@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+      "target": "ES6",  // Compilamos a código ECMAScript 6
+      "module": "commonjs",  // Usamos el sistema de módulos común
+      "esModuleInterop": true,  // Permite la interoperabilidad de ES Modules y CommonJS
+      "strict": true,  // Activa todas las comprobaciones estrictas de TypeScript
+      "skipLibCheck": true,  // Omite la comprobación de bibliotecas
+      "forceConsistentCasingInFileNames": true,  // Asegura que los nombres de los archivos son consistentes
+      "outDir": "./dist",  // El código compilado se guarda en la carpeta 'dist'
+      "rootDir": "./src"  // El código fuente está en la carpeta 'src'
+    },
+    "include": ["src/**/*.ts"]  // Incluir todos los archivos .ts dentro de 'src'
+  }
+  

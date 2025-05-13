@@ -7,7 +7,6 @@ import projectRoutes from "./routes/project";
 import userRoutes from "./routes/user";
 import baseTemplateRoutes from "./routes/baseTemplate";
 
-
 dotenv.config();
 
 const app = express();
@@ -25,8 +24,8 @@ app.use("/api/projects", projectRoutes);
 app.use("/api", userRoutes);
 app.use("/api/base-templates", baseTemplateRoutes);
 
-
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/buildit")
+mongoose
+  .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/buildit")
   .then(() => {
     console.log("Conectado a MongoDB");
     app.listen(PORT, () => {

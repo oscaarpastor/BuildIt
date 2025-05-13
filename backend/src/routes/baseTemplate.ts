@@ -4,7 +4,8 @@ import {
   getAllBaseTemplates,
   getBaseTemplateById,
   updateBaseTemplate,
-  deleteBaseTemplate
+  deleteBaseTemplate,
+  cloneBaseTemplateToProject,
 } from "../controllers/baseTemplate";
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.get("/", getAllBaseTemplates);
 router.get("/:id", getBaseTemplateById);
 router.put("/:id", updateBaseTemplate);
 router.delete("/:id", deleteBaseTemplate);
+router.post("/:id/clone", cloneBaseTemplateToProject);
 
 export default router;

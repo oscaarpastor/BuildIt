@@ -1,10 +1,16 @@
 import { Request, Response } from "express";
 import { BaseTemplate } from "../models/BaseTemplate";
+import { Project } from "../models/Project";
 
 export const createBaseTemplate = async (req: Request, res: Response) => {
   try {
     const { name, description, previewImage, config } = req.body;
-    const template = new BaseTemplate({ name, description, previewImage, config });
+    const template = new BaseTemplate({
+      name,
+      description,
+      previewImage,
+      config,
+    });
     await template.save();
     res.status(201).json(template);
   } catch (error: any) {
@@ -36,7 +42,11 @@ export const getBaseTemplateById = async (req: Request, res: Response) => {
 
 export const updateBaseTemplate = async (req: Request, res: Response) => {
   try {
-    const updated = await BaseTemplate.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await BaseTemplate.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
     if (!updated) {
       res.status(404).json({ message: "BaseTemplate no encontrado" });
       return;
@@ -53,5 +63,34 @@ export const deleteBaseTemplate = async (req: Request, res: Response) => {
     res.status(204).send();
   } catch (error: any) {
     res.status(500).json({ error: "Error al eliminar baseTemplate" });
+  }
+};
+
+export const cloneBaseTemplateToProject = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { id } = req.params;
+    const { userId, name } = req.body;
+
+    const template = await BaseTemplate.findById(id);
+    if (!template) {
+      res.status(404).json({ message: "BaseTemplate no encontrado" });
+      return;
+    }
+
+    const newProject = new Project({
+      name: name || template.name,
+      user: userId,
+      config: template.config,
+      originTemplate: template._id // ✅ añadimos esto
+    });
+
+    await newProject.save();
+    res.status(201).json(newProject);
+  } catch (error: any) {
+    console.error("Error al clonar baseTemplate:", error);
+    res.status(500).json({ error: "Error al clonar baseTemplate" });
   }
 };

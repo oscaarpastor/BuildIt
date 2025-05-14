@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import projectRoutes from "./routes/project";
 import userRoutes from "./routes/user";
 import baseTemplateRoutes from "./routes/baseTemplate";
+import statRoutes from "./routes/stat";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.get("/", (_req, res) => {
 app.use("/api/projects", projectRoutes);
 app.use("/api", userRoutes);
 app.use("/api/base-templates", baseTemplateRoutes);
+app.use("/api/stats", statRoutes);
 
 mongoose
   .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/buildit")

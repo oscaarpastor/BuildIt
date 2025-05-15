@@ -3,6 +3,7 @@ import WelcomePage from "./pages/WelcomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProjectsPage from "./pages/ProjectsPage";
+import SettingsPage from "./pages/SettingsPage";
 import PrivateRoute from "./components/routes/PrivateRoute";
 import "./index.css";
 
@@ -18,6 +19,15 @@ function App() {
         element={
           <PrivateRoute>
             <ProjectsPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/settings"
+        element={
+          <PrivateRoute>
+            <SettingsPage />
           </PrivateRoute>
         }
       />

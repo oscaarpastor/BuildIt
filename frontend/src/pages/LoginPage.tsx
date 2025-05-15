@@ -2,11 +2,20 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
+import type { AxiosError } from "axios";
+import { useAuth } from "../context/AuthContext";
 
+// Asegúrate de tener el mismo tipo User en el contexto
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+}
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,31 +24,37 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-  
-    // Validación simple de email vacío
+
     if (!email || !password) {
       setError("Rellena todos los campos.");
       return;
     }
-  
-    // Validación de formato de email
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError("Introduce un correo electrónico válido.");
       return;
     }
-  
+
     try {
-      const res = await axios.post("http://localhost:3000/api/login", {
-        email,
-        password,
-      });
-  
+      // Iniciar sesión
+      const res = await axios.post<{ token: string }>(
+        "http://localhost:3000/api/login",
+        { email, password }
+      );
+
       const token = res.data.token;
       localStorage.setItem("token", token);
+
+      // Obtener datos del usuario con tipado explícito
+      const userRes = await axios.get<User>("http://localhost:3000/api/me", {
+        headers: { Authorization: token },
+      });
+
+      setUser(userRes.data);
       navigate("/projects");
     } catch (err) {
-      const error = err as AxiosError<{ message: string }>;
+      const error = err as AxiosError<{ message?: string }>;
       setError(error.response?.data?.message || "Error al iniciar sesión");
     }
   };

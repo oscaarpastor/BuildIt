@@ -4,10 +4,17 @@ import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import type { AxiosError } from "axios";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+}
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -18,42 +25,47 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-  
-    // Validaciones frontend
+
     if (!name || !email || !password || !repeatPassword) {
       setError("Rellena todos los campos.");
       return;
     }
-  
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError("Introduce un correo electrónico válido.");
       return;
     }
-  
+
     if (password.length < 6) {
       setError("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
-  
+
     if (password !== repeatPassword) {
       setError("Las contraseñas no coinciden.");
       return;
     }
-  
+
     try {
       const res = await axios.post("http://localhost:3000/api/users", {
         name,
         email,
         password,
       });
-  
+
       const token = res.data._id;
       localStorage.setItem("token", token);
+
+      const userRes = await axios.get<User>("http://localhost:3000/api/me", {
+        headers: { Authorization: token },
+      });
+
+      setUser(userRes.data);
       navigate("/projects");
     } catch (err) {
       const error = err as AxiosError<{ message?: string; error?: string }>;
-  
+
       if (error.response?.data?.message?.includes("E11000 duplicate key")) {
         setError("El correo ya está registrado.");
       } else if (error.response?.data?.error) {

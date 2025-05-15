@@ -6,6 +6,7 @@ import {
   deleteUser,
   updateUser,
   loginUser,
+  getCurrentUser
 } from "../controllers/user";
 
 const router = express.Router();
@@ -18,5 +19,6 @@ router.put("/users/:id", updateUser);
 
 // ✅ Nueva ruta de login
 router.post("/login", loginUser);
+router.get("/me", getCurrentUser);
 
 export default router;

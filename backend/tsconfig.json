@@ -7,7 +7,8 @@
       "skipLibCheck": true,  // Omite la comprobación de bibliotecas
       "forceConsistentCasingInFileNames": true,  // Asegura que los nombres de los archivos son consistentes
       "outDir": "./dist",  // El código compilado se guarda en la carpeta 'dist'
-      "rootDir": "./src"  // El código fuente está en la carpeta 'src'
+      "rootDir": "./src",  // El código fuente está en la carpeta 'src'
+      "jsx": "react-jsx",  // Soporte para JSX en React
     },
     "include": ["src/**/*.ts"]  // Incluir todos los archivos .ts dentro de 'src'
   }

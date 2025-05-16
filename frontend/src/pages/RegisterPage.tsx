@@ -5,6 +5,8 @@ import Button from "../components/ui/Button";
 import type { AxiosError } from "axios";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "../components/ui/LanguageSelector";
 
 interface User {
   _id: string;
@@ -15,6 +17,7 @@ interface User {
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { setUser } = useAuth();
+  const { t } = useTranslation();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -27,23 +30,23 @@ export default function RegisterPage() {
     setError("");
 
     if (!name || !email || !password || !repeatPassword) {
-      setError("Rellena todos los campos.");
+      setError(t("loguin.fill_all_fields"));
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError("Introduce un correo electrónico válido.");
+      setError(t("loguin.invalid_email"));
       return;
     }
 
     if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
+      setError(t("loguin.password_too_short"));
       return;
     }
 
     if (password !== repeatPassword) {
-      setError("Las contraseñas no coinciden.");
+      setError(t("loguin.passwords_dont_match"));
       return;
     }
 
@@ -65,50 +68,60 @@ export default function RegisterPage() {
       navigate("/projects");
     } catch (err) {
       const error = err as AxiosError<{ message?: string; error?: string }>;
-
-      if (error.response?.data?.message?.includes("E11000 duplicate key")) {
-        setError("El correo ya está registrado.");
+      if (error.response?.data?.message?.includes("E11000")) {
+        setError(t("loguin.duplicate_email"));
       } else if (error.response?.data?.error) {
         setError(error.response.data.error);
       } else {
-        setError("Error al crear cuenta.");
+        setError(t("loguin.generic_error"));
       }
     }
   };
-  
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background text-text">
-      <div className="bg-surface shadow-xl rounded-xl p-10 w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center mb-6">Crea tu cuenta</h2>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-text">
+      {/* 🔝 Header */}
+      <header className="absolute top-0 left-0 w-full flex justify-between items-center p-4">
+        <button
+          onClick={() => navigate("/")}
+          className="text-sm text-primary hover:underline"
+        >
+          ← {t("loguin.back")}
+        </button>
+        <LanguageSelector />
+      </header>
+
+      {/* 🧾 Formulario */}
+      <div className="bg-surface shadow-xl rounded-xl p-10 w-full max-w-md mt-20">
+        <h2 className="text-2xl font-bold text-center mb-6">{t("loguin.register_title")}</h2>
 
         <form className="flex flex-col gap-4" onSubmit={handleRegister}>
           <Input
             type="text"
-            placeholder="Nombre de usuario"
+            placeholder={t("loguin.name_placeholder")}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <Input
             type="email"
-            placeholder="Correo electrónico"
+            placeholder={t("loguin.email_placeholder")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
           <Input
             type="password"
-            placeholder="Contraseña"
+            placeholder={t("loguin.password_placeholder")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
           <Input
             type="password"
-            placeholder="Repite la contraseña"
+            placeholder={t("loguin.repeat_password_placeholder")}
             value={repeatPassword}
             onChange={(e) => setRepeatPassword(e.target.value)}
           />
           <Button type="submit" variant="primary">
-            Registrarse
+            {t("loguin.register_submit")}
           </Button>
         </form>
 
@@ -117,12 +130,12 @@ export default function RegisterPage() {
         )}
 
         <div className="text-sm text-center text-text/70 mt-6">
-          ¿Ya tienes cuenta?{" "}
+          {t("loguin.already_account")}{" "}
           <button
             onClick={() => navigate("/login")}
             className="text-primary hover:underline font-medium"
           >
-            Inicia sesión
+            {t("loguin.login_here")}
           </button>
         </div>
       </div>

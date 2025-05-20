@@ -9,6 +9,7 @@
       "outDir": "./dist",  // El código compilado se guarda en la carpeta 'dist'
       "rootDir": "./src",  // El código fuente está en la carpeta 'src'
       "jsx": "react-jsx",  // Soporte para JSX en React
+      "moduleResolution": "node"
     },
     "include": ["src/**/*.ts"]  // Incluir todos los archivos .ts dentro de 'src'
   }

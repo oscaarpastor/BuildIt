@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>BuildIt - Startup Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+    </style>
+  </head>
+  <body id="preview" class="text-gray-800"></body>
+
+  <script>
+    const data = {
+      name: "BuildIt Startup",
+      background: "#ffffff",
+      textColor: "#111827",
+      config: {
+        theme: {
+          fontFamily: "Inter, sans-serif",
+          colorPrimary: "#3b82f6",
+          colorSecondary: "#f1f5f9",
+          darkMode: false
+        },
+        brand: {
+          name: "LaunchUp",
+          logo: "https://placehold.co/140x40?text=LaunchUp"
+        },
+        hero: {
+          title: "Convierte ideas en productos reales",
+          subtitle: "Una plataforma completa para lanzar, medir y escalar tu startup.",
+          backgroundImage: "https://placehold.co/1200x600?text=Startup+Hero",
+          ctaText: "Prueba gratuita",
+          ctaLink: "#contact"
+        },
+        about: {
+          heading: "¿Por qué LaunchUp?",
+          content: "Creamos LaunchUp para ayudar a equipos pequeños a lanzar rápido, aprender del mercado y escalar sin límites.",
+          image: "https://placehold.co/600x400?text=Dashboard"
+        },
+        features: [
+          { icon: "⚡", title: "Sin código", description: "Crea sin escribir una línea de código." },
+          { icon: "📊", title: "Analítica instantánea", description: "Mide todo desde el primer día." },
+          { icon: "🤝", title: "Colaboración ágil", description: "Tu equipo, siempre alineado." }
+        ],
+        clients: [
+          { logo: "https://placehold.co/100x40?text=RocketX" },
+          { logo: "https://placehold.co/100x40?text=SeedLab" },
+          { logo: "https://placehold.co/100x40?text=BetaWare" },
+          { logo: "https://placehold.co/100x40?text=NextScale" }
+        ],
+        documentation: [
+          { title: "Empezar con LaunchUp", url: "https://launchup.com/docs/start" },
+          { title: "Guía de integraciones", url: "https://launchup.com/docs/integraciones" }
+        ],
+        faqs: [
+          {
+            question: "¿LaunchUp es gratuito?",
+            answer: "Sí, ofrecemos un plan gratuito con funcionalidades básicas para que puedas empezar sin coste."
+          },
+          {
+            question: "¿Puedo conectar herramientas externas?",
+            answer: "Claro, contamos con integraciones para Slack, Notion, Airtable, y más."
+          },
+          {
+            question: "¿Es seguro almacenar mis datos aquí?",
+            answer: "Cumplimos con GDPR y encriptamos toda la información de forma segura."
+          }
+        ],
+        contact: {
+          email: "hola@launchup.com",
+          phone: "+34 911 987 654",
+          address: "Calle Startup 101, Madrid",
+          formEnabled: true
+        },
+        footer: {
+          text: "© 2025 LaunchUp. Todos los derechos reservados.",
+          links: [
+            { label: "Términos", url: "https://launchup.com/terms" },
+            { label: "Privacidad", url: "https://launchup.com/privacy" }
+          ]
+        }
+      }
+    };
+
+    const render = (d) => `
+      <header class="sticky top-0 z-50 bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
+          <div class="flex items-center gap-3">
+            ${d.config.brand.logo ? `<img src="${d.config.brand.logo}" alt="Logo" class="h-8">` : ""}
+            <span class="text-xl font-bold">${d.config.brand.name}</span>
+          </div>
+          <nav class="space-x-4 text-sm font-medium">
+            <a href="#hero" class="hover:text-blue-600">Inicio</a>
+            <a href="#about" class="hover:text-blue-600">Ventajas</a>
+            <a href="#features" class="hover:text-blue-600">Funcionalidades</a>
+            <a href="#docs" class="hover:text-blue-600">Docs</a>
+            <a href="#faq" class="hover:text-blue-600">FAQ</a>
+            <a href="#contact" class="hover:text-blue-600">Contacto</a>
+          </nav>
+        </div>
+      </header>
+
+      <main style="font-family: ${d.config.theme.fontFamily}; background-color: ${d.background}; color: ${d.textColor}">
+        <section id="hero" class="text-center px-6 py-32 bg-cover bg-center" style="background-image: url('${d.config.hero.backgroundImage}')">
+          <h1 class="text-5xl font-bold mb-4 text-white drop-shadow">${d.config.hero.title}</h1>
+          <p class="text-xl mb-6 text-white drop-shadow">${d.config.hero.subtitle}</p>
+          <a href="${d.config.hero.ctaLink}" class="inline-block bg-[${d.config.theme.colorPrimary}] text-white px-8 py-3 rounded-lg shadow hover:scale-105 transition">
+            ${d.config.hero.ctaText}
+          </a>
+        </section>
+
+        <section id="about" class="px-6 py-20 max-w-7xl mx-auto flex flex-col md:flex-row gap-10 items-center">
+          <img src="${d.config.about.image}" alt="Preview App" class="w-full md:w-1/2 rounded shadow" />
+          <div class="w-full md:w-1/2">
+            <h2 class="text-3xl font-semibold mb-4">${d.config.about.heading}</h2>
+            <p class="text-lg">${d.config.about.content}</p>
+          </div>
+        </section>
+
+        <section id="features" class="px-6 py-20 bg-[${d.config.theme.colorSecondary}]">
+          <h2 class="text-3xl font-semibold text-center mb-10">Funcionalidades</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
+            ${d.config.features.map(f => `
+              <div class="bg-white rounded shadow p-6 text-center">
+                <div class="text-5xl mb-3">${f.icon}</div>
+                <h3 class="text-xl font-bold">${f.title}</h3>
+                <p class="mt-2 text-sm">${f.description}</p>
+              </div>`).join("")}
+          </div>
+        </section>
+
+        <section id="clients" class="px-6 py-16 max-w-6xl mx-auto text-center">
+          <h2 class="text-2xl font-semibold mb-6">Ya confían en nosotros</h2>
+          <div class="flex flex-wrap justify-center gap-6">
+            ${d.config.clients.map(c => `<img src="${c.logo}" class="h-10" alt="Logo cliente" />`).join("")}
+          </div>
+        </section>
+
+        <section id="docs" class="px-6 py-20 bg-gray-100">
+          <h2 class="text-3xl font-semibold text-center mb-10">Documentación</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            ${d.config.documentation.map(doc => `<a href="${doc.url}" class="block p-6 rounded shadow bg-white hover:bg-blue-50 transition"><h3 class="text-lg font-semibold">${doc.title}</h3></a>`).join("")}
+          </div>
+        </section>
+
+        <section id="faq" class="px-6 py-20 max-w-4xl mx-auto">
+          <h2 class="text-3xl font-semibold text-center mb-10">Preguntas frecuentes</h2>
+          <div class="space-y-6">
+            ${d.config.faqs.map(f => `
+              <div class="bg-white border-l-4 border-[${d.config.theme.colorPrimary}] p-4 rounded shadow">
+                <h4 class="font-bold mb-2">${f.question}</h4>
+                <p>${f.answer}</p>
+              </div>
+            `).join("")}
+          </div>
+        </section>
+
+        <section id="contact" class="px-6 py-20">
+          <h2 class="text-3xl font-semibold text-center mb-6">Solicita acceso</h2>
+          <div class="text-center mb-6">
+            <p>Email: ${d.config.contact.email}</p>
+            <p>Teléfono: ${d.config.contact.phone}</p>
+            <p>Dirección: ${d.config.contact.address}</p>
+          </div>
+          ${d.config.contact.formEnabled ? `
+            <form class="max-w-xl mx-auto grid gap-4">
+              <input type="text" placeholder="Tu nombre" class="border p-3 rounded w-full" />
+              <input type="email" placeholder="Tu email" class="border p-3 rounded w-full" />
+              <textarea placeholder="Mensaje" class="border p-3 rounded w-full"></textarea>
+              <button class="bg-[${d.config.theme.colorPrimary}] text-white py-2 px-4 rounded">Enviar</button>
+            </form>` : ""}
+        </section>
+      </main>
+
+      <footer class="bg-[${d.config.theme.colorPrimary}] text-white px-6 py-10">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="font-bold text-lg mb-2">${d.config.brand.name}</h3>
+            <p class="text-sm">${d.config.footer.text}</p>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-2">Legal</h4>
+            <ul class="space-y-1 text-sm">
+              ${d.config.footer.links.map(l => `<li><a href="${l.url}" class="underline hover:opacity-90">${l.label}</a></li>`).join("")}
+            </ul>
+          </div>
+        </div>
+      </footer>
+
+      <a href="#hero" class="fixed bottom-6 right-6 bg-[${d.config.theme.colorPrimary}] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
+    `;
+
+    document.getElementById("preview").innerHTML = render(data);
+  </script>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>BuildIt - Template Completa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html { scroll-behavior: smooth; }
+    </style>
+  </head>
+  <body id="preview" class="text-gray-800"></body>
+
+  <script>
+    const data = {
+      name: "BuildIt MegaTemplate",
+      background: "#f8fafc",
+      textColor: "#1e293b",
+      config: {
+        theme: {
+          fontFamily: "ui-sans-serif",
+          colorPrimary: "#1e40af",
+          colorSecondary: "#e2e8f0",
+          darkMode: false
+        },
+        brand: {
+          name: "BuildIt",
+          logo: "https://placehold.co/140x40?text=LOGO"
+        },
+        hero: {
+          title: "Tu web perfecta empieza aquí",
+          subtitle: "Una sola plataforma, infinitas posibilidades.",
+          backgroundImage: "https://placehold.co/1200x500",
+          ctaText: "Empezar ahora",
+          ctaLink: "#contact"
+        },
+        about: {
+          heading: "Nuestra misión",
+          content: "Creamos herramientas para que cualquier persona o empresa tenga una web moderna, funcional y atractiva.",
+          image: "https://placehold.co/600x400"
+        },
+        features: [
+          { icon: "⚙️", title: "Personalizable", description: "Elige estilos, bloques y colores a tu gusto." },
+          { icon: "💡", title: "Inteligente", description: "Sugerencias automáticas basadas en tu sector." },
+          { icon: "📱", title: "Responsive", description: "Diseñado para cualquier dispositivo." }
+        ],
+        products: [
+          { title: "Producto A", description: "Ideal para freelancers.", price: "19€", image: "https://placehold.co/300x200" },
+          { title: "Producto B", description: "Pensado para empresas.", price: "49€", image: "https://placehold.co/300x200" }
+        ],
+        gallery: [
+          { image: "https://placehold.co/300x200?text=Img1" },
+          { image: "https://placehold.co/300x200?text=Img2" },
+          { image: "https://placehold.co/300x200?text=Img3" }
+        ],
+        video: {
+          url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          thumbnail: "https://placehold.co/800x450"
+        },
+        testimonials: [
+          { name: "Lucía P.", quote: "Increíble experiencia desde el primer momento.", avatar: "https://placehold.co/80" },
+          { name: "Carlos M.", quote: "Nunca fue tan fácil tener mi propia web.", avatar: "https://placehold.co/80" }
+        ],
+        documentation: [
+          { title: "Cómo empezar", url: "https://buildit.com/docs/start" },
+          { title: "Integraciones", url: "https://buildit.com/docs/integrations" }
+        ],
+        faqs: [
+          { question: "¿Necesito saber programar?", answer: "No, está todo pensado para usuarios sin conocimientos técnicos." },
+          { question: "¿Puedo exportar el sitio web?", answer: "Sí, en HTML/CSS listo para subir a cualquier hosting." }
+        ],
+        contact: {
+          email: "contacto@buildit.com",
+          phone: "+34 900 123 456",
+          address: "Calle Creatividad 88, Madrid",
+          formEnabled: true
+        },
+        footer: {
+          text: "© 2025 BuildIt. Todos los derechos reservados.",
+          links: [
+            { label: "Términos", url: "https://buildit.com/legal" },
+            { label: "Privacidad", url: "https://buildit.com/privacy" }
+          ]
+        }
+      }
+    };
+
+    const render = (d) => `
+      <header class="sticky top-0 z-50 bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
+          <div class="flex items-center gap-3">
+            ${d.config.brand.logo ? `<img src="${d.config.brand.logo}" alt="Logo" class="h-8">` : ""}
+            <span class="text-xl font-bold">${d.config.brand.name}</span>
+          </div>
+          <nav class="space-x-4 text-sm font-medium">
+            <a href="#hero" class="hover:text-blue-600">Inicio</a>
+            <a href="#about" class="hover:text-blue-600">Nosotros</a>
+            <a href="#features" class="hover:text-blue-600">Ventajas</a>
+            <a href="#products" class="hover:text-blue-600">Productos</a>
+            <a href="#testimonials" class="hover:text-blue-600">Testimonios</a>
+            <a href="#gallery" class="hover:text-blue-600">Galería</a>
+            <a href="#docs" class="hover:text-blue-600">Docs</a>
+            <a href="#faq" class="hover:text-blue-600">FAQ</a>
+            <a href="#contact" class="hover:text-blue-600">Contacto</a>
+          </nav>
+        </div>
+      </header>
+
+      <main style="font-family: ${d.config.theme.fontFamily}; background-color: ${d.background}; color: ${d.textColor}">
+        <section id="hero" class="text-center px-6 py-32 bg-cover bg-center" style="background-image: url('${d.config.hero.backgroundImage}')">
+          <h1 class="text-5xl font-bold mb-4 text-white drop-shadow">${d.config.hero.title}</h1>
+          <p class="text-xl mb-6 text-white drop-shadow">${d.config.hero.subtitle}</p>
+          <a href="${d.config.hero.ctaLink}" class="inline-block bg-[${d.config.theme.colorPrimary}] text-white px-8 py-3 rounded-lg shadow hover:scale-105 transition">
+            ${d.config.hero.ctaText}
+          </a>
+        </section>
+
+        <section id="about" class="px-6 py-20 max-w-7xl mx-auto flex flex-col md:flex-row gap-10 items-center">
+          <img src="${d.config.about.image}" alt="Imagen" class="w-full md:w-1/2 rounded shadow" />
+          <div class="w-full md:w-1/2">
+            <h2 class="text-3xl font-semibold mb-4">${d.config.about.heading}</h2>
+            <p class="text-lg">${d.config.about.content}</p>
+          </div>
+        </section>
+
+        <section id="features" class="px-6 py-20 bg-[${d.config.theme.colorSecondary}]">
+          <h2 class="text-3xl font-semibold text-center mb-10">Ventajas</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
+            ${d.config.features.map(f => `
+              <div class="bg-white rounded shadow p-6 text-center">
+                <div class="text-5xl mb-3">${f.icon}</div>
+                <h3 class="text-xl font-bold">${f.title}</h3>
+                <p class="mt-2 text-sm">${f.description}</p>
+              </div>`).join("")}
+          </div>
+        </section>
+
+        <section id="products" class="px-6 py-20">
+          <h2 class="text-3xl font-semibold text-center mb-10">Nuestros Productos</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            ${d.config.products.map(p => `
+              <div class="border rounded shadow p-4 text-center">
+                <img src="${p.image}" alt="${p.title}" class="mb-4 mx-auto">
+                <h3 class="text-xl font-bold">${p.title}</h3>
+                <p class="text-sm mb-2">${p.description}</p>
+                <span class="font-semibold">${p.price}</span>
+              </div>`).join("")}
+          </div>
+        </section>
+
+        <section id="gallery" class="px-6 py-20 bg-gray-100">
+          <h2 class="text-3xl font-semibold text-center mb-10">Galería</h2>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
+            ${d.config.gallery.map(img => `<img src="${img.image}" class="rounded shadow">`).join("")}
+          </div>
+        </section>
+
+        <section id="video" class="px-6 py-20">
+          <h2 class="text-3xl font-semibold text-center mb-10">Presentación en vídeo</h2>
+          <div class="flex justify-center">
+            <iframe width="800" height="450" src="${d.config.video.url}" frameborder="0" allowfullscreen class="rounded shadow"></iframe>
+          </div>
+        </section>
+
+        <section id="testimonials" class="px-6 py-20 max-w-7xl mx-auto">
+          <h2 class="text-3xl font-semibold text-center mb-10">Testimonios</h2>
+          <div class="flex flex-wrap justify-center gap-6">
+            ${d.config.testimonials.map(t => `
+              <div class="bg-white p-6 rounded shadow w-full md:w-1/3 text-center">
+                <img src="${t.avatar}" alt="${t.name}" class="w-16 h-16 rounded-full mx-auto mb-4">
+                <p class="italic">"${t.quote}"</p>
+                <p class="mt-2 font-semibold">${t.name}</p>
+              </div>`).join("")}
+          </div>
+        </section>
+
+        <section id="docs" class="px-6 py-20 bg-gray-100">
+          <h2 class="text-3xl font-semibold text-center mb-10">Documentación</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            ${d.config.documentation.map(doc => `<a href="${doc.url}" class="block p-6 rounded shadow bg-white hover:bg-blue-50 transition"><h3 class="text-lg font-semibold">${doc.title}</h3></a>`).join("")}
+          </div>
+        </section>
+
+        <section id="faq" class="px-6 py-20 max-w-4xl mx-auto">
+          <h2 class="text-3xl font-semibold text-center mb-10">Preguntas frecuentes</h2>
+          <div class="space-y-6">
+            ${d.config.faqs.map(f => `
+              <div class="bg-white border-l-4 border-[${d.config.theme.colorPrimary}] p-4 rounded shadow">
+                <h4 class="font-bold mb-2">${f.question}</h4>
+                <p>${f.answer}</p>
+              </div>`).join("")}
+          </div>
+        </section>
+
+        <section id="contact" class="px-6 py-20">
+          <h2 class="text-3xl font-semibold text-center mb-6">Contacto</h2>
+          <div class="text-center mb-6">
+            <p>Email: ${d.config.contact.email}</p>
+            <p>Teléfono: ${d.config.contact.phone}</p>
+            <p>Dirección: ${d.config.contact.address}</p>
+          </div>
+          ${d.config.contact.formEnabled ? `
+            <form class="max-w-xl mx-auto grid gap-4">
+              <input type="text" placeholder="Tu nombre" class="border p-3 rounded w-full" />
+              <input type="email" placeholder="Tu email" class="border p-3 rounded w-full" />
+              <textarea placeholder="Mensaje" class="border p-3 rounded w-full"></textarea>
+              <button class="bg-[${d.config.theme.colorPrimary}] text-white py-2 px-4 rounded">Enviar</button>
+            </form>` : ""}
+        </section>
+      </main>
+
+      <footer class="bg-[${d.config.theme.colorPrimary}] text-white px-6 py-10">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
+          <div>
+            <h3 class="font-bold text-lg mb-2">${d.config.brand.name}</h3>
+            <p class="text-sm">${d.config.footer.text}</p>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-2">Legal</h4>
+            <ul class="space-y-1 text-sm">
+              ${d.config.footer.links.map(l => `<li><a href="${l.url}" class="underline hover:opacity-90">${l.label}</a></li>`).join("")}
+            </ul>
+          </div>
+        </div>
+      </footer>
+
+      <a href="#hero" class="fixed bottom-6 right-6 bg-[${d.config.theme.colorPrimary}] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
+    `;
+
+    document.getElementById("preview").innerHTML = render(data);
+  </script>
+</html>

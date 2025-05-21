@@ -84,7 +84,7 @@ export const cloneBaseTemplateToProject = async (
       name: name || template.name,
       user: userId,
       config: template.config,
-      originTemplate: template._id // ✅ añadimos esto
+      originTemplate: template._id
     });
 
     await newProject.save();
@@ -92,5 +92,28 @@ export const cloneBaseTemplateToProject = async (
   } catch (error: any) {
     console.error("Error al clonar baseTemplate:", error);
     res.status(500).json({ error: "Error al clonar baseTemplate" });
+  }
+};
+
+
+export const previewBaseTemplate = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const template = await BaseTemplate.findById(id);
+
+    if (!template) {
+      res.status(404).send("BaseTemplate no encontrada");
+      return;
+    }
+
+    const data = {
+      config: template.config,
+      background: "#ffffff",
+      textColor: "#111827"
+    };
+
+    res.render("template", data);
+  } catch (error: any) {
+    res.status(500).send("Error al renderizar la plantilla");
   }
 };

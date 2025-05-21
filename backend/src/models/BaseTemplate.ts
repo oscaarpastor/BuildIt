@@ -12,6 +12,10 @@ const baseTemplateSchema = new mongoose.Schema(
         fontFamily: String,
         darkMode: Boolean,
       },
+      brand: {
+        name: String,
+        logo: String
+      },
       hero: {
         title: String,
         subtitle: String,
@@ -31,6 +35,23 @@ const baseTemplateSchema = new mongoose.Schema(
           description: String,
         },
       ],
+      products: [
+        {
+          title: String,
+          description: String,
+          price: String,
+          image: String,
+        },
+      ],
+      gallery: [
+        {
+          image: String
+        }
+      ],
+      video: {
+        url: String,
+        thumbnail: String
+      },
       testimonials: [
         {
           name: String,
@@ -38,6 +59,43 @@ const baseTemplateSchema = new mongoose.Schema(
           avatar: String,
         },
       ],
+      documentation: [
+        {
+          title: String,
+          url: String
+        }
+      ],
+      faqs: [
+        {
+          question: String,
+          answer: String
+        }
+      ],
+      inspiration: [
+        {
+          category: String,
+          name: String,
+          image: String,
+          link: String,
+          description: String
+        }
+      ],
+      program: {
+        title: String,
+        image: String,
+        reason: String,
+        functioning: String,
+        methodology: String,
+        selection: String,
+        cta1: {
+          text: String,
+          link: String
+        },
+        cta2: {
+          text: String,
+          link: String
+        }
+      },
       contact: {
         email: String,
         phone: String,
@@ -46,7 +104,12 @@ const baseTemplateSchema = new mongoose.Schema(
       },
       footer: {
         text: String,
-        links: [String],
+        links: [
+          {
+            label: String,
+            url: String
+          }
+        ]
       },
     },
   },

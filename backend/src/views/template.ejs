@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title><%= config.brand.name %> - Template Completa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style> html { scroll-behavior: smooth; } </style>
+  </head>
+  <body style="font-family: <%= config.theme.fontFamily %>; background-color: <%= background %>; color: <%= textColor %>">
+    <header class="sticky top-0 z-50 bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
+        <div class="flex items-center gap-3">
+          <% if (config.brand.logo) { %>
+            <img src="<%= config.brand.logo %>" alt="Logo" class="h-8">
+          <% } %>
+          <span class="text-xl font-bold"><%= config.brand.name %></span>
+        </div>
+        <nav class="space-x-4 text-sm font-medium">
+          <a href="#hero">Inicio</a>
+          <a href="#about">Nosotros</a>
+          <a href="#features">Ventajas</a>
+          <a href="#products">Productos</a>
+          <a href="#testimonials">Testimonios</a>
+          <a href="#gallery">Galería</a>
+          <a href="#docs">Docs</a>
+          <a href="#faq">FAQ</a>
+          <a href="#contact">Contacto</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section id="hero" class="text-center px-6 py-32 bg-cover bg-center" style="background-image: url('<%= config.hero.backgroundImage %>')">
+        <h1 class="text-5xl font-bold mb-4 text-white drop-shadow"><%= config.hero.title %></h1>
+        <p class="text-xl mb-6 text-white drop-shadow"><%= config.hero.subtitle %></p>
+        <a href="<%= config.hero.ctaLink %>" class="inline-block bg-[<%= config.theme.colorPrimary %>] text-white px-8 py-3 rounded-lg shadow hover:scale-105 transition">
+          <%= config.hero.ctaText %>
+        </a>
+      </section>
+
+      <section id="about" class="px-6 py-20 max-w-7xl mx-auto flex flex-col md:flex-row gap-10 items-center">
+        <img src="<%= config.about.image %>" alt="Imagen" class="w-full md:w-1/2 rounded shadow" />
+        <div class="w-full md:w-1/2">
+          <h2 class="text-3xl font-semibold mb-4"><%= config.about.heading %></h2>
+          <p class="text-lg"><%= config.about.content %></p>
+        </div>
+      </section>
+
+      <section id="features" class="px-6 py-20 bg-[<%= config.theme.colorSecondary %>]">
+        <h2 class="text-3xl font-semibold text-center mb-10">Ventajas</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
+          <% config.features.forEach(f => { %>
+            <div class="bg-white rounded shadow p-6 text-center">
+              <div class="text-5xl mb-3"><%= f.icon %></div>
+              <h3 class="text-xl font-bold"><%= f.title %></h3>
+              <p class="mt-2 text-sm"><%= f.description %></p>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+
+      <section id="products" class="px-6 py-20">
+        <h2 class="text-3xl font-semibold text-center mb-10">Nuestros Productos</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <% config.products.forEach(p => { %>
+            <div class="border rounded shadow p-4 text-center">
+              <img src="<%= p.image %>" alt="<%= p.title %>" class="mb-4 mx-auto">
+              <h3 class="text-xl font-bold"><%= p.title %></h3>
+              <p class="text-sm mb-2"><%= p.description %></p>
+              <span class="font-semibold"><%= p.price %></span>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+
+      <section id="gallery" class="px-6 py-20 bg-gray-100">
+        <h2 class="text-3xl font-semibold text-center mb-10">Galería</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-6xl mx-auto">
+          <% config.gallery.forEach(img => { %>
+            <img src="<%= img.image %>" class="rounded shadow">
+          <% }) %>
+        </div>
+      </section>
+
+      <section id="video" class="px-6 py-20">
+        <h2 class="text-3xl font-semibold text-center mb-10">Presentación en vídeo</h2>
+        <div class="flex justify-center">
+          <iframe width="800" height="450" src="<%= config.video.url %>" frameborder="0" allowfullscreen class="rounded shadow"></iframe>
+        </div>
+      </section>
+
+      <section id="testimonials" class="px-6 py-20 max-w-7xl mx-auto">
+        <h2 class="text-3xl font-semibold text-center mb-10">Testimonios</h2>
+        <div class="flex flex-wrap justify-center gap-6">
+          <% config.testimonials.forEach(t => { %>
+            <div class="bg-white p-6 rounded shadow w-full md:w-1/3 text-center">
+              <img src="<%= t.avatar %>" alt="<%= t.name %>" class="w-16 h-16 rounded-full mx-auto mb-4">
+              <p class="italic">"<%= t.quote %>"</p>
+              <p class="mt-2 font-semibold"><%= t.name %></p>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+
+      <section id="docs" class="px-6 py-20 bg-gray-100">
+        <h2 class="text-3xl font-semibold text-center mb-10">Documentación</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <% config.documentation.forEach(doc => { %>
+            <a href="<%= doc.url %>" class="block p-6 rounded shadow bg-white hover:bg-blue-50 transition">
+              <h3 class="text-lg font-semibold"><%= doc.title %></h3>
+            </a>
+          <% }) %>
+        </div>
+      </section>
+
+      <section id="faq" class="px-6 py-20 max-w-4xl mx-auto">
+        <h2 class="text-3xl font-semibold text-center mb-10">Preguntas frecuentes</h2>
+        <div class="space-y-6">
+          <% config.faqs.forEach(f => { %>
+            <div class="bg-white border-l-4 border-[<%= config.theme.colorPrimary %>] p-4 rounded shadow">
+              <h4 class="font-bold mb-2"><%= f.question %></h4>
+              <p><%= f.answer %></p>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+
+      <section id="contact" class="px-6 py-20">
+        <h2 class="text-3xl font-semibold text-center mb-6">Contacto</h2>
+        <div class="text-center mb-6">
+          <p>Email: <%= config.contact.email %></p>
+          <p>Teléfono: <%= config.contact.phone %></p>
+          <p>Dirección: <%= config.contact.address %></p>
+        </div>
+      </section>
+
+      <section id="inspiration" class="px-6 py-20 bg-gray-50">
+        <h2 class="text-3xl font-semibold text-center mb-10">Proyectos que inspiran</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+          <% config.inspiration.forEach(item => { %>
+            <div class="rounded-3xl overflow-hidden bg-white shadow">
+              <img src="<%= item.image %>" alt="<%= item.name %>" class="w-full h-48 object-cover">
+              <div class="p-6 text-center">
+                <p class="text-sm font-semibold mb-1 text-gray-800"><%= item.category %></p>
+                <h3 class="text-xl font-bold text-[<%= config.theme.colorPrimary %>] mb-2">
+                  <a href="<%= item.link %>" class="hover:underline"><%= item.name %></a>
+                </h3>
+                <p class="text-sm text-gray-600"><%= item.description %></p>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+
+      <section id="program" class="px-6 py-20 bg-gray-900 text-white">
+        <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
+          <div class="w-full lg:w-1/2">
+            <img src="<%= config.program.image %>" alt="De A a B" class="w-full max-w-md mx-auto" />
+          </div>
+          <div class="w-full lg:w-1/2 space-y-6">
+            <h2 class="text-4xl font-bold leading-tight"><%= config.program.title %></h2>
+            <div class="space-y-4 text-sm text-gray-300">
+              <div>
+                <h3 class="font-bold text-white">El porqué:</h3>
+                <p><%= config.program.reason %></p>
+              </div>
+              <div>
+                <h3 class="font-bold text-white">Funcionamiento:</h3>
+                <p><%= config.program.functioning %></p>
+              </div>
+              <div>
+                <h3 class="font-bold text-white">Metodología:</h3>
+                <p><%= config.program.methodology %></p>
+              </div>
+              <div>
+                <h3 class="font-bold text-white">Proceso de selección:</h3>
+                <p><%= config.program.selection %></p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-4 pt-4">
+              <a href="<%= config.program.cta1.link %>" class="bg-[<%= config.theme.colorPrimary %>] text-white px-6 py-3 rounded font-semibold hover:opacity-90 transition">
+                <%= config.program.cta1.text %>
+              </a>
+              <a href="<%= config.program.cta2.link %>" class="border border-white text-white px-6 py-3 rounded font-semibold hover:bg-white hover:text-black transition">
+                <%= config.program.cta2.text %>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+
+    </main>
+
+    <footer class="bg-[<%= config.theme.colorPrimary %>] text-white px-6 py-10">
+      <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-bold text-lg mb-2"><%= config.brand.name %></h3>
+          <p class="text-sm"><%= config.footer.text %></p>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-2">Legal</h4>
+          <ul class="space-y-1 text-sm">
+            <% config.footer.links.forEach(l => { %>
+              <li><a href="<%= l.url %>" class="underline hover:opacity-90"><%= l.label %></a></li>
+            <% }) %>
+          </ul>
+        </div>
+      </div>
+    </footer>
+
+    <a href="#hero" class="fixed bottom-6 right-6 bg-[<%= config.theme.colorPrimary %>] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
+  </body>
+</html>

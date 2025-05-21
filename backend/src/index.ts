@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
 
 import projectRoutes from "./routes/project";
 import userRoutes from "./routes/user";
@@ -16,16 +17,18 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (_req, res) => {
-  res.send("¡Backend funcionando!");
-});
+// ✅ Configuración de EJS
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
-// Rutas
+// ✅ Rutas API
 app.use("/api/projects", projectRoutes);
 app.use("/api", userRoutes);
 app.use("/api/base-templates", baseTemplateRoutes);
 app.use("/api/stats", statRoutes);
 
+
+// Conexión a MongoDB y arranque del servidor
 mongoose
   .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/buildit")
   .then(() => {

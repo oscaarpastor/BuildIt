@@ -4,7 +4,7 @@ const projectSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    originTemplate: { type: mongoose.Schema.Types.ObjectId, ref: "BaseTemplate" }, // ✅ origen
+    originTemplate: { type: mongoose.Schema.Types.ObjectId, ref: "BaseTemplate" },
 
     config: {
       theme: {
@@ -12,6 +12,10 @@ const projectSchema = new mongoose.Schema(
         colorSecondary: String,
         fontFamily: String,
         darkMode: Boolean,
+      },
+      brand: {
+        name: String,
+        logo: String
       },
       hero: {
         title: String,
@@ -32,6 +36,23 @@ const projectSchema = new mongoose.Schema(
           description: String,
         },
       ],
+      products: [
+        {
+          title: String,
+          description: String,
+          price: String,
+          image: String,
+        },
+      ],
+      gallery: [
+        {
+          image: String
+        }
+      ],
+      video: {
+        url: String,
+        thumbnail: String
+      },
       testimonials: [
         {
           name: String,
@@ -39,6 +60,43 @@ const projectSchema = new mongoose.Schema(
           avatar: String,
         },
       ],
+      documentation: [
+        {
+          title: String,
+          url: String
+        }
+      ],
+      faqs: [
+        {
+          question: String,
+          answer: String
+        }
+      ],
+      inspiration: [
+        {
+          category: String,
+          name: String,
+          image: String,
+          link: String,
+          description: String
+        }
+      ],
+      program: {
+        title: String,
+        image: String,
+        reason: String,
+        functioning: String,
+        methodology: String,
+        selection: String,
+        cta1: {
+          text: String,
+          link: String
+        },
+        cta2: {
+          text: String,
+          link: String
+        }
+      },
       contact: {
         email: String,
         phone: String,
@@ -47,7 +105,12 @@ const projectSchema = new mongoose.Schema(
       },
       footer: {
         text: String,
-        links: [String],
+        links: [
+          {
+            label: String,
+            url: String
+          }
+        ]
       }
     }
   },

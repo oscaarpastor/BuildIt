@@ -57,3 +57,56 @@ export const deleteProject = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Error deleting project" });
   }
 };
+
+export const previewProject = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const project = await Project.findById(id);
+
+    if (!project) {
+      res.status(404).send("Proyecto no encontrado");
+      return;
+    }
+
+    const data = {
+      config: project.config,
+      background: "#ffffff",
+      textColor: "#111827"
+    };
+
+    res.render("template", data);
+  } catch (error: any) {
+    res.status(500).send("Error al renderizar el proyecto");
+  }
+};
+
+import { BaseTemplate } from "../models/BaseTemplate"; // 👈 importar esto
+
+export const createProjectFromTemplate = async (req: Request, res: Response) => {
+  try {
+    const { templateId, userId, name } = req.body;
+
+    if (!templateId || !userId || !name) {
+      res.status(400).json({ message: "Faltan datos necesarios" });
+      return;
+    }
+
+    const template = await BaseTemplate.findById(templateId);
+    if (!template) {
+      res.status(404).json({ message: "Plantilla no encontrada" });
+      return;
+    }
+
+    const project = new Project({
+      name,
+      user: userId,
+      config: template.config,
+      originTemplate: template._id
+    });
+
+    await project.save();
+    res.status(201).json(project);
+  } catch (error: any) {
+    res.status(500).json({ message: "Error al crear el proyecto desde plantilla" });
+  }
+};

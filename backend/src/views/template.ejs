@@ -7,7 +7,17 @@
     <style> html { scroll-behavior: smooth; } </style>
   </head>
   <body style="font-family: <%= config.theme.fontFamily %>; background-color: <%= background %>; color: <%= textColor %>">
-    <header class="sticky top-0 z-50 bg-white shadow-sm">
+    <% if (previewMode) { %>
+      <style>
+        #preview-wrapper {
+          transform: scale(0.6);
+          transform-origin: top center;
+          width: 166.66vw;
+          margin-left: -33.33vw; /* centra el contenido tras escalar */
+        }
+      </style>
+      <div id="preview-wrapper">
+    <% } %>      
       <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
         <div class="flex items-center gap-3">
           <% if (config.brand.logo) { %>
@@ -210,5 +220,8 @@
     </footer>
 
     <a href="#hero" class="fixed bottom-6 right-6 bg-[<%= config.theme.colorPrimary %>] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
+    <% if (previewMode) { %>
+  </div>
+<% } %>
   </body>
 </html>

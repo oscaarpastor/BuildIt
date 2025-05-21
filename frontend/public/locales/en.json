@@ -24,8 +24,6 @@
   "loguin.password_too_short": "Password must be at least 6 characters.",
   "loguin.passwords_dont_match": "Passwords do not match.",
   "loguin.duplicate_email": "Email is already registered.",
-  "projects.greeting": "Hi, {{name}} 👋",
-  "projects.settings_button": "Settings",
   "settings.title": "Profile settings",
   "settings.name_placeholder": "Name",
   "settings.email_placeholder": "Email address",
@@ -33,5 +31,10 @@
   "settings.success": "✅ Profile updated successfully.",
   "settings.error": "❌ Failed to update profile.",
   "loguin.logout": "Log out",
-  "settings.back": "Back"
+  "settings.back": "Back",
+  "projects.greeting": "Hello, {{name}} 👋",
+  "projects.settings_button": "Settings",
+  "projects.your_projects": "Your projects",
+  "projects.no_preview": "No preview",
+  "projects.view_button": "View"
 }

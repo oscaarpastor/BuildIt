@@ -24,8 +24,6 @@
   "loguin.password_too_short": "La contraseña debe tener al menos 6 caracteres.",
   "loguin.passwords_dont_match": "Las contraseñas no coinciden.",
   "loguin.duplicate_email": "El correo ya está registrado.",
-  "projects.greeting": "Hola, {{name}} 👋",
-  "projects.settings_button": "Ajustes",
   "settings.title": "Configuración de perfil",
   "settings.name_placeholder": "Nombre",
   "settings.email_placeholder": "Correo electrónico",
@@ -33,5 +31,10 @@
   "settings.success": "✅ Perfil actualizado correctamente.",
   "settings.error": "❌ Error al actualizar el perfil.",
   "loguin.logout": "Cerrar sesión",
-  "settings.back": "Volver"
+  "settings.back": "Volver",
+  "projects.greeting": "Hola, {{name}} 👋",
+  "projects.settings_button": "Configuración",
+  "projects.your_projects": "Tus proyectos",
+  "projects.no_preview": "Sin vista previa",
+  "projects.view_button": "Ver"
 }

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 type PreviewCardProps = {
   id: string;
@@ -14,6 +15,15 @@ export const PreviewCard: React.FC<PreviewCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const copyToClipboard = () => {
+    const link = `${window.location.origin}/project/${id}/view`;
+    navigator.clipboard.writeText(link).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow p-6 hover:shadow-md transition flex flex-col justify-between w-full">
@@ -39,14 +49,36 @@ export const PreviewCard: React.FC<PreviewCardProps> = ({
           {new Date(createdAt).toLocaleDateString()}
         </p>
 
-        <a
-          href={`http://localhost:3000/api/projects/${id}/preview`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-white bg-primary px-4 py-2 rounded hover:bg-primary/90 inline-block text-center w-full"
-        >
-          {t("projects.view_button")}
-        </a>
+        <div className="flex flex-col gap-2">
+          <a
+            href={`/project/${id}/view`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-white bg-primary px-4 py-2 rounded hover:bg-primary/90 text-center"
+          >
+            {t("projects.view_button")}
+          </a>
+
+          <Link
+            to={`/projects/${id}/edit`}
+            className="text-sm text-primary border border-primary px-4 py-2 rounded hover:bg-primary/10 text-center"
+          >
+            ✏️ {t("projects.edit_button", "Editar")}
+          </Link>
+
+          <button
+            onClick={copyToClipboard}
+            className="text-sm text-primary border border-primary px-4 py-2 rounded hover:bg-primary/10 text-center"
+          >
+            🔗 {t("projects.share_button", "Compartir")}
+          </button>
+
+          {copied && (
+            <p className="text-xs text-green-600 text-center">
+              ✅ Enlace copiado al portapapeles
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

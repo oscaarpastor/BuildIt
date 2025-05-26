@@ -84,7 +84,7 @@ export const cloneBaseTemplateToProject = async (
       name: name || template.name,
       user: userId,
       config: template.config,
-      originTemplate: template._id
+      originTemplate: template._id,
     });
 
     await newProject.save();
@@ -94,7 +94,6 @@ export const cloneBaseTemplateToProject = async (
     res.status(500).json({ error: "Error al clonar baseTemplate" });
   }
 };
-
 
 export const previewBaseTemplate = async (req: Request, res: Response) => {
   try {
@@ -109,7 +108,8 @@ export const previewBaseTemplate = async (req: Request, res: Response) => {
     const data = {
       config: template.config,
       background: "#ffffff",
-      textColor: "#111827"
+      textColor: "#111827",
+      previewMode: req.query.preview === "true", // ✅ Se añade el modo de previsualización
     };
 
     res.render("template", data);

@@ -39,12 +39,21 @@ export default function ProjectsPage() {
           {t("projects.greeting", { name: user?.name || "usuario" })}
         </h2>
 
-        <button
-          onClick={() => navigate("/settings")}
-          className="text-sm font-semibold text-primary border border-primary px-4 py-2 rounded-lg bg-white hover:bg-primary/10 shadow-sm transition-all duration-200"
-        >
-          ⚙ {t("projects.settings_button")}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => navigate("/projects/new")}
+            className="text-sm font-semibold text-white bg-primary px-4 py-2 rounded-lg hover:bg-primary/90 transition-all duration-200 shadow"
+          >
+            + {t("projects.create_button")}
+          </button>
+
+          <button
+            onClick={() => navigate("/settings")}
+            className="text-sm font-semibold text-primary border border-primary px-4 py-2 rounded-lg bg-white hover:bg-primary/10 shadow-sm transition-all duration-200"
+          >
+            ⚙ {t("projects.settings_button")}
+          </button>
+        </div>
       </div>
 
       <h3 className="text-lg font-semibold mb-3">{t("projects.your_projects")}</h3>

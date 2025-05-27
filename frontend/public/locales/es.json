@@ -153,5 +153,7 @@
   "footersection.label": "Texto del enlace",
   "footersection.url": "URL del enlace",
   "footersection.add_link": "Añadir enlace",
-  "footersection.remove": "Eliminar"
+  "footersection.remove": "Eliminar",
+  "herosection.visible": "Mostrar sección Hero"
+
 }

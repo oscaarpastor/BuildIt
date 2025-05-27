@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useRef } from "react";
 import ThemeSection from "../components/editors/ThemeSection";
 import BrandSection from "../components/editors/BrandSection";
 import HeroSection from "../components/editors/HeroSection";
@@ -148,12 +149,24 @@ export default function EditProjectPage() {
     fetchProject();
   }, [id]);
 
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+
   const handleChange = (path: string, value: unknown) => {
     if (!project) return;
+  
     const updated = setNestedValue(project, path, value);
     setProject(updated);
-    autoSave(updated); // 👈
+  
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+  
+    saveTimeoutRef.current = setTimeout(() => {
+      autoSave(updated);
+    }, 1000);
   };
+  
   
   const autoSave = async (updatedProject: Project) => {
     try {

@@ -17,6 +17,7 @@ import InspirationSection from "../components/editors/InspirationSection";
 import ProgramSection from "../components/editors/ProgramSection";
 import ContactSection from "../components/editors/ContactSection";
 import FooterSection from "../components/editors/FooterSection";
+import type { JSX } from "react";
 
 function setNestedValue<T>(obj: T, path: string, value: unknown): T {
   const keys = path.split(".");
@@ -151,23 +152,21 @@ export default function EditProjectPage() {
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-
   const handleChange = (path: string, value: unknown) => {
     if (!project) return;
-  
+
     const updated = setNestedValue(project, path, value);
     setProject(updated);
-  
+
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
-  
+
     saveTimeoutRef.current = setTimeout(() => {
       autoSave(updated);
     }, 1000);
   };
-  
-  
+
   const autoSave = async (updatedProject: Project) => {
     try {
       await fetch(`http://localhost:3000/api/projects/${id}`, {
@@ -181,7 +180,6 @@ export default function EditProjectPage() {
       alert(t("editPage.save_error"));
     }
   };
-  
 
   const saveChanges = async () => {
     if (!project) return;
@@ -218,6 +216,50 @@ export default function EditProjectPage() {
   if (loading) return <p className="p-6">{t("editPage.loading")}</p>;
   if (!project) return <p className="p-6">{t("editPage.not_found")}</p>;
 
+  type SectionProps<K extends keyof Project["config"]> = {
+    [P in K]: Project["config"][P];
+  } & {
+    onChange: (path: string, value: unknown) => void;
+  };
+
+  const sectionComponents: {
+    [K in keyof Project["config"]]: (props: SectionProps<K>) => JSX.Element;
+  } = {
+    theme: (props) => <ThemeSection {...props} />,
+    brand: (props) => <BrandSection {...props} />,
+    hero: (props) => <HeroSection {...props} />,
+    about: (props) => <AboutSection {...props} />,
+    features: (props) => <FeatureSection {...props} />,
+    products: (props) => <ProductSection {...props} />,
+    gallery: (props) => <GallerySection {...props} />,
+    video: (props) => <VideoSection {...props} />,
+    testimonials: (props) => <TestimonialsSection {...props} />,
+    documentation: (props) => <DocumentationSection {...props} />,
+    faqs: (props) => <FaqsSection {...props} />,
+    inspiration: (props) => <InspirationSection {...props} />,
+    program: (props) => <ProgramSection {...props} />,
+    contact: (props) => <ContactSection {...props} />,
+    footer: (props) => <FooterSection {...props} />,
+  };
+
+  const sectionOrder: (keyof Project["config"])[] = [
+    "theme",
+    "brand",
+    "hero",
+    "about",
+    "features",
+    "products",
+    "gallery",
+    "video",
+    "testimonials",
+    "documentation",
+    "faqs",
+    "inspiration",
+    "program",
+    "contact",
+    "footer",
+  ];
+
   return (
     <div className="flex h-screen">
       {/* Preview en tiempo real */}
@@ -229,7 +271,7 @@ export default function EditProjectPage() {
           title="Vista previa"
         />
       </div>
-  
+
       {/* Formulario */}
       <div className="w-1/2 overflow-y-auto p-6 space-y-6">
         <div className="flex justify-between items-center mb-2">
@@ -252,7 +294,7 @@ export default function EditProjectPage() {
             </button>
           </div>
         </div>
-  
+
         <div>
           <label className="font-semibold">{t("editPage.project_name")}</label>
           <input
@@ -261,24 +303,39 @@ export default function EditProjectPage() {
             className="w-full px-3 py-2 border rounded"
           />
         </div>
-  
-        {/* SECCIONES */}
-        <ThemeSection theme={project.config.theme} onChange={handleChange} />
-        <BrandSection brand={project.config.brand} onChange={handleChange} />
-        <HeroSection hero={project.config.hero} onChange={handleChange} />
-        <AboutSection about={project.config.about} onChange={handleChange} />
-        <FeatureSection features={project.config.features} onChange={handleChange} />
-        <ProductSection products={project.config.products} onChange={handleChange} />
-        <GallerySection gallery={project.config.gallery} onChange={handleChange} />
-        <VideoSection video={project.config.video} onChange={handleChange} />
-        <TestimonialsSection testimonials={project.config.testimonials} onChange={handleChange} />
-        <DocumentationSection documentation={project.config.documentation} onChange={handleChange} />
-        <FaqsSection faqs={project.config.faqs} onChange={handleChange} />
-        <InspirationSection inspiration={project.config.inspiration} onChange={handleChange} />
-        <ProgramSection program={project.config.program} onChange={handleChange} />
-        <ContactSection contact={project.config.contact} onChange={handleChange} />
-        <FooterSection footer={project.config.footer} onChange={handleChange} />
-  
+
+
+        {sectionOrder.map((key) => {
+  const sectionData = project.config[key];
+
+  const isEmpty =
+    sectionData == null ||
+    (typeof sectionData === "object" &&
+      !Array.isArray(sectionData) &&
+      Object.values(sectionData).every(
+        (val) => val === "" || val == null
+      )) ||
+    (Array.isArray(sectionData) && sectionData.length === 0);
+
+  if (isEmpty) return null;
+
+  const Component = sectionComponents[key];
+  if (!Component) return null;
+
+  const props = {
+    [key]: sectionData,
+    onChange: handleChange,
+  } as SectionProps<typeof key>;
+
+  return (
+    <div key={key} className="border-t pt-6 mt-6">
+      <Component {...props} />
+    </div>
+  );
+})}
+
+
+
         <button
           onClick={saveChanges}
           className="bg-primary text-white px-6 py-2 rounded hover:bg-primary/90"
@@ -289,5 +346,4 @@ export default function EditProjectPage() {
       </div>
     </div>
   );
-  
 }

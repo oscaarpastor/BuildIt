@@ -27,20 +27,22 @@ export const PreviewCard: React.FC<PreviewCardProps> = ({
 
   return (
     <div className="bg-white rounded-2xl shadow p-6 hover:shadow-md transition flex flex-col justify-between w-full">
-      <div className="overflow-hidden rounded-lg mb-4 relative h-[200px] border">
+      <div className="overflow-hidden rounded-lg mb-4 relative h-[200px] bg-white">
         {loading && (
           <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg z-10" />
         )}
 
-        <iframe
-          src={`http://localhost:3000/api/projects/${id}/preview?preview=true`}
-          className={`w-full h-full rounded-lg pointer-events-none transition-opacity duration-500 ${
-            loading ? "opacity-0" : "opacity-100"
-          }`}
-          title={`Preview de ${name}`}
-          loading="lazy"
-          onLoad={() => setLoading(false)}
-        />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[166.66%] h-[400px] scale-[0.6] origin-top pointer-events-none transition-opacity duration-500">
+          <iframe
+            src={`http://localhost:3000/api/projects/${id}/preview?preview=true`}
+            className={`w-full h-full border-0 rounded-lg ${
+              loading ? "opacity-0" : "opacity-100"
+            }`}
+            title={`Preview de ${name}`}
+            loading="lazy"
+            onLoad={() => setLoading(false)}
+          />
+        </div>
       </div>
 
       <div>

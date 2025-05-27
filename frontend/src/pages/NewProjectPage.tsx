@@ -12,7 +12,9 @@ export default function NewProjectPage() {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
-  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
+  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -32,15 +34,18 @@ export default function NewProjectPage() {
 
   const createProject = async (templateId: string) => {
     try {
-      const res = await fetch("http://localhost:3000/api/projects/from-template", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          templateId,
-          userId: user?._id,
-          name: `Proyecto nuevo`,
-        }),
-      });
+      const res = await fetch(
+        "http://localhost:3000/api/projects/from-template",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            templateId,
+            userId: user?._id,
+            name: `Proyecto nuevo`,
+          }),
+        }
+      );
 
       const project = await res.json();
       navigate(`/projects/${project._id}/edit`);
@@ -67,15 +72,26 @@ export default function NewProjectPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {templates.map((tpl) => (
-            <div key={tpl._id} className="border rounded-2xl shadow p-4 flex flex-col">
+            <div
+              key={tpl._id}
+              className="border rounded-2xl shadow p-4 flex flex-col"
+            >
               {/* Preview embebida al principio del card */}
-              <div className="overflow-hidden rounded-lg mb-4 relative h-[200px] border">
-                <iframe
-                  src={`http://localhost:3000/api/base-templates/${tpl._id}/preview?preview=true`}
-                  className="w-[166.66%] h-[400px] scale-[0.6] origin-top pointer-events-none border-0 transition-opacity duration-500"
-                  title={`Preview de ${tpl.name}`}
-                  loading="lazy"
-                />
+              <div className="overflow-hidden rounded-lg mb-4 relative h-[200px] bg-white">
+                {loading && (
+                  <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg z-10" />
+                )}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[166.66%] h-[400px] scale-[0.6] origin-top pointer-events-none">
+                  <iframe
+                    src={`http://localhost:3000/api/base-templates/${tpl._id}/preview?preview=true`}
+                    className={`w-full h-full border-0 rounded-lg transition-opacity duration-500 ${
+                      loading ? "opacity-0" : "opacity-100"
+                    }`}
+                    title={`Preview de ${tpl.name}`}
+                    loading="lazy"
+                    onLoad={() => setLoading(false)}
+                  />
+                </div>
               </div>
 
               <h3 className="text-lg font-semibold mb-4">{tpl.name}</h3>

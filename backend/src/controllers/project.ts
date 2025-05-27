@@ -77,7 +77,7 @@ export const previewProject = async (req: Request, res: Response) => {
       previewMode: isPreview,
     };
 
-    res.render("template", data);
+    res.render(project.view || "template", data);
   } catch (error: any) {
     res.status(500).send("Error al renderizar el proyecto");
   }
@@ -103,7 +103,8 @@ export const createProjectFromTemplate = async (req: Request, res: Response) => 
       user: userId,
       config: template.config,
       originTemplate: template._id,
-    });
+      view: template.view || "template"
+    });    
 
     await project.save();
     res.status(201).json(project);

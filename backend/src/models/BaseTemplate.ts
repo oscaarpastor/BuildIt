@@ -5,6 +5,7 @@ const baseTemplateSchema = new mongoose.Schema(
     name: { type: String, required: true },
     description: { type: String },
     previewImage: { type: String },
+    view: { type: String, default: "template" },
     config: {
       theme: {
         colorPrimary: String,

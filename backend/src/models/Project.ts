@@ -5,7 +5,8 @@ const projectSchema = new mongoose.Schema(
     name: { type: String, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     originTemplate: { type: mongoose.Schema.Types.ObjectId, ref: "BaseTemplate" },
-
+    view: { type: String, default: "template" },
+    
     config: {
       theme: {
         colorPrimary: String,

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title><%= config.brand.name %> - Blog Personal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style> html { scroll-behavior: smooth; } </style>
+  </head>
+  <body style="font-family: <%= config.theme.fontFamily %>; background-color: <%= background %>; color: <%= textColor %>" class="antialiased">
+    <% if (previewMode) { %>
+      <style>
+        #preview-wrapper {
+          transform: scale(0.6);
+          transform-origin: top center;
+          width: 166.66vw;
+          margin-left: -33.33vw;
+        }
+      </style>
+      <div id="preview-wrapper">
+    <% } %>
+
+    <!-- Header -->
+    <header class="bg-white shadow sticky top-0 z-50 border-b border-gray-200">
+      <div class="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
+        <div class="flex items-center gap-4">
+          <% if (config.brand.logo) { %>
+            <img src="<%= config.brand.logo %>" alt="Logo" class="h-9 rounded">
+          <% } %>
+          <span class="text-xl font-bold tracking-tight"><%= config.brand.name %></span>
+        </div>
+        <nav class="hidden md:flex gap-5 text-sm font-medium text-gray-600">
+          <a href="#hero">Inicio</a>
+          <a href="#about">Sobre mí</a>
+          <a href="#gallery">Galería</a>
+          <a href="#video">Vídeo</a>
+          <a href="#testimonials">Opiniones</a>
+          <a href="#contact">Contacto</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <!-- HERO -->
+      <section id="hero" class="text-center px-6 py-28 bg-[<%= config.theme.colorPrimary %>] text-white">
+        <h1 class="text-5xl font-extrabold mb-4 drop-shadow-md"><%= config.hero.title %></h1>
+        <p class="text-xl mb-6 drop-shadow-sm"><%= config.hero.subtitle %></p>
+        <a href="<%= config.hero.ctaLink %>" class="inline-block bg-white text-[<%= config.theme.colorPrimary %>] px-8 py-3 rounded-full font-semibold shadow hover:scale-105 transition">
+          <%= config.hero.ctaText %>
+        </a>
+      </section>
+
+      <!-- VIDEO -->
+      <section id="video" class="px-6 py-20">
+        <h2 class="text-3xl font-bold text-center mb-10">Mi videoblog</h2>
+        <div class="flex justify-center">
+          <iframe width="800" height="450" src="<%= config.video.url %>" frameborder="0" allowfullscreen class="rounded-xl shadow"></iframe>
+        </div>
+      </section>
+
+      <!-- GALLERY -->
+      <section id="gallery" class="px-6 py-20 bg-gray-100">
+        <h2 class="text-3xl font-bold text-center mb-10">Galería de momentos</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          <% config.gallery.forEach(img => { %>
+            <img src="<%= img.image %>" class="rounded-2xl shadow object-cover w-full h-48">
+          <% }) %>
+        </div>
+      </section>
+
+      <!-- ABOUT -->
+      <section id="about" class="px-6 py-20 max-w-5xl mx-auto text-center">
+        <h2 class="text-3xl font-bold mb-6"><%= config.about.heading %></h2>
+        <img src="<%= config.about.image %>" alt="Sobre mí" class="w-40 h-40 rounded-full mx-auto mb-4 object-cover shadow" />
+        <p class="text-lg text-gray-700 leading-relaxed"><%= config.about.content %></p>
+      </section>
+
+      <!-- TESTIMONIALS -->
+      <section id="testimonials" class="px-6 py-20 bg-white">
+        <div class="max-w-7xl mx-auto">
+          <h2 class="text-3xl font-bold text-center mb-10">Opiniones de lectores</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <% config.testimonials.forEach(t => { %>
+              <div class="border rounded-xl shadow-sm p-6 text-center bg-gray-50">
+                <img src="<%= t.avatar %>" alt="<%= t.name %>" class="w-16 h-16 rounded-full mx-auto mb-4">
+                <p class="italic text-gray-600">"<%= t.quote %>"</p>
+                <p class="mt-2 font-bold"><%= t.name %></p>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTACT -->
+      <section id="contact" class="px-6 py-20 bg-[<%= config.theme.colorSecondary %>]">
+        <div class="max-w-4xl mx-auto text-center">
+          <h2 class="text-3xl font-bold mb-6">Contacto</h2>
+          <p>Email: <%= config.contact.email %></p>
+          <p>Teléfono: <%= config.contact.phone %></p>
+          <p>Dirección: <%= config.contact.address %></p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bg-[<%= config.theme.colorPrimary %>] text-white px-6 py-10 mt-20">
+      <div class="max-w-6xl mx-auto text-center">
+        <h3 class="font-bold text-lg mb-2"><%= config.brand.name %></h3>
+        <p class="text-sm"><%= config.footer.text %></p>
+      </div>
+    </footer>
+
+    <a href="#hero" class="fixed bottom-6 right-6 bg-[<%= config.theme.colorPrimary %>] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
+    <% if (previewMode) { %></div><% } %>
+  </body>
+</html>

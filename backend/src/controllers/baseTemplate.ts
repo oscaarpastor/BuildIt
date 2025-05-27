@@ -4,12 +4,13 @@ import { Project } from "../models/Project";
 
 export const createBaseTemplate = async (req: Request, res: Response) => {
   try {
-    const { name, description, previewImage, config } = req.body;
+    const { name, description, previewImage, config, view} = req.body;
     const template = new BaseTemplate({
       name,
       description,
       previewImage,
       config,
+      view: view || "template"
     });
     await template.save();
     res.status(201).json(template);
@@ -112,7 +113,7 @@ export const previewBaseTemplate = async (req: Request, res: Response) => {
       previewMode: req.query.preview === "true", // ✅ Se añade el modo de previsualización
     };
 
-    res.render("template", data);
+    res.render(template.view || "template", data);
   } catch (error: any) {
     res.status(500).send("Error al renderizar la plantilla");
   }

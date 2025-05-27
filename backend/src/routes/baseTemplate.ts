@@ -6,7 +6,7 @@ import {
   updateBaseTemplate,
   deleteBaseTemplate,
   cloneBaseTemplateToProject,
-  previewBaseTemplate // ✅ nuevo import
+  previewBaseTemplate 
 } from "../controllers/baseTemplate";
 
 const router = express.Router();
@@ -17,6 +17,6 @@ router.get("/:id", getBaseTemplateById);
 router.put("/:id", updateBaseTemplate);
 router.delete("/:id", deleteBaseTemplate);
 router.post("/:id/clone", cloneBaseTemplateToProject);
-router.get("/:id/preview", previewBaseTemplate); // ✅ nueva ruta
+router.get("/:id/preview", previewBaseTemplate);
 
 export default router;

@@ -154,6 +154,6 @@
   "footersection.url": "Link URL",
   "footersection.add_link": "Add link",
   "footersection.remove": "Remove",
-  "herosection.visible": "Show Hero section"
-
+  "herosection.visible": "Show Hero section",
+  "editPage.export": "Download HTML"
 }

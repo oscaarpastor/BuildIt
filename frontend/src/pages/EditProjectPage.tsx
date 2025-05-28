@@ -254,6 +254,13 @@ export default function EditProjectPage() {
             >
               {t("editPage.back")}
             </button>
+            <a
+              href={`http://localhost:3000/api/projects/${project._id}/export`}
+              className="text-sm border border-blue-600 text-blue-600 px-4 py-2 rounded hover:bg-blue-50 transition"
+              download
+            >
+              {t("editPage.export")}
+            </a>
             <button
               onClick={deleteProject}
               className="text-sm border border-red-500 text-red-500 px-4 py-2 rounded hover:bg-red-50 transition"

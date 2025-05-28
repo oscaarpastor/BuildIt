@@ -17,7 +17,6 @@ import InspirationSection from "../components/editors/InspirationSection";
 import ProgramSection from "../components/editors/ProgramSection";
 import ContactSection from "../components/editors/ContactSection";
 import FooterSection from "../components/editors/FooterSection";
-import type { JSX } from "react";
 
 function setNestedValue<T>(obj: T, path: string, value: unknown): T {
   const keys = path.split(".");
@@ -216,49 +215,19 @@ export default function EditProjectPage() {
   if (loading) return <p className="p-6">{t("editPage.loading")}</p>;
   if (!project) return <p className="p-6">{t("editPage.not_found")}</p>;
 
-  type SectionProps<K extends keyof Project["config"]> = {
-    [P in K]: Project["config"][P];
-  } & {
-    onChange: (path: string, value: unknown) => void;
-  };
+  const isEmpty = (section: unknown): boolean => {
+    if (section == null) return true;
 
-  const sectionComponents: {
-    [K in keyof Project["config"]]: (props: SectionProps<K>) => JSX.Element;
-  } = {
-    theme: (props) => <ThemeSection {...props} />,
-    brand: (props) => <BrandSection {...props} />,
-    hero: (props) => <HeroSection {...props} />,
-    about: (props) => <AboutSection {...props} />,
-    features: (props) => <FeatureSection {...props} />,
-    products: (props) => <ProductSection {...props} />,
-    gallery: (props) => <GallerySection {...props} />,
-    video: (props) => <VideoSection {...props} />,
-    testimonials: (props) => <TestimonialsSection {...props} />,
-    documentation: (props) => <DocumentationSection {...props} />,
-    faqs: (props) => <FaqsSection {...props} />,
-    inspiration: (props) => <InspirationSection {...props} />,
-    program: (props) => <ProgramSection {...props} />,
-    contact: (props) => <ContactSection {...props} />,
-    footer: (props) => <FooterSection {...props} />,
-  };
+    if (Array.isArray(section)) {
+      return section.length === 0;
+    }
 
-  const sectionOrder: (keyof Project["config"])[] = [
-    "theme",
-    "brand",
-    "hero",
-    "about",
-    "features",
-    "products",
-    "gallery",
-    "video",
-    "testimonials",
-    "documentation",
-    "faqs",
-    "inspiration",
-    "program",
-    "contact",
-    "footer",
-  ];
+    if (typeof section === "object") {
+      return Object.values(section).every((val) => val === "" || val == null);
+    }
+
+    return false;
+  };
 
   return (
     <div className="flex h-screen">
@@ -304,37 +273,80 @@ export default function EditProjectPage() {
           />
         </div>
 
+        {/* SECCIONES */}
 
-        {sectionOrder.map((key) => {
-  const sectionData = project.config[key];
-
-  const isEmpty =
-    sectionData == null ||
-    (typeof sectionData === "object" &&
-      !Array.isArray(sectionData) &&
-      Object.values(sectionData).every(
-        (val) => val === "" || val == null
-      )) ||
-    (Array.isArray(sectionData) && sectionData.length === 0);
-
-  if (isEmpty) return null;
-
-  const Component = sectionComponents[key];
-  if (!Component) return null;
-
-  const props = {
-    [key]: sectionData,
-    onChange: handleChange,
-  } as SectionProps<typeof key>;
-
-  return (
-    <div key={key} className="border-t pt-6 mt-6">
-      <Component {...props} />
-    </div>
-  );
-})}
-
-
+        {!isEmpty(project.config.theme) && (
+          <ThemeSection theme={project.config.theme} onChange={handleChange} />
+        )}
+        {!isEmpty(project.config.brand) && (
+          <BrandSection brand={project.config.brand} onChange={handleChange} />
+        )}
+        {!isEmpty(project.config.hero) && (
+          <HeroSection hero={project.config.hero} onChange={handleChange} />
+        )}
+        {!isEmpty(project.config.about) && (
+          <AboutSection about={project.config.about} onChange={handleChange} />
+        )}
+        {!isEmpty(project.config.features) && (
+          <FeatureSection
+            features={project.config.features}
+            onChange={handleChange}
+          />
+        )}
+        {!isEmpty(project.config.products) && (
+          <ProductSection
+            products={project.config.products}
+            onChange={handleChange}
+          />
+        )}
+        {!isEmpty(project.config.gallery) && (
+          <GallerySection
+            gallery={project.config.gallery}
+            onChange={handleChange}
+          />
+        )}
+        {!isEmpty(project.config.video) && (
+          <VideoSection video={project.config.video} onChange={handleChange} />
+        )}
+        {!isEmpty(project.config.testimonials) && (
+          <TestimonialsSection
+            testimonials={project.config.testimonials}
+            onChange={handleChange}
+          />
+        )}
+        {!isEmpty(project.config.documentation) && (
+          <DocumentationSection
+            documentation={project.config.documentation}
+            onChange={handleChange}
+          />
+        )}
+        {!isEmpty(project.config.faqs) && (
+          <FaqsSection faqs={project.config.faqs} onChange={handleChange} />
+        )}
+        {!isEmpty(project.config.inspiration) && (
+          <InspirationSection
+            inspiration={project.config.inspiration}
+            onChange={handleChange}
+          />
+        )}
+        {!isEmpty(project.config.program) && (
+          <ProgramSection
+            program={project.config.program}
+            onChange={handleChange}
+          />
+        )}
+        {!isEmpty(project.config.contact) && (
+          <ContactSection
+            contact={project.config.contact}
+            onChange={handleChange}
+          />
+        )}
+        {!isEmpty(project.config.footer) && (
+          <FooterSection
+            footer={project.config.footer}
+            onChange={handleChange}
+          />
+        )}
 
         <button
           onClick={saveChanges}

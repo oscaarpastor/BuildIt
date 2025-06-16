@@ -23,7 +23,7 @@ services:
       - ./backend:/app
     environment:
       - MONGODB_URI=mongodb://mongo:27017/buildit
-    command: npm run start  # importante: coincide con tu script definido
+    command: npm run start
 
 volumes:
   mongo_data:

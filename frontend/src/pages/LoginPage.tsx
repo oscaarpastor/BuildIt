@@ -14,6 +14,8 @@ interface User {
   email: string;
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { setUser } = useAuth();
@@ -39,15 +41,15 @@ export default function LoginPage() {
     }
 
     try {
-      const res = await axios.post<{ token: string }>("http://localhost:3000/api/login", {
-        email,
-        password,
-      });
+      const res = await axios.post<{ token: string }>(
+        `${API_BASE_URL}/api/login`,
+        { email, password }
+      );
 
       const token = res.data.token;
       localStorage.setItem("token", token);
 
-      const userRes = await axios.get<User>("http://localhost:3000/api/me", {
+      const userRes = await axios.get<User>(`${API_BASE_URL}/api/me`, {
         headers: { Authorization: token },
       });
 
@@ -74,7 +76,9 @@ export default function LoginPage() {
 
       {/* 🧾 Formulario */}
       <div className="bg-surface shadow-xl rounded-xl p-10 w-full max-w-md mt-20">
-        <h2 className="text-2xl font-bold text-center mb-6">{t("loguin.title")}</h2>
+        <h2 className="text-2xl font-bold text-center mb-6">
+          {t("loguin.title")}
+        </h2>
 
         <form className="flex flex-col gap-4" onSubmit={handleLogin}>
           <Input

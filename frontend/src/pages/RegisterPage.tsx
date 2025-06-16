@@ -18,6 +18,8 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const { setUser } = useAuth();
   const { t } = useTranslation();
+  const API_URL = import.meta.env.VITE_API_URL;
+
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -51,7 +53,7 @@ export default function RegisterPage() {
     }
 
     try {
-      const res = await axios.post("http://localhost:3000/api/users", {
+      const res = await axios.post(`${API_URL}/api/users`, {
         name,
         email,
         password,
@@ -60,7 +62,7 @@ export default function RegisterPage() {
       const token = res.data._id;
       localStorage.setItem("token", token);
 
-      const userRes = await axios.get<User>("http://localhost:3000/api/me", {
+      const userRes = await axios.get<User>(`${API_URL}/api/me`, {
         headers: { Authorization: token },
       });
 

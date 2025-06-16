@@ -25,6 +25,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     axios
-      .get("http://localhost:3000/api/me", {
+      .get(`${API_URL}/api/me`, {
         headers: { Authorization: token },
       })
       .then((res) => {

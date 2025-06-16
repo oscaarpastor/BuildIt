@@ -2,10 +2,12 @@ import { useParams } from "react-router-dom";
 
 export default function PublicStandaloneView() {
   const { id } = useParams();
+  const API_URL = import.meta.env.VITE_API_URL;
+
 
   return (
     <iframe
-      src={`http://localhost:3000/api/projects/${id}/preview`}
+      src={`${API_URL}/api/projects/${id}/preview`}
       style={{
         width: "100vw",
         height: "100vh",

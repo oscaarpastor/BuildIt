@@ -4,11 +4,11 @@ export default {
     theme: {
       extend: {
         colors: {
-          primary: "#3B82F6",        // Azul principal
-          primaryHover: "#60A5FA",   // Hover del botón
-          background: "#0F172A",     // Fondo general
-          surface: "#334155",        // Paneles y tarjetas
-          text: "#CBD5E1",           // Texto principal claro
+          primary: "#3B82F6",        
+          primaryHover: "#60A5FA",   
+          background: "#0F172A",     
+          surface: "#334155",        
+          text: "#CBD5E1",           
         },
       },
     },

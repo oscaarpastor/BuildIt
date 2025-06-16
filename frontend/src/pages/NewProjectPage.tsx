@@ -15,11 +15,13 @@ export default function NewProjectPage() {
   const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(
     null
   );
+  const API_URL = import.meta.env.VITE_API_URL;
+
 
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/base-templates");
+        const res = await fetch(`${API_URL}/api/base-templates`);
         const data = await res.json();
         setTemplates(data);
       } catch (err) {
@@ -35,7 +37,7 @@ export default function NewProjectPage() {
   const createProject = async (templateId: string) => {
     try {
       const res = await fetch(
-        "http://localhost:3000/api/projects/from-template",
+        `${API_URL}/api/projects/from-template`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -83,7 +85,7 @@ export default function NewProjectPage() {
                 )}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[166.66%] h-[400px] scale-[0.6] origin-top pointer-events-none">
                   <iframe
-                    src={`http://localhost:3000/api/base-templates/${tpl._id}/preview?preview=true`}
+                    src={`${API_URL}/api/base-templates/${tpl._id}/preview?preview=true`}
                     className={`w-full h-full border-0 rounded-lg transition-opacity duration-500 ${
                       loading ? "opacity-0" : "opacity-100"
                     }`}
@@ -120,7 +122,7 @@ export default function NewProjectPage() {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="relative w-[90%] h-[90%] bg-white rounded-lg shadow-lg overflow-hidden">
             <iframe
-              src={`http://localhost:3000/api/base-templates/${previewTemplateId}/preview?preview=true`}
+              src={`${API_URL}/api/base-templates/${previewTemplateId}/preview?preview=true`}
               className="w-full h-full border-0"
               title="Vista previa plantilla"
             />

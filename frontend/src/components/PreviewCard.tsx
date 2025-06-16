@@ -17,6 +17,8 @@ export const PreviewCard: React.FC<PreviewCardProps> = ({
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL; // <--- aquí
+
   const copyToClipboard = () => {
     const link = `${window.location.origin}/project/${id}/view`;
     navigator.clipboard.writeText(link).then(() => {
@@ -34,8 +36,8 @@ export const PreviewCard: React.FC<PreviewCardProps> = ({
 
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[166.66%] h-[400px] scale-[0.6] origin-top pointer-events-none transition-opacity duration-500">
           <iframe
-            src={`http://localhost:3000/api/projects/${id}/preview?preview=true`}
-            className={`w-full h-full border-0 rounded-lg ${
+            src={`${API_URL}/api/projects/${id}/preview?preview=true`} // <--- aquí
+            className={`w-full h-full border-0 rounded-lg transition-opacity duration-500 ease-in-out ${
               loading ? "opacity-0" : "opacity-100"
             }`}
             title={`Preview de ${name}`}

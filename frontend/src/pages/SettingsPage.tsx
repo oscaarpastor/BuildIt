@@ -12,6 +12,7 @@ export default function SettingsPage() {
   const { user, updateUser } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -29,7 +30,7 @@ export default function SettingsPage() {
     setMessage("");
 
     try {
-      await axios.put(`http://localhost:3000/api/users/${user?._id}`, {
+      await axios.put(`${API_URL}/api/users/${user?._id}`, {
         name,
         email,
       });

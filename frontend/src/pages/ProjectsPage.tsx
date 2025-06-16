@@ -14,6 +14,7 @@ export default function ProjectsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const [projects, setProjects] = useState<Project[]>([]);
 
@@ -21,7 +22,7 @@ export default function ProjectsPage() {
     const fetchProjects = async () => {
       try {
         if (!user?._id) return;
-        const res = await fetch(`http://localhost:3000/api/projects/user/${user._id}`);
+        const res = await fetch(`${API_URL}/api/projects/user/${user._id}`);
         const data = await res.json();
         setProjects(data);
       } catch (err) {

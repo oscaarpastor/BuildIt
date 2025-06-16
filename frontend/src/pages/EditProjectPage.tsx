@@ -133,6 +133,9 @@ export default function EditProjectPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
+
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -141,7 +144,7 @@ export default function EditProjectPage() {
 
   useEffect(() => {
     const fetchProject = async () => {
-      const res = await fetch(`http://localhost:3000/api/projects/${id}`);
+      const res = await fetch(`${API_URL}/api/projects/${id}`);
       const data = await res.json();
       setProject(data);
       setLoading(false);
@@ -168,7 +171,7 @@ export default function EditProjectPage() {
 
   const autoSave = async (updatedProject: Project) => {
     try {
-      await fetch(`http://localhost:3000/api/projects/${id}`, {
+      await fetch(`${API_URL}/api/projects/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedProject),
@@ -184,7 +187,7 @@ export default function EditProjectPage() {
     if (!project) return;
     setSaving(true);
     try {
-      await fetch(`http://localhost:3000/api/projects/${id}`, {
+      await fetch(`${API_URL}/api/projects/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(project),
@@ -201,7 +204,7 @@ export default function EditProjectPage() {
     if (!window.confirm(t("editPage.delete_confirm"))) return;
     setDeleting(true);
     try {
-      await fetch(`http://localhost:3000/api/projects/${id}`, {
+      await fetch(`${API_URL}/api/projects/${id}`, {
         method: "DELETE",
       });
       navigate("/projects");
@@ -235,7 +238,7 @@ export default function EditProjectPage() {
       <div className="w-1/2 border-r overflow-y-auto">
         <iframe
           key={iframeKey}
-          src={`http://localhost:3000/api/projects/${id}/preview?preview=true`}
+          src={`${API_URL}/api/projects/${id}/preview?preview=true`}
           className="w-full h-full"
           title="Vista previa"
         />
@@ -255,7 +258,7 @@ export default function EditProjectPage() {
               {t("editPage.back")}
             </button>
             <a
-              href={`http://localhost:3000/api/projects/${project._id}/export`}
+              href={`${API_URL}/api/projects/${project._id}/export`}
               className="text-sm border border-blue-600 text-blue-600 px-4 py-2 rounded hover:bg-blue-50 transition"
               download
             >

@@ -14,21 +14,36 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+const allowedOrigins = (process.env.CORS_ORIGINS || "").split(",").filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
+}));
 app.use(express.json());
 
-// ✅ Configuración de EJS
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// ✅ Rutas API
 app.use("/api/projects", projectRoutes);
 app.use("/api", userRoutes);
 app.use("/api/base-templates", baseTemplateRoutes);
 app.use("/api/stats", statRoutes);
 
+app.use(express.static(path.join(__dirname, "../public")));
 
-// Conexión a MongoDB y arranque del servidor
+app.get("*", (_req, res) => {
+  const indexPath = path.join(__dirname, "../public", "index.html");
+  res.sendFile(indexPath, (err) => {
+    if (err) res.status(404).send("Not found");
+  });
+});
+
 mongoose
   .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/buildit")
   .then(() => {

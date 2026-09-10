@@ -11,8 +11,11 @@ type Props = {
 };
 
 const fontOptions = [
-  "Arial", "Helvetica", "Georgia", "Times New Roman",
-  "Courier New", "Verdana", "Roboto", "Inter",
+  { value: "Inter", label: "Inter — Modern & Clean" },
+  { value: "Playfair Display", label: "Playfair Display — Elegant Serif" },
+  { value: "Montserrat", label: "Montserrat — Geometric Sans" },
+  { value: "Raleway", label: "Raleway — Thin & Sophisticated" },
+  { value: "Poppins", label: "Poppins — Friendly Rounded" },
 ];
 
 export default function ThemeSection({ theme, onChange }: Props) {
@@ -74,11 +77,14 @@ export default function ThemeSection({ theme, onChange }: Props) {
           className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
         >
           {fontOptions.map((font) => (
-            <option key={font} value={font}>
-              {font}
+            <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+              {font.label}
             </option>
           ))}
         </select>
+        <p className="text-xs text-gray-400 mt-1" style={{ fontFamily: theme.fontFamily }}>
+          Preview: The quick brown fox jumps over the lazy dog
+        </p>
       </div>
     </section>
   );

@@ -86,6 +86,7 @@ export const cloneBaseTemplateToProject = async (
       user: userId,
       config: template.config,
       originTemplate: template._id,
+      view: template.view || "template",
     });
 
     await newProject.save();

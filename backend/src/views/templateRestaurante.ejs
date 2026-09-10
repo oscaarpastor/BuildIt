@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title><%= config.brand.name %> - Restaurante</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+      html { scroll-behavior: smooth; }
+      body { font-family: 'Playfair Display', serif; }
+      .menu-item { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+      .menu-item:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+    </style>
+  </head>
+  <body style="font-family: <%= config.theme.fontFamily %>; background-color: <%= background %>; color: <%= textColor %>" class="antialiased">
+    <% if (previewMode) { %>
+      <style>
+        #preview-wrapper {
+          transform: scale(0.6);
+          transform-origin: top center;
+          width: 166.66vw;
+          margin-left: -33.33vw;
+        }
+      </style>
+      <div id="preview-wrapper">
+    <% } %>
+
+    <header class="max-w-7xl mx-auto flex justify-between items-center px-6 py-6 border-b border-amber-200/30">
+      <div class="flex items-center gap-4">
+        <% if (config.brand.logo) { %>
+          <img src="<%= config.brand.logo %>" alt="Logo" class="h-10 rounded">
+        <% } %>
+        <span class="text-2xl font-bold tracking-tight"><%= config.brand.name %></span>
+      </div>
+      <nav class="hidden md:flex gap-6 text-sm font-medium">
+        <a href="#hero">Inicio</a>
+        <a href="#about">Nosotros</a>
+        <a href="#features">Experiencia</a>
+        <a href="#products">Carta</a>
+        <a href="#gallery">Galeria</a>
+        <a href="#testimonials">Resenas</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Reservas</a>
+      </nav>
+    </header>
+
+    <main class="space-y-24">
+      <section id="hero" class="text-center px-6 py-36 relative overflow-hidden rounded-b-[3rem]" style="background: linear-gradient(135deg, rgba(180,83,9,0.85), rgba(146,64,14,0.9)), linear-gradient(to bottom, #1c1917, #292524)">
+        <div class="relative z-10">
+          <p class="text-amber-300 uppercase tracking-[0.3em] text-sm mb-4 font-medium">Bienvenidos a</p>
+          <h1 class="text-5xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg"><%= config.hero.title %></h1>
+          <p class="text-xl mb-8 text-amber-100 max-w-2xl mx-auto"><%= config.hero.subtitle %></p>
+          <a href="<%= config.hero.ctaLink %>" class="inline-block bg-[<%= config.theme.colorPrimary %>] text-white px-10 py-4 rounded-full shadow-xl hover:scale-105 transition-transform duration-300 font-semibold text-lg">
+            <%= config.hero.ctaText %>
+          </a>
+        </div>
+      </section>
+
+      <section id="about" class="px-6 py-20 max-w-7xl mx-auto flex flex-col md:flex-row gap-12 items-center">
+        <div class="w-full md:w-1/2">
+          <div class="aspect-[4/3] rounded-2xl bg-gradient-to-br from-amber-100 to-amber-200 shadow-xl flex items-center justify-center">
+            <span class="text-8xl">🍽️</span>
+          </div>
+        </div>
+        <div class="w-full md:w-1/2">
+          <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold">Nuestra Historia</p>
+          <h2 class="text-4xl font-bold mb-6"><%= config.about.heading %></h2>
+          <p class="text-lg text-gray-600 leading-relaxed"><%= config.about.content %></p>
+        </div>
+      </section>
+
+      <section id="features" class="px-6 py-20" style="background: linear-gradient(to right, #fffbeb, #fef3c7)">
+        <div class="max-w-7xl mx-auto">
+          <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold text-center">La Experiencia</p>
+          <h2 class="text-4xl font-bold text-center mb-12">Lo Que Nos Hace Unicos</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <% config.features.forEach(f => { %>
+              <div class="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow border border-amber-100">
+                <div class="text-5xl mb-4"><%= f.icon %></div>
+                <h3 class="text-xl font-bold mb-3"><%= f.title %></h3>
+                <p class="text-gray-600"><%= f.description %></p>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <section id="products" class="px-6 py-20">
+        <div class="max-w-5xl mx-auto">
+          <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold text-center">Nuestra Carta</p>
+          <h2 class="text-4xl font-bold text-center mb-12">Platos Destacados</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <% config.products.forEach(p => { %>
+              <div class="menu-item bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+                <div class="h-48 bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
+                  <span class="text-6xl">🥘</span>
+                </div>
+                <div class="p-6">
+                  <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-xl font-bold"><%= p.title %></h3>
+                    <span class="text-lg font-bold text-[<%= config.theme.colorPrimary %>]"><%= p.price %></span>
+                  </div>
+                  <p class="text-gray-600 text-sm"><%= p.description %></p>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <section id="gallery" class="px-6 py-20 bg-gray-50">
+        <div class="max-w-6xl mx-auto">
+          <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold text-center">Galeria</p>
+          <h2 class="text-4xl font-bold text-center mb-12">Nuestro Espacio</h2>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <% config.gallery.forEach(function(img, i) { %>
+              <div class="aspect-square rounded-2xl overflow-hidden shadow-lg bg-gradient-to-br from-amber-100 to-orange-200 flex items-center justify-center">
+                <% if (img.image) { %>
+                  <img src="<%= img.image %>" class="w-full h-full object-cover">
+                <% } else { %>
+                  <span class="text-6xl"><%= ['🍷','🥂','🍝','🥗','🍰','☕'][i % 6] %></span>
+                <% } %>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <section id="testimonials" class="px-6 py-20">
+        <div class="max-w-7xl mx-auto">
+          <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold text-center">Opiniones</p>
+          <h2 class="text-4xl font-bold text-center mb-12">Lo Que Dicen Nuestros Clientes</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <% config.testimonials.forEach(t => { %>
+              <div class="bg-white p-8 rounded-2xl shadow-lg border border-amber-50 text-center">
+                <div class="w-16 h-16 rounded-full mx-auto mb-4 bg-gradient-to-br from-amber-200 to-orange-300 flex items-center justify-center text-2xl font-bold text-white">
+                  <%= t.name.charAt(0) %>
+                </div>
+                <p class="italic text-gray-600 mb-4">"<%= t.quote %>"</p>
+                <p class="font-bold text-[<%= config.theme.colorPrimary %>]"><%= t.name %></p>
+                <div class="flex justify-center gap-1 mt-2 text-amber-400">
+                  <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" class="px-6 py-20 bg-amber-50">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="text-4xl font-bold text-center mb-12">Preguntas Frecuentes</h2>
+          <div class="space-y-6">
+            <% config.faqs.forEach(f => { %>
+              <div class="bg-white border-l-4 border-[<%= config.theme.colorPrimary %>] p-6 rounded-r-xl shadow-md">
+                <h4 class="font-bold mb-2 text-lg"><%= f.question %></h4>
+                <p class="text-gray-600"><%= f.answer %></p>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" class="px-6 py-20">
+        <div class="max-w-4xl mx-auto text-center">
+          <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold">Reservas</p>
+          <h2 class="text-4xl font-bold mb-8">Visitanos</h2>
+          <div class="bg-white rounded-2xl shadow-xl p-10 border border-amber-100">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+              <div>
+                <div class="text-3xl mb-2">📧</div>
+                <p class="font-semibold">Email</p>
+                <p class="text-gray-600"><%= config.contact.email %></p>
+              </div>
+              <div>
+                <div class="text-3xl mb-2">📞</div>
+                <p class="font-semibold">Telefono</p>
+                <p class="text-gray-600"><%= config.contact.phone %></p>
+              </div>
+              <div>
+                <div class="text-3xl mb-2">📍</div>
+                <p class="font-semibold">Direccion</p>
+                <p class="text-gray-600"><%= config.contact.address %></p>
+              </div>
+            </div>
+            <a href="mailto:<%= config.contact.email %>" class="inline-block bg-[<%= config.theme.colorPrimary %>] text-white px-10 py-4 rounded-full shadow-lg hover:scale-105 transition-transform font-semibold text-lg">
+              Reservar Mesa
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bg-stone-900 text-white px-6 py-12 mt-24">
+      <div class="max-w-6xl mx-auto text-center">
+        <h3 class="font-bold text-2xl mb-3"><%= config.brand.name %></h3>
+        <p class="text-sm text-stone-400"><%= config.footer.text %></p>
+        <div class="flex justify-center gap-6 mt-6">
+          <% config.footer.links.forEach(l => { %>
+            <a href="<%= l.url %>" class="text-stone-400 hover:text-white transition text-sm underline"><%= l.label %></a>
+          <% }) %>
+        </div>
+      </div>
+    </footer>
+
+    <a href="#hero" class="fixed bottom-6 right-6 bg-[<%= config.theme.colorPrimary %>] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
+    <% if (previewMode) { %></div><% } %>
+  </body>
+</html>

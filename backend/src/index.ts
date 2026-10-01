@@ -37,7 +37,7 @@ app.use("/api/stats", statRoutes);
 
 app.use(express.static(path.join(__dirname, "../public")));
 
-app.get("*", (_req, res) => {
+app.get("/{*splat}", (_req, res) => {
   const indexPath = path.join(__dirname, "../public", "index.html");
   res.sendFile(indexPath, (err) => {
     if (err) res.status(404).send("Not found");

@@ -33,3 +33,56 @@ Pruebas:
 Problemas nuevos detectados (se tratan en fases posteriores):
 - La app no fija color de fondo: en un navegador en modo oscuro, algunas páginas salen con texto oscuro sobre fondo oscuro. [Ejecutado]
 - Plantilla Startup: el título del hero es blanco sobre fondo claro cuando no hay imagen de fondo. [Ejecutado]
+
+## Fase 2: seguridad y robustez ✅
+
+| Commit | Cambio |
+|---|---|
+| `chore(deps): parches de seguridad...` | `npm update` + `npm audit fix` sin saltos de versión mayor: **0 vulnerabilidades** en backend (antes 8) y frontend (antes 26). Fuera `eta`, `ejs`/`react-intl` del frontend y tipos sin uso |
+| `feat(backend)!: autenticación JWT...` | JWT, permisos por dueño, validación zod, URLs/colores/fuentes seguras, login genérico con tiempo constante, límite de intentos, helmet/CSP, CORS por `CORS_ORIGINS`, errores sin detalles, `publicId` aleatorio para compartir, API de plantillas de solo lectura, exportación con la vista del proyecto (E5a) |
+| `build(backend): producción con JS compilado...` | `npm run build` copia las `.ejs` a `dist/views`; `npm start` = `node dist/index.js` (E5b); seed idempotente |
+| `fix(frontend): fondo explícito...` | Arregla texto oscuro sobre fondo oscuro |
+| `feat(frontend): API centralizada...` | `src/lib/api.ts` único punto de acceso; JWT; control de errores en todas las llamadas; cierre de sesión de Ajustes; cambio de contraseña; i18n completo; se elimina `axios` |
+| `chore: .gitignore en la raíz...` | Fuera de git `.DS_Store` y `frontend/.env`; `frontend/.env.example` |
+| `build: build de producción automatizado...` | `npm run build` / `npm start` en la raíz |
+| `build(docker): imagen multietapa...` | Dockerfile en la raíz, `mongo:8.0`, frontend incluido, sin montar carpetas del Mac |
+
+API resultante:
+
+| Método y ruta | Acceso |
+|---|---|
+| `POST /api/auth/register`, `POST /api/auth/login` | Público, con límite de intentos |
+| `GET /api/auth/me`, `PUT /api/users/me` | Usuario autenticado (solo su cuenta) |
+| `GET/POST /api/projects`, `GET/PUT/DELETE /api/projects/:id`, `GET /api/projects/:id/export` | Solo el dueño |
+| `GET /api/base-templates`, `GET /api/base-templates/:id/preview` | Público, solo lectura |
+| `GET /api/public/sites/:publicId` | Público por enlace (id aleatorio de 16 caracteres) |
+
+Pruebas:
+- [Ejecutado] Con `curl`/Python contra la API:
+  - Registro válido, duplicado (409) e inválido (400 con detalle).
+  - Login correcto, incorrecto y con email inexistente: mismo mensaje y mismo 401.
+  - Inyección NoSQL en el login rechazada (400).
+  - Token ausente, falso o con el id antiguo: 401.
+  - Respuestas sin `password`.
+  - Usuario B no puede ver, editar, borrar ni exportar el proyecto de A (404).
+  - No se puede cambiar el dueño (400).
+  - `javascript:` (también en mayúsculas), `data:`, CSS en URLs y colores, y fuentes fuera de la lista: rechazados (400). Enlaces `https`, `#ancla` y `mailto:` aceptados.
+  - Datos maliciosos metidos a mano en MongoDB no llegan al HTML.
+  - Límite de intentos: 429 tras 10 intentos.
+  - JSON malformado: 400 sin detalles.
+  - Cabeceras CSP, `X-Frame-Options` y `nosniff` presentes; sin `X-Powered-By`.
+- [Ejecutado] En el navegador (modo desarrollo):
+  - Portada con la descripción ya traducida.
+  - Registro, crear proyecto, editor, error de validación visible y recuperación.
+  - Autoguardado, exportación (200 con token y 401 sin él).
+  - Cambio de contraseña con la actual incorrecta (error) y correcta (OK).
+  - Cerrar sesión desde Ajustes, ruta privada que redirige a `/login`, login con la contraseña antigua rechazado y con la nueva aceptado.
+- [Ejecutado] Modo producción (`npm run build` + `npm start`): app, editor y vistas previas sin violaciones de CSP.
+- [Ejecutado] Linter del frontend sin errores ni avisos; todas las claves i18n usadas existen en `es` y `en`.
+- [Ejecutado parcialmente] Docker: la etapa final de la imagen se reprodujo en local con `npm ci --omit=dev` y arranca. [Suposición] `docker compose up` funciona; **no se ha podido probar** porque Docker no está instalado.
+
+Decisiones tomadas por mi cuenta:
+- Se adelantó a la fase 1 dejar de versionar `backend/node_modules`.
+- Contraseña mínima de 8 caracteres (antes 6) y máxima de 72 (límite de bcrypt).
+- Las webs son públicas para quien tenga el enlace, como antes, pero el enlace usa un id aleatorio en lugar del `_id` de MongoDB, que es parcialmente predecible.
+- El JWT se guarda en `localStorage`. Es habitual, pero un XSS en la app podría leerlo; la CSP estricta de la app reduce ese riesgo. La alternativa (cookie `httpOnly` + protección CSRF) queda como mejora.

@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import { BaseTemplate } from "../models/BaseTemplate";
+import { BaseTemplate } from "./models/BaseTemplate";
 
 dotenv.config();
 
@@ -226,7 +226,7 @@ async function seed() {
     const created = await BaseTemplate.insertMany(templates);
     console.log(`Seeded ${created.length} templates`);
 
-    created.forEach((t) => {
+    created.forEach((t: { name: string; view?: string | null }) => {
       console.log(`  - ${t.name} (${t.view})`);
     });
 

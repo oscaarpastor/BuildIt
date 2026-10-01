@@ -86,3 +86,33 @@ Decisiones tomadas por mi cuenta:
 - Contraseña mínima de 8 caracteres (antes 6) y máxima de 72 (límite de bcrypt).
 - Las webs son públicas para quien tenga el enlace, como antes, pero el enlace usa un id aleatorio en lugar del `_id` de MongoDB, que es parcialmente predecible.
 - El JWT se guarda en `localStorage`. Es habitual, pero un XSS en la app podría leerlo; la CSP estricta de la app reduce ese riesgo. La alternativa (cookie `httpOnly` + protección CSRF) queda como mejora.
+
+## Fase 3: funciones a medias y tests ✅
+
+| Commit | Cambio |
+|---|---|
+| `refactor: elimina código muerto...` | Fuera `tailwind.config.js`, `template.ejs`, la casilla del formulario de contacto (`contact.formEnabled`) y `BaseTemplate.previewImage` |
+| `feat: ocultar secciones, modo oscuro y estadísticas...` | Ver detalle abajo |
+| `fix(i18n): plurales en visitas y clics` | "1 visita" / "2 visitas" |
+| `test(backend): 64 tests de API...` | Vitest + Supertest contra `buildit_test` |
+| `test(e2e): flujo principal y aislamiento...` | Playwright contra el build de producción y `buildit_e2e` |
+
+Funciones terminadas:
+- **Ocultar secciones**: se guardan en el proyecto (`hiddenSections`) y desaparecen de la web generada, con sus enlaces del menú, en vista previa, enlace público y exportación. La marca no es ocultable porque va en la cabecera. [Ejecutado]
+- **Modo oscuro**: interruptor en Tema. Un único render aplica los mismos colores en editor, enlace público y exportación, con una hoja de estilos que oscurece las clases claras de las plantillas. Revisado visualmente en Restaurante; en las demás plantillas solo por tests. [Ejecutado]
+- **Estadísticas**: la web pública registra la visita al cargarse y cada clic en un enlace; las miniaturas, la vista previa y la exportación no cuentan. Visitas, clics y última visita aparecen en cada tarjeta. [Ejecutado]
+
+Problemas nuevos encontrados y corregidos en esta fase:
+- `.section-card` de Startup nunca tuvo estilo: el `@apply` estaba en un `<style>` normal, que el CDN de Tailwind no procesa. [Ejecutado]
+- Con `sanitizeFilter` (protección anti-inyección de la fase 2), un `$in` propio rompía el listado de proyectos (500). Se marca con `mongoose.trusted`. [Ejecutado]
+- La sección "Programa" aparecía como no vacía en Restaurante por sus objetos anidados. [Ejecutado]
+
+Tests:
+- `npm run test:api`: **64/64** pasan. Cubren autenticación, límite de intentos, permisos entre usuarios, CRUD, validación, web pública, secciones ocultas, modo oscuro, exportación (también sin plantilla base), estadísticas, cabeceras, errores y CORS. [Ejecutado]
+- Mutación de control: quitando el filtro por dueño, el test de permisos falla. Restaurado el código, vuelve a pasar. [Ejecutado]
+- `npm run test:e2e`: **2/2** pasan, en dos ejecuciones seguidas. Recorren el flujo principal y el aislamiento entre dos usuarios. [Ejecutado]
+- `npm run lint`: el frontend no tiene errores ni avisos y el backend compila (`tsc --noEmit`). [Ejecutado]
+
+Pendiente por decisión tuya (no implementado):
+- Formulario de contacto en las webs generadas.
+- Subida de imágenes (hoy solo se pegan URLs).

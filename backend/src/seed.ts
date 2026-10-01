@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { BaseTemplate } from "./models/BaseTemplate";
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const templates = [
   {
@@ -232,17 +232,18 @@ async function seed() {
     await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/buildit");
     console.log("Connected to MongoDB");
 
-    await BaseTemplate.deleteMany({});
-    console.log("Cleared existing templates");
+    // Upsert por "view": los _id de las plantillas se mantienen entre ejecuciones,
+    // así que los proyectos que ya apuntan a ellas no se rompen.
+    for (const template of templates) {
+      await BaseTemplate.findOneAndUpdate({ view: template.view }, template, {
+        upsert: true,
+        setDefaultsOnInsert: true,
+      });
+      console.log(`  - ${template.name} (${template.view})`);
+    }
+    console.log(`Seeded ${templates.length} templates`);
 
-    const created = await BaseTemplate.insertMany(templates);
-    console.log(`Seeded ${created.length} templates`);
-
-    created.forEach((t: { name: string; view?: string | null }) => {
-      console.log(`  - ${t.name} (${t.view})`);
-    });
-
-    process.exit(0);
+    await mongoose.disconnect();
   } catch (err) {
     console.error("Seed error:", err);
     process.exit(1);

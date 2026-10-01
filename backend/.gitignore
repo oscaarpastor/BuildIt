@@ -36,3 +36,7 @@ Thumbs.db
 # Optional IDE/editor folders
 .vscode/
 .idea/
+
+# Build
+dist/
+public/

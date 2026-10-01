@@ -98,7 +98,7 @@ npm test
 
 | Comando | Qué ejecuta |
 |---|---|
-| `npm run test:api` | 64 tests de la API (Vitest + Supertest): autenticación, permisos entre usuarios, CRUD de proyectos, validación, web pública, exportación, estadísticas y cabeceras de seguridad |
+| `npm run test:api` | 65 tests de la API (Vitest + Supertest): autenticación, permisos entre usuarios, CRUD de proyectos, validación, web pública, exportación, estadísticas y cabeceras de seguridad |
 | `npm run test:e2e` | Playwright: compila la app, la arranca en el puerto 3100 y recorre el flujo completo con dos usuarios en Google Chrome |
 | `npm run lint` | ESLint del frontend y comprobación de tipos del backend |
 

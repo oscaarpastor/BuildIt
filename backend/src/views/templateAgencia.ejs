@@ -53,7 +53,7 @@
       <!-- ABOUT -->
       <% if (show("about")) { %>
       <section id="about" class="px-6 py-20 max-w-7xl mx-auto flex flex-col md:flex-row gap-10 items-center">
-        <img src="<%= config.about.image %>" alt="Sobre nosotros" class="w-full md:w-1/2 rounded shadow" />
+        <% if (config.about.image) { %><img src="<%= config.about.image %>" alt="Sobre nosotros" class="w-full md:w-1/2 rounded shadow" /><% } %>
         <div class="w-full md:w-1/2">
           <h2 class="text-3xl font-semibold mb-4"><%= config.about.heading %></h2>
           <p class="text-lg"><%= config.about.content %></p>
@@ -101,7 +101,7 @@
         <div class="flex flex-wrap justify-center gap-6">
           <% config.testimonials.forEach(t => { %>
             <div class="bg-white p-6 rounded shadow w-full md:w-1/3 text-center">
-              <img src="<%= t.avatar %>" alt="<%= t.name %>" class="w-16 h-16 rounded-full mx-auto mb-4">
+              <% if (t.avatar) { %><img src="<%= t.avatar %>" alt="<%= t.name %><% } %>" class="w-16 h-16 rounded-full mx-auto mb-4">
               <p class="italic">"<%= t.quote %>"</p>
               <p class="mt-2 font-semibold"><%= t.name %></p>
             </div>

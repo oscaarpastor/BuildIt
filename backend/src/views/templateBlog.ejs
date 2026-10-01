@@ -67,7 +67,7 @@
         <h2 class="text-3xl font-bold text-center mb-10">Galería de momentos</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
           <% config.gallery.forEach(img => { %>
-            <img src="<%= img.image %>" class="rounded-2xl shadow object-cover w-full h-48">
+            <% if (img.image) { %><img src="<%= img.image %>" class="rounded-2xl shadow object-cover w-full h-48"><% } %>
           <% }) %>
         </div>
       </section>
@@ -77,7 +77,7 @@
       <% if (show("about")) { %>
       <section id="about" class="px-6 py-20 max-w-5xl mx-auto text-center">
         <h2 class="text-3xl font-bold mb-6"><%= config.about.heading %></h2>
-        <img src="<%= config.about.image %>" alt="Sobre mí" class="w-40 h-40 rounded-full mx-auto mb-4 object-cover shadow" />
+        <% if (config.about.image) { %><img src="<%= config.about.image %>" alt="Sobre mí" class="w-40 h-40 rounded-full mx-auto mb-4 object-cover shadow" /><% } %>
         <p class="text-lg text-gray-700 leading-relaxed"><%= config.about.content %></p>
       </section>
       <% } %>
@@ -90,7 +90,7 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <% config.testimonials.forEach(t => { %>
               <div class="border rounded-xl shadow-sm p-6 text-center bg-gray-50">
-                <img src="<%= t.avatar %>" alt="<%= t.name %>" class="w-16 h-16 rounded-full mx-auto mb-4">
+                <% if (t.avatar) { %><img src="<%= t.avatar %>" alt="<%= t.name %><% } %>" class="w-16 h-16 rounded-full mx-auto mb-4">
                 <p class="italic text-gray-600">"<%= t.quote %>"</p>
                 <p class="mt-2 font-bold"><%= t.name %></p>
               </div>

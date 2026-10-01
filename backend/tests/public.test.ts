@@ -28,6 +28,11 @@ describe("web pública", () => {
     expect(res.headers["content-security-policy"]).toContain("https://cdn.tailwindcss.com");
   });
 
+  it("no pinta imágenes rotas cuando la URL está vacía", async () => {
+    const res = await request(app).get(siteUrl(project.publicId));
+    expect(res.text).not.toMatch(/<img src=""/);
+  });
+
   it("la vista previa no lleva el script de estadísticas", async () => {
     const res = await request(app).get(siteUrl(project.publicId, true));
     expect(res.status).toBe(200);

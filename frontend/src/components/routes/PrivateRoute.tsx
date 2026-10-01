@@ -1,16 +1,14 @@
 import { Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import { useAuth } from "../../context/useAuth";
 
-interface PrivateRouteProps {
-  children: ReactNode;
-}
+export default function PrivateRoute({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth();
+  const { t } = useTranslation();
 
-export default function PrivateRoute({ children }: PrivateRouteProps) {
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    return <Navigate to="/login" />;
-  }
+  if (loading) return <p className="p-6 text-gray-500">{t("common.loading")}</p>;
+  if (!user) return <Navigate to="/login" replace />;
 
   return children;
 }

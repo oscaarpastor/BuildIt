@@ -1,60 +1,37 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-
-type BaseTemplate = {
-  _id: string;
-  name: string;
-  description?: string;
-  icon?: string;
-  gradient?: string;
-};
+import { useTranslation } from "react-i18next";
+import { api, templatePreviewUrl } from "../lib/api";
+import { errorKey } from "../lib/errors";
+import type { BaseTemplate, Project } from "../types";
 
 export default function NewProjectPage() {
-  const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [templates, setTemplates] = useState<BaseTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
   const [creating, setCreating] = useState<string | null>(null);
-  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    const fetchTemplates = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/base-templates`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        setTemplates(await res.json());
-      } catch (err) {
-        console.error("Error cargando plantillas:", err);
-        setError("No se pudieron cargar las plantillas.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTemplates();
-  }, [API_URL]);
+    api<BaseTemplate[]>("/api/base-templates")
+      .then(setTemplates)
+      .catch((err) => setError(errorKey(err, "newProject.load_error")))
+      .finally(() => setLoading(false));
+  }, []);
 
   const createProject = async (tpl: BaseTemplate) => {
     setCreating(tpl._id);
     setError("");
     try {
-      const res = await fetch(`${API_URL}/api/projects/from-template`, {
+      const project = await api<Project>("/api/projects", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          templateId: tpl._id,
-          userId: user?._id,
-          name: tpl.name,
-        }),
+        body: { templateId: tpl._id, name: tpl.name },
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const project = await res.json();
       navigate(`/projects/${project._id}/edit`);
     } catch (err) {
-      console.error("Error creando proyecto:", err);
-      setError("No se pudo crear el proyecto. Inténtalo de nuevo.");
+      setError(errorKey(err, "newProject.create_error"));
       setCreating(null);
     }
   };
@@ -65,20 +42,20 @@ export default function NewProjectPage() {
         onClick={() => navigate("/projects")}
         className="mb-4 text-sm text-primary border border-primary px-4 py-2 rounded hover:bg-primary/10 transition"
       >
-        &larr; Volver
+        &larr; {t("common.back")}
       </button>
 
-      <h1 className="text-2xl font-bold mb-2">Selecciona una plantilla</h1>
-      <p className="text-gray-500 mb-6">Elige un diseno profesional para empezar tu proyecto.</p>
+      <h1 className="text-2xl font-bold mb-2">{t("newProject.title")}</h1>
+      <p className="text-gray-500 mb-6">{t("newProject.subtitle")}</p>
 
       {error && (
         <p role="alert" className="mb-6 text-sm text-red-600 bg-red-50 border border-red-200 rounded px-4 py-2">
-          {error}
+          {t(error)}
         </p>
       )}
 
       {loading ? (
-        <p className="text-gray-500">Cargando plantillas...</p>
+        <p className="text-gray-500">{t("newProject.loading")}</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {templates.map((tpl) => (
@@ -102,14 +79,14 @@ export default function NewProjectPage() {
                   onClick={() => setPreviewTemplateId(tpl._id)}
                   className="bg-white border border-primary text-primary px-4 py-2 rounded hover:bg-primary/10 text-sm font-medium"
                 >
-                  Ver plantilla
+                  {t("newProject.view_template")}
                 </button>
                 <button
                   onClick={() => createProject(tpl)}
                   disabled={creating !== null}
                   className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 text-sm font-medium disabled:opacity-50"
                 >
-                  {creating === tpl._id ? "Creando..." : "Usar plantilla"}
+                  {creating === tpl._id ? t("newProject.creating") : t("newProject.use_template")}
                 </button>
               </div>
             </div>
@@ -118,18 +95,23 @@ export default function NewProjectPage() {
       )}
 
       {previewTemplateId && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t("newProject.preview_title")}
+        >
           <div className="relative w-full max-w-5xl h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden">
             <iframe
-              src={`${API_URL}/api/base-templates/${previewTemplateId}/preview`}
+              src={templatePreviewUrl(previewTemplateId)}
               className="w-full h-full border-0"
-              title="Vista previa de la plantilla"
+              title={t("newProject.preview_title")}
             />
             <button
               onClick={() => setPreviewTemplateId(null)}
               className="absolute top-4 right-4 bg-white text-black px-4 py-2 rounded-lg shadow hover:bg-gray-100 font-medium"
             >
-              Cerrar
+              {t("common.close")}
             </button>
           </div>
         </div>

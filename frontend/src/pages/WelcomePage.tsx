@@ -11,7 +11,7 @@ export default function WelcomePage() {
     <div className="min-h-screen bg-background text-text flex flex-col">
       <header className="w-full px-6 py-4 flex justify-between items-center">
         <div className="cursor-pointer flex items-center" onClick={() => navigate("/")}>
-          <img src="/logoLargo-nobg.png" alt="BuildIt logo" className="h-24" />
+          <img src="/logoLargo-nobg.png" alt={t("welcome.logo_alt")} className="h-24" />
         </div>
 
         <div className="flex items-center gap-4">
@@ -46,7 +46,7 @@ export default function WelcomePage() {
             <div className="w-full max-w-md aspect-video rounded-xl overflow-hidden">
               <img
                 src="/welcomepage.jpg"
-                alt="Ilustración bienvenida"
+                alt={t("welcome.image_alt")}
                 className="w-full h-full object-cover"
               />
             </div>

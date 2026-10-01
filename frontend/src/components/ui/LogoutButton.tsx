@@ -1,18 +1,13 @@
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/useAuth";
 import Button from "./Button";
 
 export default function LogoutButton() {
-  const navigate = useNavigate();
+  const { logout } = useAuth();
   const { t } = useTranslation();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
   return (
-    <Button variant="danger" onClick={handleLogout}>
+    <Button type="button" variant="danger" onClick={logout}>
       {t("loguin.logout")}
     </Button>
   );

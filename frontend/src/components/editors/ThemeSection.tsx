@@ -10,13 +10,7 @@ type Props = {
   onChange: (path: string, value: unknown) => void;
 };
 
-const fontOptions = [
-  { value: "Inter", label: "Inter — Modern & Clean" },
-  { value: "Playfair Display", label: "Playfair Display — Elegant Serif" },
-  { value: "Montserrat", label: "Montserrat — Geometric Sans" },
-  { value: "Raleway", label: "Raleway — Thin & Sophisticated" },
-  { value: "Poppins", label: "Poppins — Friendly Rounded" },
-];
+const FONTS = ["Inter", "Playfair Display", "Montserrat", "Raleway", "Poppins"] as const;
 
 export default function ThemeSection({ theme, onChange }: Props) {
   const { t } = useTranslation();
@@ -76,14 +70,14 @@ export default function ThemeSection({ theme, onChange }: Props) {
           }
           className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
         >
-          {fontOptions.map((font) => (
-            <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
-              {font.label}
+          {FONTS.map((font) => (
+            <option key={font} value={font} style={{ fontFamily: font }}>
+              {font} — {t(`themeselector.fonts.${font}`)}
             </option>
           ))}
         </select>
         <p className="text-xs text-gray-400 mt-1" style={{ fontFamily: theme.fontFamily }}>
-          Preview: The quick brown fox jumps over the lazy dog
+          {t("themeselector.font_preview")}
         </p>
       </div>
     </section>

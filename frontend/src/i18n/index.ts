@@ -9,6 +9,8 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: "es",
+    supportedLngs: ["es", "en"],
+    load: "languageOnly",
     debug: false,
     backend: {
       loadPath: "/locales/{{lng}}.json", // Cargará los archivos desde public/locales/
@@ -17,5 +19,10 @@ i18n
       escapeValue: false,
     },
   });
+
+// Mantener el atributo lang del documento sincronizado (accesibilidad y SEO)
+i18n.on("languageChanged", (lng) => {
+  document.documentElement.lang = lng.split("-")[0];
+});
 
 export default i18n;

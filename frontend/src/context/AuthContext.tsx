@@ -1,87 +1,66 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
-import axios from "axios";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
+import { api, AUTH_EXPIRED_EVENT, tokenStore } from "../lib/api";
+import type { User } from "../types";
+import { AuthContext } from "./auth-context";
 
-// Tipo de usuario
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-}
+type AuthResponse = { token: string; user: User };
 
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  loading: boolean;
-  logout: () => void;
-  updateUser: (fields: Partial<User>) => void;
-  setUser: (user: User | null) => void;
-}
-
-const AuthContext = createContext<AuthContextType | null>(null);
-
-const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
-
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => Boolean(tokenStore.get()));
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    window.location.href = "/login";
-  };
-
-  const updateUser = (fields: Partial<User>) => {
-    setUser((prev) => (prev ? { ...prev, ...fields } : prev));
-  };
-
+  // Recuperar la sesión guardada al cargar la app
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
-    axios
-      .get(`${API_URL}/api/me`, {
-        headers: { Authorization: token },
-      })
-      .then((res) => {
-        setUser(res.data as User);
-        setLoading(false);
-      })
+    if (!tokenStore.get()) return;
+    api<User>("/api/auth/me")
+      .then(setUser)
       .catch(() => {
-        logout();
-        setLoading(false);
-      });
+        tokenStore.clear();
+        setUser(null);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        loading,
-        logout,
-        updateUser,
-        setUser,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  // El módulo de API avisa cuando el servidor rechaza el token
+  useEffect(() => {
+    const onExpired = () => setUser(null);
+    window.addEventListener(AUTH_EXPIRED_EVENT, onExpired);
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, onExpired);
+  }, []);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth debe usarse dentro de AuthProvider");
-  }
-  return context;
-};
+  const startSession = useCallback(({ token, user }: AuthResponse) => {
+    tokenStore.set(token);
+    setUser(user);
+  }, []);
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      startSession(await api<AuthResponse>("/api/auth/login", { method: "POST", body: { email, password } }));
+    },
+    [startSession]
+  );
+
+  const register = useCallback(
+    async (name: string, email: string, password: string) => {
+      startSession(
+        await api<AuthResponse>("/api/auth/register", { method: "POST", body: { name, email, password } })
+      );
+    },
+    [startSession]
+  );
+
+  const logout = useCallback(() => {
+    tokenStore.clear();
+    setUser(null);
+    navigate("/login", { replace: true });
+  }, [navigate]);
+
+  const value = useMemo(
+    () => ({ user, loading, login, register, logout, updateUser: setUser }),
+    [user, loading, login, register, logout]
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}

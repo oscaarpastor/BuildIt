@@ -1,7 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useRef } from "react";
 import ThemeSection from "../components/editors/ThemeSection";
 import BrandSection from "../components/editors/BrandSection";
 import HeroSection from "../components/editors/HeroSection";
@@ -17,6 +16,9 @@ import InspirationSection from "../components/editors/InspirationSection";
 import ProgramSection from "../components/editors/ProgramSection";
 import ContactSection from "../components/editors/ContactSection";
 import FooterSection from "../components/editors/FooterSection";
+import { api, ApiError, downloadFile, siteUrl } from "../lib/api";
+import { errorKey } from "../lib/errors";
+import type { Project, SectionKey } from "../types";
 
 function setNestedValue<T>(obj: T, path: string, value: unknown): T {
   const keys = path.split(".");
@@ -35,209 +37,116 @@ function setNestedValue<T>(obj: T, path: string, value: unknown): T {
   return newObj;
 }
 
-type Project = {
-  _id: string;
-  name: string;
-  config: {
-    theme: {
-      colorPrimary: string;
-      colorSecondary: string;
-      fontFamily: string;
-      darkMode?: boolean;
-    };
-    brand: {
-      name: string;
-      logo: string;
-    };
-    hero: {
-      title: string;
-      subtitle: string;
-      backgroundImage: string;
-      ctaText: string;
-      ctaLink: string;
-    };
-    about: {
-      heading: string;
-      content: string;
-      image: string;
-    };
-    features: {
-      icon: string;
-      title: string;
-      description: string;
-    }[];
-    products: {
-      title: string;
-      description: string;
-      price: string;
-      image: string;
-    }[];
-    gallery: {
-      image: string;
-    }[];
-    video: {
-      url: string;
-      thumbnail: string;
-    };
-    testimonials: {
-      name: string;
-      quote: string;
-      avatar: string;
-    }[];
-    documentation: {
-      title: string;
-      url: string;
-    }[];
-    faqs: {
-      question: string;
-      answer: string;
-    }[];
-    inspiration: {
-      category: string;
-      name: string;
-      image: string;
-      link: string;
-      description: string;
-    }[];
-    program: {
-      title: string;
-      image: string;
-      reason: string;
-      functioning: string;
-      methodology: string;
-      selection: string;
-      cta1: { text: string; link: string };
-      cta2: { text: string; link: string };
-    };
-    contact: {
-      email: string;
-      phone: string;
-      address: string;
-      formEnabled: boolean;
-    };
-    footer: {
-      text: string;
-      links: { label: string; url: string }[];
-    };
-  };
+const SECTION_KEYS: SectionKey[] = [
+  "brand",
+  "hero",
+  "about",
+  "features",
+  "products",
+  "gallery",
+  "video",
+  "testimonials",
+  "documentation",
+  "faqs",
+  "inspiration",
+  "program",
+  "contact",
+  "footer",
+];
+
+const isEmpty = (section: unknown): boolean => {
+  if (section == null) return true;
+  if (Array.isArray(section)) return section.length === 0;
+  if (typeof section === "object") return Object.values(section).every((val) => val === "" || val == null);
+  return false;
 };
 
-const SECTION_LABELS: Record<string, string> = {
-  theme: "Tema",
-  brand: "Marca",
-  hero: "Hero",
-  about: "Nosotros",
-  features: "Caracteristicas",
-  products: "Productos",
-  gallery: "Galeria",
-  video: "Video",
-  testimonials: "Testimonios",
-  documentation: "Documentacion",
-  faqs: "FAQ",
-  inspiration: "Inspiracion",
-  program: "Programa",
-  contact: "Contacto",
-  footer: "Footer",
-};
+type SaveState = "idle" | "saving" | "saved" | "error";
 
 export default function EditProjectPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const API_URL = import.meta.env.VITE_API_URL;
 
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [saveError, setSaveError] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [iframeKey, setIframeKey] = useState(Date.now());
   const [hiddenSections, setHiddenSections] = useState<Set<string>>(new Set());
   const [showSectionToggle, setShowSectionToggle] = useState(false);
-
-  useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/projects/${id}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        setProject(await res.json());
-      } catch (err) {
-        console.error("Error cargando el proyecto:", err);
-        setProject(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProject();
-  }, [id, API_URL]);
-
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const refreshPreview = useCallback(() => {
-    setIframeKey(Date.now());
+  useEffect(() => {
+    api<Project>(`/api/projects/${id}`)
+      .then(setProject)
+      .catch(() => setProject(null))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  useEffect(() => () => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
   }, []);
+
+  const save = useCallback(
+    async (data: Project) => {
+      setSaveState("saving");
+      setSaveError("");
+      try {
+        await api<Project>(`/api/projects/${id}`, {
+          method: "PUT",
+          body: { name: data.name, config: data.config },
+        });
+        setSaveState("saved");
+        setIframeKey(Date.now());
+      } catch (err) {
+        setSaveState("error");
+        if (err instanceof ApiError && err.status === 400 && err.errors?.length) {
+          const first = err.errors[0];
+          setSaveError(t("editPage.invalid_field", { field: first.path, message: first.message }));
+        } else {
+          setSaveError(t(errorKey(err, "editPage.save_error")));
+        }
+      }
+    },
+    [id, t]
+  );
 
   const handleChange = (path: string, value: unknown) => {
     if (!project) return;
-
     const updated = setNestedValue(project, path, value);
     setProject(updated);
 
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    saveTimeoutRef.current = setTimeout(() => {
-      autoSave(updated);
-    }, 800);
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => save(updated), 800);
   };
 
-  const autoSave = async (updatedProject: Project) => {
-    try {
-      const res = await fetch(`${API_URL}/api/projects/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedProject),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      refreshPreview();
-    } catch (err) {
-      console.error(err);
-      alert(t("editPage.save_error"));
-    }
-  };
-
-  const saveChanges = async () => {
+  const saveNow = () => {
     if (!project) return;
-    setSaving(true);
-    try {
-      const res = await fetch(`${API_URL}/api/projects/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(project),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      refreshPreview();
-    } catch (err) {
-      console.error(err);
-      alert(t("editPage.save_error"));
-    }
-    setSaving(false);
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    save(project);
   };
 
   const deleteProject = async () => {
     if (!window.confirm(t("editPage.delete_confirm"))) return;
     setDeleting(true);
     try {
-      const res = await fetch(`${API_URL}/api/projects/${id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await api(`/api/projects/${id}`, { method: "DELETE" });
       navigate("/projects");
     } catch (err) {
-      console.error(err);
-      alert(t("editPage.delete_error"));
+      setSaveError(t(errorKey(err, "editPage.delete_error")));
+      setDeleting(false);
     }
-    setDeleting(false);
+  };
+
+  const exportHtml = async () => {
+    if (!project) return;
+    try {
+      await downloadFile(`/api/projects/${project._id}/export`, `${project.name}.html`);
+    } catch (err) {
+      setSaveError(t(errorKey(err, "editPage.export_error")));
+    }
   };
 
   const toggleSection = (key: string) => {
@@ -250,49 +159,34 @@ export default function EditProjectPage() {
   };
 
   if (loading) return <p className="p-6">{t("editPage.loading")}</p>;
-  if (!project) return <p className="p-6">{t("editPage.not_found")}</p>;
+  if (!project) {
+    return (
+      <div className="p-6 space-y-4">
+        <p>{t("editPage.not_found")}</p>
+        <button onClick={() => navigate("/projects")} className="text-sm text-primary hover:underline">
+          ← {t("editPage.back")}
+        </button>
+      </div>
+    );
+  }
 
-  const isEmpty = (section: unknown): boolean => {
-    if (section == null) return true;
-    if (Array.isArray(section)) return section.length === 0;
-    if (typeof section === "object") return Object.values(section).every((val) => val === "" || val == null);
-    return false;
-  };
-
-  const sectionEntries: [string, unknown][] = [
-    ["theme", project.config.theme],
-    ["brand", project.config.brand],
-    ["hero", project.config.hero],
-    ["about", project.config.about],
-    ["features", project.config.features],
-    ["products", project.config.products],
-    ["gallery", project.config.gallery],
-    ["video", project.config.video],
-    ["testimonials", project.config.testimonials],
-    ["documentation", project.config.documentation],
-    ["faqs", project.config.faqs],
-    ["inspiration", project.config.inspiration],
-    ["program", project.config.program],
-    ["contact", project.config.contact],
-    ["footer", project.config.footer],
-  ];
+  const { config } = project;
+  const visible = (key: SectionKey) => !hiddenSections.has(key) && !isEmpty(config[key]);
 
   return (
     <div className="flex h-screen">
       <div className="w-1/2 border-r overflow-y-auto">
         <iframe
           key={iframeKey}
-          src={`${API_URL}/api/projects/${id}/preview?preview=true`}
+          src={siteUrl(project.publicId, true)}
           className="w-full h-full"
-          title="Vista previa"
+          title={t("editPage.preview_title")}
         />
       </div>
 
       <div className="w-1/2 overflow-y-auto p-6 space-y-6">
-        <div className="flex justify-between items-center mb-2">
-          <h1 className="text-xl font-bold">
-            {t("editPage.title", { name: project.name })}
-          </h1>
+        <div className="flex justify-between items-center mb-2 gap-2">
+          <h1 className="text-xl font-bold">{t("editPage.title", { name: project.name })}</h1>
           <div className="flex gap-2">
             <button
               onClick={() => navigate("/projects")}
@@ -300,13 +194,12 @@ export default function EditProjectPage() {
             >
               {t("editPage.back")}
             </button>
-            <a
-              href={`${API_URL}/api/projects/${project._id}/export`}
+            <button
+              onClick={exportHtml}
               className="text-sm border border-blue-600 text-blue-600 px-4 py-2 rounded hover:bg-blue-50 transition"
-              download
             >
               {t("editPage.export")}
-            </a>
+            </button>
             <button
               onClick={deleteProject}
               className="text-sm border border-red-500 text-red-500 px-4 py-2 rounded hover:bg-red-50 transition"
@@ -317,10 +210,24 @@ export default function EditProjectPage() {
           </div>
         </div>
 
+        <p role="status" className="text-xs text-gray-500 min-h-4">
+          {saveState === "saving" && t("editPage.saving")}
+          {saveState === "saved" && t("editPage.saved")}
+        </p>
+        {saveError && (
+          <p role="alert" className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-4 py-2">
+            {saveError}
+          </p>
+        )}
+
         <div>
-          <label className="font-semibold">{t("editPage.project_name")}</label>
+          <label htmlFor="project-name" className="font-semibold">
+            {t("editPage.project_name")}
+          </label>
           <input
+            id="project-name"
             value={project.name}
+            maxLength={120}
             onChange={(e) => handleChange("name", e.target.value)}
             className="w-full px-3 py-2 border rounded"
           />
@@ -330,82 +237,56 @@ export default function EditProjectPage() {
           <button
             onClick={() => setShowSectionToggle(!showSectionToggle)}
             className="text-sm font-medium text-primary hover:underline flex items-center gap-2"
+            aria-expanded={showSectionToggle}
           >
-            {showSectionToggle ? "▼" : "▶"} Mostrar/ocultar secciones
+            {showSectionToggle ? "▼" : "▶"} {t("editPage.toggle_sections")}
           </button>
           {showSectionToggle && (
             <div className="mt-3 flex flex-wrap gap-2">
-              {sectionEntries
-                .filter(([, section]) => !isEmpty(section))
-                .map(([key]) => (
-                  <button
-                    key={key}
-                    onClick={() => toggleSection(key)}
-                    className={`text-xs px-3 py-1.5 rounded-full font-medium transition ${
-                      hiddenSections.has(key)
-                        ? "bg-gray-200 text-gray-500 line-through"
-                        : "bg-primary/10 text-primary border border-primary/30"
-                    }`}
-                  >
-                    {SECTION_LABELS[key] || key}
-                  </button>
-                ))}
+              {SECTION_KEYS.filter((key) => !isEmpty(config[key])).map((key) => (
+                <button
+                  key={key}
+                  onClick={() => toggleSection(key)}
+                  aria-pressed={!hiddenSections.has(key)}
+                  className={`text-xs px-3 py-1.5 rounded-full font-medium transition ${
+                    hiddenSections.has(key)
+                      ? "bg-gray-200 text-gray-500 line-through"
+                      : "bg-primary/10 text-primary border border-primary/30"
+                  }`}
+                >
+                  {t(`editPage.sections.${key}`)}
+                </button>
+              ))}
             </div>
           )}
         </div>
 
-        {!hiddenSections.has("theme") && !isEmpty(project.config.theme) && (
-          <ThemeSection theme={project.config.theme} onChange={handleChange} />
+        <ThemeSection theme={config.theme} onChange={handleChange} />
+        {visible("brand") && <BrandSection brand={config.brand} onChange={handleChange} />}
+        {visible("hero") && <HeroSection hero={config.hero} onChange={handleChange} />}
+        {visible("about") && <AboutSection about={config.about} onChange={handleChange} />}
+        {visible("features") && <FeatureSection features={config.features} onChange={handleChange} />}
+        {visible("products") && <ProductSection products={config.products} onChange={handleChange} />}
+        {visible("gallery") && <GallerySection gallery={config.gallery} onChange={handleChange} />}
+        {visible("video") && <VideoSection video={config.video} onChange={handleChange} />}
+        {visible("testimonials") && (
+          <TestimonialsSection testimonials={config.testimonials} onChange={handleChange} />
         )}
-        {!hiddenSections.has("brand") && !isEmpty(project.config.brand) && (
-          <BrandSection brand={project.config.brand} onChange={handleChange} />
+        {visible("documentation") && (
+          <DocumentationSection documentation={config.documentation} onChange={handleChange} />
         )}
-        {!hiddenSections.has("hero") && !isEmpty(project.config.hero) && (
-          <HeroSection hero={project.config.hero} onChange={handleChange} />
-        )}
-        {!hiddenSections.has("about") && !isEmpty(project.config.about) && (
-          <AboutSection about={project.config.about} onChange={handleChange} />
-        )}
-        {!hiddenSections.has("features") && !isEmpty(project.config.features) && (
-          <FeatureSection features={project.config.features} onChange={handleChange} />
-        )}
-        {!hiddenSections.has("products") && !isEmpty(project.config.products) && (
-          <ProductSection products={project.config.products} onChange={handleChange} />
-        )}
-        {!hiddenSections.has("gallery") && !isEmpty(project.config.gallery) && (
-          <GallerySection gallery={project.config.gallery} onChange={handleChange} />
-        )}
-        {!hiddenSections.has("video") && !isEmpty(project.config.video) && (
-          <VideoSection video={project.config.video} onChange={handleChange} />
-        )}
-        {!hiddenSections.has("testimonials") && !isEmpty(project.config.testimonials) && (
-          <TestimonialsSection testimonials={project.config.testimonials} onChange={handleChange} />
-        )}
-        {!hiddenSections.has("documentation") && !isEmpty(project.config.documentation) && (
-          <DocumentationSection documentation={project.config.documentation} onChange={handleChange} />
-        )}
-        {!hiddenSections.has("faqs") && !isEmpty(project.config.faqs) && (
-          <FaqsSection faqs={project.config.faqs} onChange={handleChange} />
-        )}
-        {!hiddenSections.has("inspiration") && !isEmpty(project.config.inspiration) && (
-          <InspirationSection inspiration={project.config.inspiration} onChange={handleChange} />
-        )}
-        {!hiddenSections.has("program") && !isEmpty(project.config.program) && (
-          <ProgramSection program={project.config.program} onChange={handleChange} />
-        )}
-        {!hiddenSections.has("contact") && !isEmpty(project.config.contact) && (
-          <ContactSection contact={project.config.contact} onChange={handleChange} />
-        )}
-        {!hiddenSections.has("footer") && !isEmpty(project.config.footer) && (
-          <FooterSection footer={project.config.footer} onChange={handleChange} />
-        )}
+        {visible("faqs") && <FaqsSection faqs={config.faqs} onChange={handleChange} />}
+        {visible("inspiration") && <InspirationSection inspiration={config.inspiration} onChange={handleChange} />}
+        {visible("program") && <ProgramSection program={config.program} onChange={handleChange} />}
+        {visible("contact") && <ContactSection contact={config.contact} onChange={handleChange} />}
+        {visible("footer") && <FooterSection footer={config.footer} onChange={handleChange} />}
 
         <button
-          onClick={saveChanges}
+          onClick={saveNow}
           className="bg-primary text-white px-6 py-2 rounded hover:bg-primary/90"
-          disabled={saving}
+          disabled={saveState === "saving"}
         >
-          {saving ? t("editPage.saving") : t("editPage.save")}
+          {saveState === "saving" ? t("editPage.saving") : t("editPage.save")}
         </button>
       </div>
     </div>

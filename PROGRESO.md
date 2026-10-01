@@ -108,7 +108,7 @@ Problemas nuevos encontrados y corregidos en esta fase:
 - La sección "Programa" aparecía como no vacía en Restaurante por sus objetos anidados. [Ejecutado]
 
 Tests:
-- `npm run test:api`: **64/64** pasan. Cubren autenticación, límite de intentos, permisos entre usuarios, CRUD, validación, web pública, secciones ocultas, modo oscuro, exportación (también sin plantilla base), estadísticas, cabeceras, errores y CORS. [Ejecutado]
+- `npm run test:api`: **64/64** pasan (65 tras el cierre). Cubren autenticación, límite de intentos, permisos entre usuarios, CRUD, validación, web pública, secciones ocultas, modo oscuro, exportación (también sin plantilla base), estadísticas, cabeceras, errores y CORS. [Ejecutado]
 - Mutación de control: quitando el filtro por dueño, el test de permisos falla. Restaurado el código, vuelve a pasar. [Ejecutado]
 - `npm run test:e2e`: **2/2** pasan, en dos ejecuciones seguidas. Recorren el flujo principal y el aislamiento entre dos usuarios. [Ejecutado]
 - `npm run lint`: el frontend no tiene errores ni avisos y el backend compila (`tsc --noEmit`). [Ejecutado]
@@ -116,3 +116,81 @@ Tests:
 Pendiente por decisión tuya (no implementado):
 - Formulario de contacto en las webs generadas.
 - Subida de imágenes (hoy solo se pegan URLs).
+
+## Cierre ✅
+
+| Commit | Cambio |
+|---|---|
+| `docs: README...` | README en la raíz: requisitos, desarrollo, producción, tests, variables, Docker, estructura y API. `.env.example` actualizados en `backend/`, `frontend/` y la raíz |
+| `fix(plantillas): no pintar imágenes rotas...` | Detectado en la prueba final: 15 `<img>` salían rotas con la URL vacía. Corregido, con test nuevo (65 en total) |
+
+### Prueba final desde cero [Ejecutado]
+
+Se repitió entera **después** del último arreglo, sobre un clon nuevo de la rama (`git clone -b arreglo-completo`) y con todas las bases de datos borradas. Se siguió el README paso a paso:
+
+| Paso del README | Resultado |
+|---|---|
+| Requisitos | `node -v` muestra v24.21.0; `db.version()` muestra 8.0.32 |
+| 1. `npm run install:all` | OK, 0 vulnerabilidades en backend, frontend y e2e |
+| 2. `cp backend/.env.example backend/.env` + clave JWT | OK |
+| 3. `npm run seed` | 6 plantillas |
+| 4. `npm run dev:backend` / `npm run dev:frontend` | Backend en :3000 y Vite en :5173 |
+| 5. Navegador con dos usuarios | Ver abajo |
+| Producción: `npm run build` y `npm start` | Build completo; app y API en :3000 (production), login correcto |
+| Tests: `npm test` | **65/65** API y **2/2** E2E |
+
+Flujo con dos usuarios en http://localhost:5173:
+1. **Laura** se registra desde la portada, crea un proyecto Portfolio y cambia la marca a "Laura Studio": autoguardado y vista previa sin imágenes rotas.
+2. Laura exporta (200, contiene "Laura Studio"), abre su web pública (1 visita en la tarjeta) y cierra sesión desde Ajustes.
+3. **Marcos** se registra y ve su lista vacía. Al abrir la URL del editor de Laura obtiene "Proyecto no encontrado".
+4. Con su propio token contra la API, Marcos recibe 404 al **ver, editar, exportar y borrar** el proyecto de Laura. Intentar crear un proyecto indicando otro dueño da 400.
+5. En MongoDB el proyecto de Laura sigue intacto (marca "Laura Studio", dueña Laura) y las dos contraseñas están cifradas con bcrypt.
+6. Laura vuelve a entrar y ve su proyecto con sus estadísticas.
+
+### Resumen de verificación
+
+| Qué | Cómo | Etiqueta |
+|---|---|---|
+| Arranque en desarrollo y producción siguiendo el README | Clon limpio | [Ejecutado] |
+| Seguridad: JWT, permisos, validación, cabeceras, límite de intentos, errores | 65 tests de API, `curl` y navegador | [Ejecutado] |
+| Flujo completo y aislamiento entre usuarios | 2 tests E2E y prueba manual con dos usuarios | [Ejecutado] |
+| Dependencias sin vulnerabilidades conocidas | `npm audit` en backend, frontend y e2e | [Ejecutado] |
+| Docker (`docker compose up`) | Solo se reprodujo la etapa final de la imagen | [Suposición] que funciona entero; **no probado** |
+| Modo oscuro en las 6 plantillas | Restaurante revisado a ojo; el resto, solo por tests (clase y colores aplicados) | [Ejecutado] parcialmente |
+
+## Pendiente y por qué
+
+| Pendiente | Motivo |
+|---|---|
+| Formulario de contacto y subida de imágenes | Indicaste no implementarlos |
+| Probar `docker compose` | Docker no está instalado en este Mac |
+| Rotar la contraseña de MongoDB Atlas | La cambias tú; sigue en el historial de git, que no se ha reescrito (decisión tuya) |
+| Tailwind por CDN en las webs generadas | No estaba en el alcance. El navegador avisa de que no es para producción y el HTML exportado necesita internet |
+| `ts-node-dev` sin mantenimiento (arrastra `glob@7`, marcado obsoleto) | Solo afecta al desarrollo. Cambiarlo por otra herramienta no se pidió |
+| Accesibilidad: los `<label>` del editor no están asociados a sus campos | Detectado al escribir el E2E; son unas 50 etiquetas en 14 componentes |
+| Mensajes de validación del servidor solo en español | En la interfaz en inglés, el detalle del campo erróneo aparece en español |
+| Límite de intentos guardado en memoria | Se reinicia al reiniciar el servidor y no se comparte entre varias instancias. Basta en local |
+| Las visitas del propio dueño cuentan en las estadísticas | Decisión de simplicidad |
+| JWT en `localStorage` | Ver decisiones de la fase 2 |
+| El hero de Restaurante ignora los colores del tema | Su degradado está fijado en la plantilla |
+| Avisos de npm 11 sobre "install scripts" (`bcrypt`, `esbuild`, `fsevents`...) | Informativos: todo funciona porque usan binarios precompilados. Se podrían aprobar con `npm install-scripts approve` |
+
+## Problemas nuevos encontrados durante el trabajo
+
+Todos corregidos salvo los marcados como pendientes.
+
+- Fondo sin definir: texto oscuro sobre fondo oscuro en navegadores en modo oscuro (fase 1, corregido).
+- Startup: título blanco sobre blanco sin imagen de fondo (fase 1, corregido).
+- El botón "Cerrar sesión" de Ajustes también enviaba el formulario (fase 2, corregido).
+- `.section-card` sin estilo por un `@apply` mal colocado (fase 3, corregido).
+- `sanitizeFilter` rompía el `$in` del listado (fase 3, corregido).
+- Imágenes rotas con la URL vacía (cierre, corregido).
+- `<label>` sin asociar en el editor (pendiente).
+
+## Estado del entorno
+
+- MongoDB 8 queda como servicio de Homebrew y arranca al iniciar sesión (`brew services list`).
+- `backend/.env` existe en tu copia de trabajo con un `JWT_SECRET` aleatorio. Está ignorado por git.
+- La base de datos `buildit` contiene los usuarios de la prueba final (Laura y Marcos). Para vaciarla: `npm run db:reset` y después `npm run seed`.
+- `~/.zprofile` tiene dos líneas nuevas: el `shellenv` de Homebrew y Node 24 en el PATH.
+- Rama `arreglo-completo`: 25 commits sobre `059db4c`, **sin push**.

@@ -213,9 +213,11 @@
   "editPage.sections.contact": "Contacto",
   "editPage.sections.footer": "Pie de página",
   "themeselector.dark_mode": "Modo oscuro",
-  "projects.views": "{{count}} visitas",
-  "projects.clicks": "{{count}} clics",
   "projects.last_visit": "Última visita: {{date}}",
   "projects.no_visits": "Sin visitas todavía",
-  "editPage.hidden_hint": "Las secciones tachadas no aparecen en la web publicada ni en la exportación."
+  "editPage.hidden_hint": "Las secciones tachadas no aparecen en la web publicada ni en la exportación.",
+  "projects.views_one": "{{count}} visita",
+  "projects.views_other": "{{count}} visitas",
+  "projects.clicks_one": "{{count}} clic",
+  "projects.clicks_other": "{{count}} clics"
 }

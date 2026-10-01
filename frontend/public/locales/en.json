@@ -213,9 +213,11 @@
   "editPage.sections.contact": "Contact",
   "editPage.sections.footer": "Footer",
   "themeselector.dark_mode": "Dark mode",
-  "projects.views": "{{count}} views",
-  "projects.clicks": "{{count}} clicks",
   "projects.last_visit": "Last visit: {{date}}",
   "projects.no_visits": "No visits yet",
-  "editPage.hidden_hint": "Crossed-out sections are hidden from the published site and the export."
+  "editPage.hidden_hint": "Crossed-out sections are hidden from the published site and the export.",
+  "projects.views_one": "{{count}} view",
+  "projects.views_other": "{{count}} views",
+  "projects.clicks_one": "{{count}} click",
+  "projects.clicks_other": "{{count}} clicks"
 }

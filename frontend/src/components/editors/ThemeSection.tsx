@@ -59,6 +59,16 @@ export default function ThemeSection({ theme, onChange }: Props) {
         </div>
       </div>
 
+      <label className="flex items-center gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={Boolean(theme.darkMode)}
+          onChange={(e) => onChange("config.theme.darkMode", e.target.checked)}
+          className="w-4 h-4 rounded border-gray-300"
+        />
+        <span className="text-sm font-medium text-gray-700">{t("themeselector.dark_mode")}</span>
+      </label>
+
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           {t("themeselector.font")}

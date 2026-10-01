@@ -142,7 +142,6 @@
   "contactsection.email": "Email",
   "contactsection.phone": "Phone",
   "contactsection.address": "Address",
-  "contactsection.form_enabled": "Enable contact form",
   "footersection.title": "Footer",
   "footersection.text": "Footer text",
   "footersection.links": "Links",
@@ -212,5 +211,11 @@
   "editPage.sections.inspiration": "Inspiration",
   "editPage.sections.program": "Program",
   "editPage.sections.contact": "Contact",
-  "editPage.sections.footer": "Footer"
+  "editPage.sections.footer": "Footer",
+  "themeselector.dark_mode": "Dark mode",
+  "projects.views": "{{count}} views",
+  "projects.clicks": "{{count}} clicks",
+  "projects.last_visit": "Last visit: {{date}}",
+  "projects.no_visits": "No visits yet",
+  "editPage.hidden_hint": "Crossed-out sections are hidden from the published site and the export."
 }

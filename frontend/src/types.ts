@@ -79,7 +79,6 @@ export type SiteConfig = {
     email: string;
     phone: string;
     address: string;
-    formEnabled: boolean;
   };
   footer: {
     text: string;
@@ -89,18 +88,29 @@ export type SiteConfig = {
 
 export type SectionKey = Exclude<keyof SiteConfig, "theme">;
 
+/** Secciones que se pueden ocultar en la web generada (la marca va en la cabecera). */
+export type HideableSection = Exclude<SectionKey, "brand">;
+
+export type ProjectStats = {
+  views: number;
+  clicks: number;
+  lastAccess: string | null;
+};
+
 export type Project = {
   _id: string;
   name: string;
   publicId: string;
   view: string;
-  hiddenSections: SectionKey[];
+  hiddenSections: HideableSection[];
   createdAt: string;
   updatedAt: string;
   config: SiteConfig;
 };
 
-export type ProjectSummary = Pick<Project, "_id" | "name" | "publicId" | "createdAt" | "updatedAt">;
+export type ProjectSummary = Pick<Project, "_id" | "name" | "publicId" | "createdAt" | "updatedAt"> & {
+  stats: ProjectStats;
+};
 
 export type BaseTemplate = {
   _id: string;

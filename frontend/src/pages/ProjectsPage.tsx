@@ -111,6 +111,7 @@ export default function ProjectsPage() {
                 publicId={project.publicId}
                 name={project.name}
                 createdAt={project.createdAt}
+                stats={project.stats}
               />
             ))}
           </div>

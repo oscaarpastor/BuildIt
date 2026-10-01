@@ -18,7 +18,7 @@ import ContactSection from "../components/editors/ContactSection";
 import FooterSection from "../components/editors/FooterSection";
 import { api, ApiError, downloadFile, siteUrl } from "../lib/api";
 import { errorKey } from "../lib/errors";
-import type { Project, SectionKey } from "../types";
+import type { HideableSection, Project, SectionKey } from "../types";
 
 function setNestedValue<T>(obj: T, path: string, value: unknown): T {
   const keys = path.split(".");
@@ -37,8 +37,7 @@ function setNestedValue<T>(obj: T, path: string, value: unknown): T {
   return newObj;
 }
 
-const SECTION_KEYS: SectionKey[] = [
-  "brand",
+const HIDEABLE_SECTIONS: HideableSection[] = [
   "hero",
   "about",
   "features",
@@ -54,10 +53,11 @@ const SECTION_KEYS: SectionKey[] = [
   "footer",
 ];
 
+// Vacía = sin texto en ningún campo, también en objetos anidados (p. ej. program.cta1).
 const isEmpty = (section: unknown): boolean => {
-  if (section == null) return true;
+  if (section == null || section === "") return true;
   if (Array.isArray(section)) return section.length === 0;
-  if (typeof section === "object") return Object.values(section).every((val) => val === "" || val == null);
+  if (typeof section === "object") return Object.values(section).every(isEmpty);
   return false;
 };
 
@@ -74,7 +74,6 @@ export default function EditProjectPage() {
   const [saveError, setSaveError] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [iframeKey, setIframeKey] = useState(Date.now());
-  const [hiddenSections, setHiddenSections] = useState<Set<string>>(new Set());
   const [showSectionToggle, setShowSectionToggle] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -96,7 +95,7 @@ export default function EditProjectPage() {
       try {
         await api<Project>(`/api/projects/${id}`, {
           method: "PUT",
-          body: { name: data.name, config: data.config },
+          body: { name: data.name, config: data.config, hiddenSections: data.hiddenSections },
         });
         setSaveState("saved");
         setIframeKey(Date.now());
@@ -149,13 +148,17 @@ export default function EditProjectPage() {
     }
   };
 
-  const toggleSection = (key: string) => {
-    setHiddenSections((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+  // Ocultar o mostrar una sección en la web generada; se guarda al momento.
+  const toggleSection = (key: HideableSection) => {
+    if (!project) return;
+    const hidden = project.hiddenSections ?? [];
+    const updated: Project = {
+      ...project,
+      hiddenSections: hidden.includes(key) ? hidden.filter((k) => k !== key) : [...hidden, key],
+    };
+    setProject(updated);
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    save(updated);
   };
 
   if (loading) return <p className="p-6">{t("editPage.loading")}</p>;
@@ -171,6 +174,7 @@ export default function EditProjectPage() {
   }
 
   const { config } = project;
+  const hiddenSections = new Set<SectionKey>(project.hiddenSections ?? []);
   const visible = (key: SectionKey) => !hiddenSections.has(key) && !isEmpty(config[key]);
 
   return (
@@ -242,8 +246,10 @@ export default function EditProjectPage() {
             {showSectionToggle ? "▼" : "▶"} {t("editPage.toggle_sections")}
           </button>
           {showSectionToggle && (
+            <>
+            <p className="mt-2 text-xs text-gray-500">{t("editPage.hidden_hint")}</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {SECTION_KEYS.filter((key) => !isEmpty(config[key])).map((key) => (
+              {HIDEABLE_SECTIONS.filter((key) => !isEmpty(config[key])).map((key) => (
                 <button
                   key={key}
                   onClick={() => toggleSection(key)}
@@ -258,6 +264,7 @@ export default function EditProjectPage() {
                 </button>
               ))}
             </div>
+            </>
           )}
         </div>
 

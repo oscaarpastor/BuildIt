@@ -33,18 +33,19 @@
         <span class="text-2xl font-bold tracking-tight"><%= config.brand.name %></span>
       </div>
       <nav class="hidden md:flex gap-6 text-sm font-medium">
-        <a href="#hero">Inicio</a>
-        <a href="#about">Nosotros</a>
-        <a href="#features">Experiencia</a>
-        <a href="#products">Carta</a>
-        <a href="#gallery">Galeria</a>
-        <a href="#testimonials">Resenas</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contact">Reservas</a>
+        <% if (show("hero")) { %><a href="#hero">Inicio</a><% } %>
+        <% if (show("about")) { %><a href="#about">Nosotros</a><% } %>
+        <% if (show("features")) { %><a href="#features">Experiencia</a><% } %>
+        <% if (show("products")) { %><a href="#products">Carta</a><% } %>
+        <% if (show("gallery")) { %><a href="#gallery">Galeria</a><% } %>
+        <% if (show("testimonials")) { %><a href="#testimonials">Resenas</a><% } %>
+        <% if (show("faqs")) { %><a href="#faq">FAQ</a><% } %>
+        <% if (show("contact")) { %><a href="#contact">Reservas</a><% } %>
       </nav>
     </header>
 
     <main class="space-y-24">
+      <% if (show("hero")) { %>
       <section id="hero" class="text-center px-6 py-36 relative overflow-hidden rounded-b-[3rem]" style="background: linear-gradient(135deg, rgba(180,83,9,0.85), rgba(146,64,14,0.9)), linear-gradient(to bottom, #1c1917, #292524)">
         <div class="relative z-10">
           <p class="text-amber-300 uppercase tracking-[0.3em] text-sm mb-4 font-medium">Bienvenidos a</p>
@@ -55,7 +56,9 @@
           </a>
         </div>
       </section>
+      <% } %>
 
+      <% if (show("about")) { %>
       <section id="about" class="px-6 py-20 max-w-7xl mx-auto flex flex-col md:flex-row gap-12 items-center">
         <div class="w-full md:w-1/2">
           <div class="aspect-[4/3] rounded-2xl bg-gradient-to-br from-amber-100 to-amber-200 shadow-xl flex items-center justify-center">
@@ -68,7 +71,9 @@
           <p class="text-lg text-gray-600 leading-relaxed"><%= config.about.content %></p>
         </div>
       </section>
+      <% } %>
 
+      <% if (show("features")) { %>
       <section id="features" class="px-6 py-20" style="background: linear-gradient(to right, #fffbeb, #fef3c7)">
         <div class="max-w-7xl mx-auto">
           <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold text-center">La Experiencia</p>
@@ -84,7 +89,9 @@
           </div>
         </div>
       </section>
+      <% } %>
 
+      <% if (show("products")) { %>
       <section id="products" class="px-6 py-20">
         <div class="max-w-5xl mx-auto">
           <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold text-center">Nuestra Carta</p>
@@ -107,7 +114,9 @@
           </div>
         </div>
       </section>
+      <% } %>
 
+      <% if (show("gallery")) { %>
       <section id="gallery" class="px-6 py-20 bg-gray-50">
         <div class="max-w-6xl mx-auto">
           <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold text-center">Galeria</p>
@@ -125,7 +134,9 @@
           </div>
         </div>
       </section>
+      <% } %>
 
+      <% if (show("testimonials")) { %>
       <section id="testimonials" class="px-6 py-20">
         <div class="max-w-7xl mx-auto">
           <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold text-center">Opiniones</p>
@@ -146,7 +157,9 @@
           </div>
         </div>
       </section>
+      <% } %>
 
+      <% if (show("faqs")) { %>
       <section id="faq" class="px-6 py-20 bg-amber-50">
         <div class="max-w-4xl mx-auto">
           <h2 class="text-4xl font-bold text-center mb-12">Preguntas Frecuentes</h2>
@@ -160,7 +173,9 @@
           </div>
         </div>
       </section>
+      <% } %>
 
+      <% if (show("contact")) { %>
       <section id="contact" class="px-6 py-20">
         <div class="max-w-4xl mx-auto text-center">
           <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold">Reservas</p>
@@ -189,8 +204,10 @@
           </div>
         </div>
       </section>
+      <% } %>
     </main>
 
+    <% if (show("footer")) { %>
     <footer class="bg-stone-900 text-white px-6 py-12 mt-24">
       <div class="max-w-6xl mx-auto text-center">
         <h3 class="font-bold text-2xl mb-3"><%= config.brand.name %></h3>
@@ -202,6 +219,7 @@
         </div>
       </div>
     </footer>
+    <% } %>
 
     <a href="#hero" class="fixed bottom-6 right-6 bg-[<%= config.theme.colorPrimary %>] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
     <% if (previewMode) { %></div><% } %>

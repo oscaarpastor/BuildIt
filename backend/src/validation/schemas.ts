@@ -18,8 +18,8 @@ const media = z
 const color = z.string().refine(isSafeColor, "Color no válido: usa el formato #rrggbb");
 const list = <T extends z.ZodType>(item: T) => z.array(item).max(50).default([]);
 
+// Secciones que se pueden ocultar en la web generada (la marca va en la cabecera).
 export const SECTION_KEYS = [
-  "brand",
   "hero",
   "about",
   "features",

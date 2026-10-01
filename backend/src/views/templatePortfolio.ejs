@@ -28,18 +28,19 @@
         <span class="text-2xl font-extrabold tracking-tight"><%= config.brand.name %></span>
       </div>
       <nav class="hidden md:flex gap-6 text-sm font-medium">
-        <a href="#hero">Inicio</a>
-        <a href="#about">Sobre mí</a>
-        <a href="#features">Habilidades</a>
-        <a href="#gallery">Trabajos</a>
-        <a href="#video">Vídeo</a>
-        <a href="#testimonials">Opiniones</a>
-        <a href="#contact">Contacto</a>
+        <% if (show("hero")) { %><a href="#hero">Inicio</a><% } %>
+        <% if (show("about")) { %><a href="#about">Sobre mí</a><% } %>
+        <% if (show("features")) { %><a href="#features">Habilidades</a><% } %>
+        <% if (show("gallery")) { %><a href="#gallery">Trabajos</a><% } %>
+        <% if (show("video")) { %><a href="#video">Vídeo</a><% } %>
+        <% if (show("testimonials")) { %><a href="#testimonials">Opiniones</a><% } %>
+        <% if (show("contact")) { %><a href="#contact">Contacto</a><% } %>
       </nav>
     </header>
 
     <main class="space-y-24">
       <!-- HERO -->
+      <% if (show("hero")) { %>
       <section id="hero" class="text-center px-6 py-32 bg-cover bg-center rounded-b-[3rem] shadow-xl" style="<%= heroStyle %>">
         <h1 class="text-5xl font-extrabold mb-4 text-white drop-shadow-xl"><%= config.hero.title %></h1>
         <p class="text-xl mb-6 text-white drop-shadow-md"><%= config.hero.subtitle %></p>
@@ -47,8 +48,10 @@
           <%= config.hero.ctaText %>
         </a>
       </section>
+      <% } %>
 
       <!-- ABOUT -->
+      <% if (show("about")) { %>
       <section id="about" class="px-6 py-20 max-w-7xl mx-auto flex flex-col md:flex-row gap-10 items-center">
         <img src="<%= config.about.image %>" alt="Imagen" class="w-full md:w-1/2 rounded-2xl shadow" />
         <div class="w-full md:w-1/2">
@@ -56,8 +59,10 @@
           <p class="text-lg text-gray-700"><%= config.about.content %></p>
         </div>
       </section>
+      <% } %>
 
       <!-- FEATURES -->
+      <% if (show("features")) { %>
       <section id="features" class="px-6 py-20 bg-[<%= config.theme.colorSecondary %>] text-white">
         <h2 class="text-3xl font-semibold text-center mb-10">Habilidades</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
@@ -70,8 +75,10 @@
           <% }) %>
         </div>
       </section>
+      <% } %>
 
       <!-- GALLERY -->
+      <% if (show("gallery")) { %>
       <section id="gallery" class="px-6 py-20 bg-gray-100">
         <h2 class="text-3xl font-semibold text-center mb-10">Mis trabajos</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
@@ -80,16 +87,20 @@
           <% }) %>
         </div>
       </section>
+      <% } %>
 
       <!-- VIDEO -->
+      <% if (show("video")) { %>
       <section id="video" class="px-6 py-20">
         <h2 class="text-3xl font-semibold text-center mb-10">Mi presentación</h2>
         <div class="flex justify-center">
           <iframe width="800" height="450" src="<%= config.video.url %>" frameborder="0" allowfullscreen class="rounded-xl shadow"></iframe>
         </div>
       </section>
+      <% } %>
 
       <!-- TESTIMONIALS -->
+      <% if (show("testimonials")) { %>
       <section id="testimonials" class="px-6">
         <div class="max-w-7xl mx-auto">
           <h2 class="text-3xl font-semibold text-center mb-10">Opiniones</h2>
@@ -104,8 +115,10 @@
           </div>
         </div>
       </section>
+      <% } %>
 
       <!-- CONTACT -->
+      <% if (show("contact")) { %>
       <section id="contact" class="px-6">
         <div class="max-w-4xl mx-auto text-center bg-white rounded-xl shadow p-10">
           <h2 class="text-3xl font-semibold mb-6">Contacto</h2>
@@ -114,15 +127,18 @@
           <p>Dirección: <%= config.contact.address %></p>
         </div>
       </section>
+      <% } %>
     </main>
 
     <!-- FOOTER -->
+    <% if (show("footer")) { %>
     <footer class="bg-[<%= config.theme.colorPrimary %>] text-white px-6 py-10 mt-24">
       <div class="max-w-6xl mx-auto text-center">
         <h3 class="font-bold text-lg mb-2"><%= config.brand.name %></h3>
         <p class="text-sm"><%= config.footer.text %></p>
       </div>
     </footer>
+    <% } %>
 
     <a href="#hero" class="fixed bottom-6 right-6 bg-[<%= config.theme.colorPrimary %>] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
     <% if (previewMode) { %></div><% } %>

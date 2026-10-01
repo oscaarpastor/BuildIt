@@ -10,7 +10,7 @@ const projectSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
     originTemplate: { type: mongoose.Schema.Types.ObjectId, ref: "BaseTemplate" },
-    view: { type: String, default: "template" },
+    view: { type: String, default: "templateStartup" },
     publicId: { type: String, required: true, unique: true, default: newPublicId },
     hiddenSections: { type: [String], default: [] },
     config: siteConfigDefinition,

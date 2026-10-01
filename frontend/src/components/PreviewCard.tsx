@@ -2,15 +2,17 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { shareUrl, siteUrl } from "../lib/api";
+import type { ProjectStats } from "../types";
 
 type PreviewCardProps = {
   id: string;
   publicId: string;
   name: string;
   createdAt: string;
+  stats: ProjectStats;
 };
 
-export function PreviewCard({ id, publicId, name, createdAt }: PreviewCardProps) {
+export function PreviewCard({ id, publicId, name, createdAt, stats }: PreviewCardProps) {
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
@@ -46,7 +48,18 @@ export function PreviewCard({ id, publicId, name, createdAt }: PreviewCardProps)
 
       <div>
         <h4 className="text-lg font-bold truncate">{name}</h4>
-        <p className="text-sm text-gray-500 mb-3">{new Date(createdAt).toLocaleDateString(i18n.language)}</p>
+        <p className="text-sm text-gray-500">{new Date(createdAt).toLocaleDateString(i18n.language)}</p>
+
+        <div className="text-xs text-gray-600 mt-2 mb-3" data-testid="project-stats">
+          <span>👁 {t("projects.views", { count: stats.views })}</span>
+          <span className="mx-2">·</span>
+          <span>🖱 {t("projects.clicks", { count: stats.clicks })}</span>
+          <p className="text-gray-400 mt-1">
+            {stats.lastAccess
+              ? t("projects.last_visit", { date: new Date(stats.lastAccess).toLocaleString(i18n.language) })
+              : t("projects.no_visits")}
+          </p>
+        </div>
 
         <div className="flex flex-col gap-2">
           <a

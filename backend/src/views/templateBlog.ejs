@@ -29,18 +29,19 @@
           <span class="text-xl font-bold tracking-tight"><%= config.brand.name %></span>
         </div>
         <nav class="hidden md:flex gap-5 text-sm font-medium text-gray-600">
-          <a href="#hero">Inicio</a>
-          <a href="#about">Sobre mí</a>
-          <a href="#gallery">Galería</a>
-          <a href="#video">Vídeo</a>
-          <a href="#testimonials">Opiniones</a>
-          <a href="#contact">Contacto</a>
+          <% if (show("hero")) { %><a href="#hero">Inicio</a><% } %>
+          <% if (show("about")) { %><a href="#about">Sobre mí</a><% } %>
+          <% if (show("gallery")) { %><a href="#gallery">Galería</a><% } %>
+          <% if (show("video")) { %><a href="#video">Vídeo</a><% } %>
+          <% if (show("testimonials")) { %><a href="#testimonials">Opiniones</a><% } %>
+          <% if (show("contact")) { %><a href="#contact">Contacto</a><% } %>
         </nav>
       </div>
     </header>
 
     <main>
       <!-- HERO -->
+      <% if (show("hero")) { %>
       <section id="hero" class="text-center px-6 py-28 bg-[<%= config.theme.colorPrimary %>] text-white">
         <h1 class="text-5xl font-extrabold mb-4 drop-shadow-md"><%= config.hero.title %></h1>
         <p class="text-xl mb-6 drop-shadow-sm"><%= config.hero.subtitle %></p>
@@ -48,16 +49,20 @@
           <%= config.hero.ctaText %>
         </a>
       </section>
+      <% } %>
 
       <!-- VIDEO -->
+      <% if (show("video")) { %>
       <section id="video" class="px-6 py-20">
         <h2 class="text-3xl font-bold text-center mb-10">Mi videoblog</h2>
         <div class="flex justify-center">
           <iframe width="800" height="450" src="<%= config.video.url %>" frameborder="0" allowfullscreen class="rounded-xl shadow"></iframe>
         </div>
       </section>
+      <% } %>
 
       <!-- GALLERY -->
+      <% if (show("gallery")) { %>
       <section id="gallery" class="px-6 py-20 bg-gray-100">
         <h2 class="text-3xl font-bold text-center mb-10">Galería de momentos</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
@@ -66,15 +71,19 @@
           <% }) %>
         </div>
       </section>
+      <% } %>
 
       <!-- ABOUT -->
+      <% if (show("about")) { %>
       <section id="about" class="px-6 py-20 max-w-5xl mx-auto text-center">
         <h2 class="text-3xl font-bold mb-6"><%= config.about.heading %></h2>
         <img src="<%= config.about.image %>" alt="Sobre mí" class="w-40 h-40 rounded-full mx-auto mb-4 object-cover shadow" />
         <p class="text-lg text-gray-700 leading-relaxed"><%= config.about.content %></p>
       </section>
+      <% } %>
 
       <!-- TESTIMONIALS -->
+      <% if (show("testimonials")) { %>
       <section id="testimonials" class="px-6 py-20 bg-white">
         <div class="max-w-7xl mx-auto">
           <h2 class="text-3xl font-bold text-center mb-10">Opiniones de lectores</h2>
@@ -89,8 +98,10 @@
           </div>
         </div>
       </section>
+      <% } %>
 
       <!-- CONTACT -->
+      <% if (show("contact")) { %>
       <section id="contact" class="px-6 py-20 bg-[<%= config.theme.colorSecondary %>]">
         <div class="max-w-4xl mx-auto text-center">
           <h2 class="text-3xl font-bold mb-6">Contacto</h2>
@@ -99,14 +110,17 @@
           <p>Dirección: <%= config.contact.address %></p>
         </div>
       </section>
+      <% } %>
     </main>
 
+    <% if (show("footer")) { %>
     <footer class="bg-[<%= config.theme.colorPrimary %>] text-white px-6 py-10 mt-20">
       <div class="max-w-6xl mx-auto text-center">
         <h3 class="font-bold text-lg mb-2"><%= config.brand.name %></h3>
         <p class="text-sm"><%= config.footer.text %></p>
       </div>
     </footer>
+    <% } %>
 
     <a href="#hero" class="fixed bottom-6 right-6 bg-[<%= config.theme.colorPrimary %>] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
     <% if (previewMode) { %></div><% } %>

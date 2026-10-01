@@ -28,18 +28,19 @@
         <span class="text-xl font-bold"><%= config.brand.name %></span>
       </div>
       <nav class="space-x-4 text-sm font-medium hidden md:block">
-        <a href="#hero">Inicio</a>
-        <a href="#about">Sobre nosotros</a>
-        <a href="#features">Servicios</a>
-        <a href="#products">Planes</a>
-        <a href="#testimonials">Clientes</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contact">Contacto</a>
+        <% if (show("hero")) { %><a href="#hero">Inicio</a><% } %>
+        <% if (show("about")) { %><a href="#about">Sobre nosotros</a><% } %>
+        <% if (show("features")) { %><a href="#features">Servicios</a><% } %>
+        <% if (show("products")) { %><a href="#products">Planes</a><% } %>
+        <% if (show("testimonials")) { %><a href="#testimonials">Clientes</a><% } %>
+        <% if (show("faqs")) { %><a href="#faq">FAQ</a><% } %>
+        <% if (show("contact")) { %><a href="#contact">Contacto</a><% } %>
       </nav>
     </header>
 
     <main>
       <!-- HERO -->
+      <% if (show("hero")) { %>
       <section id="hero" class="text-center px-6 py-32 bg-cover bg-center" style="<%= heroStyle %>">
         <h1 class="text-5xl font-bold mb-4 text-white drop-shadow"><%= config.hero.title %></h1>
         <p class="text-xl mb-6 text-white drop-shadow"><%= config.hero.subtitle %></p>
@@ -47,8 +48,10 @@
           <%= config.hero.ctaText %>
         </a>
       </section>
+      <% } %>
 
       <!-- ABOUT -->
+      <% if (show("about")) { %>
       <section id="about" class="px-6 py-20 max-w-7xl mx-auto flex flex-col md:flex-row gap-10 items-center">
         <img src="<%= config.about.image %>" alt="Sobre nosotros" class="w-full md:w-1/2 rounded shadow" />
         <div class="w-full md:w-1/2">
@@ -56,8 +59,10 @@
           <p class="text-lg"><%= config.about.content %></p>
         </div>
       </section>
+      <% } %>
 
       <!-- FEATURES -->
+      <% if (show("features")) { %>
       <section id="features" class="px-6 py-20 bg-gray-50">
         <h2 class="text-3xl font-semibold text-center mb-10">Nuestros Servicios</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
@@ -70,8 +75,10 @@
           <% }) %>
         </div>
       </section>
+      <% } %>
 
       <!-- PRODUCTS -->
+      <% if (show("products")) { %>
       <section id="products" class="px-6 py-20">
         <h2 class="text-3xl font-semibold text-center mb-10">Nuestros Planes</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
@@ -85,8 +92,10 @@
           <% }) %>
         </div>
       </section>
+      <% } %>
 
       <!-- TESTIMONIALS -->
+      <% if (show("testimonials")) { %>
       <section id="testimonials" class="px-6 py-20 max-w-7xl mx-auto">
         <h2 class="text-3xl font-semibold text-center mb-10">Clientes satisfechos</h2>
         <div class="flex flex-wrap justify-center gap-6">
@@ -99,8 +108,10 @@
           <% }) %>
         </div>
       </section>
+      <% } %>
 
       <!-- FAQ -->
+      <% if (show("faqs")) { %>
       <section id="faq" class="px-6 py-20 max-w-4xl mx-auto">
         <h2 class="text-3xl font-semibold text-center mb-10">Preguntas frecuentes</h2>
         <div class="space-y-6">
@@ -112,8 +123,10 @@
           <% }) %>
         </div>
       </section>
+      <% } %>
 
       <!-- CONTACT -->
+      <% if (show("contact")) { %>
       <section id="contact" class="px-6 py-20">
         <h2 class="text-3xl font-semibold text-center mb-6">Solicita una reunión</h2>
         <div class="text-center mb-6">
@@ -122,15 +135,18 @@
           <p>Dirección: <%= config.contact.address %></p>
         </div>
       </section>
+      <% } %>
     </main>
 
     <!-- FOOTER -->
+    <% if (show("footer")) { %>
     <footer class="bg-[<%= config.theme.colorPrimary %>] text-white px-6 py-10">
       <div class="max-w-6xl mx-auto text-center">
         <h3 class="font-bold text-lg mb-2"><%= config.brand.name %></h3>
         <p class="text-sm"><%= config.footer.text %></p>
       </div>
     </footer>
+    <% } %>
 
     <a href="#hero" class="fixed bottom-6 right-6 bg-[<%= config.theme.colorPrimary %>] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
     <% if (previewMode) { %></div><% } %>

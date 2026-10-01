@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { Project } from "../models/Project";
 import { BaseTemplate } from "../models/BaseTemplate";
 import { Stat } from "../models/Stat";
@@ -20,11 +20,28 @@ async function findOwnedProject(req: Request) {
   return project;
 }
 
+// Lista los proyectos del usuario con sus estadísticas de visitas y clics.
 export const listProjects = async (req: Request, res: Response) => {
   const projects = await Project.find({ user: currentUserId(req) })
     .select("name publicId createdAt updatedAt view")
-    .sort({ createdAt: -1 });
-  res.json(projects);
+    .sort({ createdAt: -1 })
+    .lean();
+  // trusted(): con sanitizeFilter activado, los operadores ($in) escritos por
+  // nosotros deben marcarse como seguros explícitamente.
+  const stats = await Stat.find({
+    project: mongoose.trusted({ $in: projects.map((p) => p._id) }),
+  }).lean();
+  const byProject = new Map(stats.map((s) => [String(s.project), s]));
+
+  res.json(
+    projects.map(({ __v: _v, ...project }) => {
+      const stat = byProject.get(String(project._id));
+      return {
+        ...project,
+        stats: { views: stat?.views ?? 0, clicks: stat?.clicks ?? 0, lastAccess: stat?.lastAccess ?? null },
+      };
+    })
+  );
 };
 
 export const createProject = async (req: Request, res: Response) => {

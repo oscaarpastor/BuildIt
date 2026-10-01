@@ -6,6 +6,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       html { scroll-behavior: smooth; }
+    </style>
+    <style type="text/tailwindcss">
       .section-card { @apply bg-white rounded-3xl shadow-lg p-10; }
     </style>
   </head>
@@ -31,20 +33,21 @@
         <span class="text-2xl font-bold tracking-tight"><%= config.brand.name %></span>
       </div>
       <nav class="hidden md:flex gap-6 text-sm font-medium">
-        <a href="#hero">Inicio</a>
-        <a href="#features">Ventajas</a>
-        <a href="#program">Programa</a>
-        <a href="#products">Productos</a>
-        <a href="#about">Nosotros</a>
-        <a href="#testimonials">Testimonios</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contact">Contacto</a>
+        <% if (show("hero")) { %><a href="#hero">Inicio</a><% } %>
+        <% if (show("features")) { %><a href="#features">Ventajas</a><% } %>
+        <% if (show("program")) { %><a href="#program">Programa</a><% } %>
+        <% if (show("products")) { %><a href="#products">Productos</a><% } %>
+        <% if (show("about")) { %><a href="#about">Nosotros</a><% } %>
+        <% if (show("testimonials")) { %><a href="#testimonials">Testimonios</a><% } %>
+        <% if (show("faqs")) { %><a href="#faq">FAQ</a><% } %>
+        <% if (show("contact")) { %><a href="#contact">Contacto</a><% } %>
       </nav>
     </header>
 
     <main class="space-y-24">
 
       <!-- HERO -->
+      <% if (show("hero")) { %>
       <section id="hero" class="text-center px-6 py-32 bg-cover bg-center rounded-b-[3rem] shadow-xl" style="<%= heroStyle %>">
         <h1 class="text-5xl font-extrabold mb-4 text-white drop-shadow"><%= config.hero.title %></h1>
         <p class="text-xl mb-6 text-white drop-shadow-md"><%= config.hero.subtitle %></p>
@@ -52,8 +55,10 @@
           <%= config.hero.ctaText %>
         </a>
       </section>
+      <% } %>
 
       <!-- FEATURES -->
+      <% if (show("features")) { %>
       <section id="features" class="px-6">
         <div class="section-card max-w-7xl mx-auto">
           <h2 class="text-3xl font-semibold text-center mb-10">Ventajas</h2>
@@ -68,8 +73,10 @@
           </div>
         </div>
       </section>
+      <% } %>
 
       <!-- PROGRAM -->
+      <% if (show("program")) { %>
       <section id="program" class="bg-gray-900 text-white px-6 py-20">
         <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
           <div class="w-full lg:w-1/2">
@@ -94,8 +101,10 @@
           </div>
         </div>
       </section>
+      <% } %>
 
       <!-- PRODUCTS -->
+      <% if (show("products")) { %>
       <section id="products" class="px-6">
         <div class="section-card max-w-6xl mx-auto">
           <h2 class="text-3xl font-semibold text-center mb-10">Nuestros Productos</h2>
@@ -111,8 +120,10 @@
           </div>
         </div>
       </section>
+      <% } %>
 
       <!-- ABOUT -->
+      <% if (show("about")) { %>
       <section id="about" class="px-6">
         <div class="section-card max-w-7xl mx-auto flex flex-col md:flex-row gap-10 items-center">
           <img src="<%= config.about.image %>" alt="Imagen" class="w-full md:w-1/2 rounded-xl shadow-md" />
@@ -122,8 +133,10 @@
           </div>
         </div>
       </section>
+      <% } %>
 
       <!-- TESTIMONIALS -->
+      <% if (show("testimonials")) { %>
       <section id="testimonials" class="px-6">
         <div class="section-card max-w-7xl mx-auto">
           <h2 class="text-3xl font-semibold text-center mb-10">Testimonios</h2>
@@ -138,8 +151,10 @@
           </div>
         </div>
       </section>
+      <% } %>
 
       <!-- FAQ -->
+      <% if (show("faqs")) { %>
       <section id="faq" class="px-6">
         <div class="section-card max-w-4xl mx-auto">
           <h2 class="text-3xl font-semibold text-center mb-10">Preguntas frecuentes</h2>
@@ -153,8 +168,10 @@
           </div>
         </div>
       </section>
+      <% } %>
 
       <!-- CONTACT -->
+      <% if (show("contact")) { %>
       <section id="contact" class="px-6">
         <div class="section-card max-w-4xl mx-auto text-center">
           <h2 class="text-3xl font-semibold mb-6">Contacto</h2>
@@ -163,15 +180,18 @@
           <p>Dirección: <%= config.contact.address %></p>
         </div>
       </section>
+      <% } %>
     </main>
 
     <!-- FOOTER -->
+    <% if (show("footer")) { %>
     <footer class="bg-[<%= config.theme.colorPrimary %>] text-white px-6 py-10 mt-24">
       <div class="max-w-6xl mx-auto text-center">
         <h3 class="font-bold text-lg mb-2"><%= config.brand.name %></h3>
         <p class="text-sm"><%= config.footer.text %></p>
       </div>
     </footer>
+    <% } %>
 
     <a href="#hero" class="fixed bottom-6 right-6 bg-[<%= config.theme.colorPrimary %>] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
     <% if (previewMode) { %></div><% } %>

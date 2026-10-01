@@ -1,31 +1,37 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "ts-node-dev src/index.ts",
-    "start": "ts-node src/index.ts",
-    "build": "tsc",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc && node scripts/copy-views.js",
+    "start": "NODE_ENV=production node dist/index.js",
     "seed": "ts-node src/seed.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "seed:prod": "node dist/seed.js",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "API de Build It: usuarios, proyectos y render de las webs generadas",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^16.6.1",
     "ejs": "^3.1.10",
     "express": "^5.2.1",
-    "mongoose": "^8.24.4"
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.24.4",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.19",
     "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.20.4",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",

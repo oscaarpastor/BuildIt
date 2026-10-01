@@ -1,30 +1,23 @@
 import express from "express";
 import {
   createProject,
-  getAllProjects,
-  getProjectById,
-  updateProject,
   deleteProject,
-  previewProject,
-  createProjectFromTemplate,
-  getProjectsByUser
+  exportProject,
+  getProject,
+  listProjects,
+  updateProject,
 } from "../controllers/project";
-
-import { exportProjectHtml } from "../controllers/exportController";
+import { requireAuth } from "../middleware/auth";
 
 const router = express.Router();
 
-// Rutas de proyectos
+router.use(requireAuth);
+
+router.get("/", listProjects);
 router.post("/", createProject);
-router.get("/", getAllProjects);
-router.get("/:id", getProjectById);
+router.get("/:id", getProject);
 router.put("/:id", updateProject);
 router.delete("/:id", deleteProject);
-router.get("/:id/preview", previewProject);
-router.post("/from-template", createProjectFromTemplate);
-router.get("/user/:userId", getProjectsByUser);
-
-// ✅ Exportar HTML
-router.get("/:id/export", exportProjectHtml);
+router.get("/:id/export", exportProject);
 
 export default router;

@@ -2,129 +2,76 @@ import { Request, Response } from "express";
 import { isValidObjectId } from "mongoose";
 import { Project } from "../models/Project";
 import { BaseTemplate } from "../models/BaseTemplate";
+import { Stat } from "../models/Stat";
+import { currentUserId } from "../middleware/auth";
+import { HttpError, notFound } from "../middleware/errors";
+import { renderSite } from "../lib/render";
+import { createProjectSchema, updateProjectSchema } from "../validation/schemas";
+
+const PROJECT_NOT_FOUND = "Proyecto no encontrado";
+
+// Devuelve el proyecto solo si pertenece al usuario autenticado. Si no existe
+// o es de otra persona se responde igual (404) para no revelar su existencia.
+async function findOwnedProject(req: Request) {
+  const { id } = req.params;
+  if (typeof id !== "string" || !isValidObjectId(id)) throw notFound(PROJECT_NOT_FOUND);
+  const project = await Project.findOne({ _id: id, user: currentUserId(req) });
+  if (!project) throw notFound(PROJECT_NOT_FOUND);
+  return project;
+}
+
+export const listProjects = async (req: Request, res: Response) => {
+  const projects = await Project.find({ user: currentUserId(req) })
+    .select("name publicId createdAt updatedAt view")
+    .sort({ createdAt: -1 });
+  res.json(projects);
+};
 
 export const createProject = async (req: Request, res: Response) => {
-  try {
-    const { name, user, config } = req.body;
-    const project = new Project({ name, user, config });
-    await project.save();
-    res.status(201).json(project);
-  } catch (error: any) {
-    res.status(500).json({ error: "Error creating project" });
-  }
+  const { templateId, name } = createProjectSchema.parse(req.body);
+
+  const template = await BaseTemplate.findById(templateId);
+  if (!template) throw new HttpError(400, "Plantilla no encontrada");
+
+  const project = await Project.create({
+    name,
+    user: currentUserId(req),
+    config: template.config,
+    originTemplate: template._id,
+    view: template.view,
+  });
+  res.status(201).json(project);
 };
 
-export const getAllProjects = async (_req: Request, res: Response) => {
-  try {
-    const projects = await Project.find().populate("user");
-    res.json(projects);
-  } catch (error: any) {
-    res.status(500).json({ error: "Error fetching projects" });
-  }
-};
-
-export const getProjectById = async (req: Request, res: Response) => {
-  try {
-    const project = await Project.findById(req.params.id).populate("user");
-    if (!project) {
-      res.status(404).json({ message: "Proyecto no encontrado" });
-      return;
-    }
-    res.json(project);
-  } catch (error: any) {
-    res.status(500).json({ error: "Error fetching project" });
-  }
+export const getProject = async (req: Request, res: Response) => {
+  res.json(await findOwnedProject(req));
 };
 
 export const updateProject = async (req: Request, res: Response) => {
-  try {
-    const updated = await Project.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    if (!updated) {
-      res.status(404).json({ message: "Proyecto no encontrado" });
-      return;
-    }
-    res.json(updated);
-  } catch (error: any) {
-    res.status(500).json({ error: "Error updating project" });
-  }
+  const data = updateProjectSchema.parse(req.body);
+  const project = await findOwnedProject(req);
+
+  if (data.name !== undefined) project.name = data.name;
+  if (data.config !== undefined) project.set("config", data.config);
+  if (data.hiddenSections !== undefined) project.hiddenSections = data.hiddenSections;
+
+  await project.save();
+  res.json(project);
 };
 
 export const deleteProject = async (req: Request, res: Response) => {
-  try {
-    await Project.findByIdAndDelete(req.params.id);
-    res.status(204).send();
-  } catch (error: any) {
-    res.status(500).json({ error: "Error deleting project" });
-  }
+  const project = await findOwnedProject(req);
+  await Promise.all([project.deleteOne(), Stat.deleteOne({ project: project._id })]);
+  res.status(204).send();
 };
 
-export const previewProject = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const isPreview = req.query.preview === "true";
+export const exportProject = async (req: Request, res: Response) => {
+  const project = await findOwnedProject(req);
+  // Se usa la vista guardada en el propio proyecto: no depende de que la
+  // plantilla base siga existiendo (E5a).
+  const html = await renderSite(project, "export");
+  const filename = project.name.replace(/[^\w.-]+/g, "_").slice(0, 80) || "web";
 
-    const project = await Project.findById(id);
-    if (!project) {
-      res.status(404).send("Proyecto no encontrado");
-      return;
-    }
-
-    const data = {
-      config: project.config,
-      background: "#ffffff",
-      textColor: "#111827",
-      previewMode: isPreview,
-    };
-
-    res.render(project.view || "template", data);
-  } catch (error: any) {
-    res.status(500).send("Error al renderizar el proyecto");
-  }
-};
-
-export const createProjectFromTemplate = async (req: Request, res: Response) => {
-  try {
-    const { templateId, userId, name } = req.body;
-
-    if (!templateId || !userId || !name) {
-      res.status(400).json({ message: "Faltan datos necesarios" });
-      return;
-    }
-
-    if (!isValidObjectId(templateId) || !isValidObjectId(userId)) {
-      res.status(400).json({ message: "Identificador de plantilla o usuario no válido" });
-      return;
-    }
-
-    const template = await BaseTemplate.findById(templateId);
-    if (!template) {
-      res.status(404).json({ message: "Plantilla no encontrada" });
-      return;
-    }
-
-    const project = new Project({
-      name,
-      user: userId,
-      config: template.config,
-      originTemplate: template._id,
-      view: template.view || "template"
-    });    
-
-    await project.save();
-    res.status(201).json(project);
-  } catch (error: any) {
-    res.status(500).json({ message: "Error al crear el proyecto desde plantilla" });
-  }
-};
-
-export const getProjectsByUser = async (req: Request, res: Response) => {
-  try {
-    const { userId } = req.params;
-    const projects = await Project.find({ user: userId }).populate("user");
-    res.json(projects);
-  } catch (error: any) {
-    res.status(500).json({ error: "Error fetching user projects" });
-  }
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}.html"`);
+  res.type("html").send(html);
 };

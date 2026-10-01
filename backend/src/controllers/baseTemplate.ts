@@ -1,121 +1,23 @@
 import { Request, Response } from "express";
+import { isValidObjectId } from "mongoose";
 import { BaseTemplate } from "../models/BaseTemplate";
-import { Project } from "../models/Project";
+import { notFound } from "../middleware/errors";
+import { renderSite } from "../lib/render";
 
-export const createBaseTemplate = async (req: Request, res: Response) => {
-  try {
-    const { name, description, previewImage, config, view} = req.body;
-    const template = new BaseTemplate({
-      name,
-      description,
-      previewImage,
-      config,
-      view: view || "template"
-    });
-    await template.save();
-    res.status(201).json(template);
-  } catch (error: any) {
-    res.status(500).json({ error: "Error al crear baseTemplate" });
-  }
-};
+// Las plantillas base solo se gestionan con el seed: la API es de solo lectura.
 
-export const getAllBaseTemplates = async (_req: Request, res: Response) => {
-  try {
-    const templates = await BaseTemplate.find();
-    res.json(templates);
-  } catch (error: any) {
-    res.status(500).json({ error: "Error al obtener baseTemplates" });
-  }
-};
-
-export const getBaseTemplateById = async (req: Request, res: Response) => {
-  try {
-    const template = await BaseTemplate.findById(req.params.id);
-    if (!template) {
-      res.status(404).json({ message: "BaseTemplate no encontrado" });
-      return;
-    }
-    res.json(template);
-  } catch (error: any) {
-    res.status(500).json({ error: "Error al obtener baseTemplate" });
-  }
-};
-
-export const updateBaseTemplate = async (req: Request, res: Response) => {
-  try {
-    const updated = await BaseTemplate.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    if (!updated) {
-      res.status(404).json({ message: "BaseTemplate no encontrado" });
-      return;
-    }
-    res.json(updated);
-  } catch (error: any) {
-    res.status(500).json({ error: "Error al actualizar baseTemplate" });
-  }
-};
-
-export const deleteBaseTemplate = async (req: Request, res: Response) => {
-  try {
-    await BaseTemplate.findByIdAndDelete(req.params.id);
-    res.status(204).send();
-  } catch (error: any) {
-    res.status(500).json({ error: "Error al eliminar baseTemplate" });
-  }
-};
-
-export const cloneBaseTemplateToProject = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const { id } = req.params;
-    const { userId, name } = req.body;
-
-    const template = await BaseTemplate.findById(id);
-    if (!template) {
-      res.status(404).json({ message: "BaseTemplate no encontrado" });
-      return;
-    }
-
-    const newProject = new Project({
-      name: name || template.name,
-      user: userId,
-      config: template.config,
-      originTemplate: template._id,
-      view: template.view || "template",
-    });
-
-    await newProject.save();
-    res.status(201).json(newProject);
-  } catch (error: any) {
-    console.error("Error al clonar baseTemplate:", error);
-    res.status(500).json({ error: "Error al clonar baseTemplate" });
-  }
+export const listBaseTemplates = async (_req: Request, res: Response) => {
+  const templates = await BaseTemplate.find()
+    .select("name description icon gradient view")
+    .sort({ createdAt: 1 });
+  res.json(templates);
 };
 
 export const previewBaseTemplate = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const template = await BaseTemplate.findById(id);
+  const { id } = req.params;
+  if (typeof id !== "string" || !isValidObjectId(id)) throw notFound("Plantilla no encontrada");
+  const template = await BaseTemplate.findById(id);
+  if (!template) throw notFound("Plantilla no encontrada");
 
-    if (!template) {
-      res.status(404).send("BaseTemplate no encontrada");
-      return;
-    }
-
-    const data = {
-      config: template.config,
-      background: "#ffffff",
-      textColor: "#111827",
-      previewMode: req.query.preview === "true", // ✅ Se añade el modo de previsualización
-    };
-
-    res.render(template.view || "template", data);
-  } catch (error: any) {
-    res.status(500).send("Error al renderizar la plantilla");
-  }
+  res.type("html").send(await renderSite(template, "public"));
 };

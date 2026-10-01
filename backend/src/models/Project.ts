@@ -1,121 +1,29 @@
+import crypto from "crypto";
 import mongoose from "mongoose";
+import { siteConfigDefinition } from "./siteConfig";
+
+// Identificador aleatorio para el enlace público (no adivinable, a diferencia del _id).
+export const newPublicId = () => crypto.randomBytes(12).toString("base64url");
 
 const projectSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    name: { type: String, required: true, trim: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
     originTemplate: { type: mongoose.Schema.Types.ObjectId, ref: "BaseTemplate" },
     view: { type: String, default: "template" },
-    
-    config: {
-      theme: {
-        colorPrimary: String,
-        colorSecondary: String,
-        fontFamily: String,
-        darkMode: Boolean,
-      },
-      brand: {
-        name: String,
-        logo: String
-      },
-      hero: {
-        title: String,
-        subtitle: String,
-        backgroundImage: String,
-        ctaText: String,
-        ctaLink: String,
-      },
-      about: {
-        heading: String,
-        content: String,
-        image: String,
-      },
-      features: [
-        {
-          icon: String,
-          title: String,
-          description: String,
-        },
-      ],
-      products: [
-        {
-          title: String,
-          description: String,
-          price: String,
-          image: String,
-        },
-      ],
-      gallery: [
-        {
-          image: String
-        }
-      ],
-      video: {
-        url: String,
-        thumbnail: String
-      },
-      testimonials: [
-        {
-          name: String,
-          quote: String,
-          avatar: String,
-        },
-      ],
-      documentation: [
-        {
-          title: String,
-          url: String
-        }
-      ],
-      faqs: [
-        {
-          question: String,
-          answer: String
-        }
-      ],
-      inspiration: [
-        {
-          category: String,
-          name: String,
-          image: String,
-          link: String,
-          description: String
-        }
-      ],
-      program: {
-        title: String,
-        image: String,
-        reason: String,
-        functioning: String,
-        methodology: String,
-        selection: String,
-        cta1: {
-          text: String,
-          link: String
-        },
-        cta2: {
-          text: String,
-          link: String
-        }
-      },
-      contact: {
-        email: String,
-        phone: String,
-        address: String,
-        formEnabled: Boolean,
-      },
-      footer: {
-        text: String,
-        links: [
-          {
-            label: String,
-            url: String
-          }
-        ]
-      }
-    }
+    publicId: { type: String, required: true, unique: true, default: newPublicId },
+    hiddenSections: { type: [String], default: [] },
+    config: siteConfigDefinition,
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: {
+      transform: (_doc, ret: Record<string, unknown>) => {
+        delete ret.__v;
+        return ret;
+      },
+    },
+  }
 );
 
 export const Project = mongoose.model("Project", projectSchema);

@@ -1,105 +1,28 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { User } from "../models/User";
+import { currentUserId } from "../middleware/auth";
+import { HttpError } from "../middleware/errors";
+import { updateMeSchema } from "../validation/schemas";
 
+// Solo se puede modificar la propia cuenta, y solo nombre, email y contraseña.
+export const updateMe = async (req: Request, res: Response) => {
+  const data = updateMeSchema.parse(req.body);
+  const user = await User.findById(currentUserId(req)).select("+password");
+  if (!user) throw new HttpError(401, "Sesión no válida");
 
-export const createUser = async (req: Request, res: Response) => {
-  try {
-    const user = await User.create(req.body);
-    res.status(201).json(user);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  if (data.email && data.email !== user.email && (await User.exists({ email: data.email }))) {
+    throw new HttpError(409, "Ese email ya está registrado");
   }
-};
 
-export const getUsers = async (_req: Request, res: Response) => {
-  try {
-    const users = await User.find();
-    res.json(users);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  if (data.newPassword) {
+    const ok = await bcrypt.compare(data.currentPassword ?? "", user.password);
+    if (!ok) throw new HttpError(400, "La contraseña actual no es correcta");
+    user.password = data.newPassword; // se cifra en pre("save")
   }
-};
+  if (data.name !== undefined) user.name = data.name;
+  if (data.email !== undefined) user.email = data.email;
 
-export const getUserById = async (req: Request, res: Response) => {
-  try {
-    const user = await User.findById(req.params.id).select("-password");
-    if (!user) {
-      res.status(404).json({ message: "Usuario no encontrado" });
-      return;
-    }
-    res.json(user);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const deleteUser = async (req: Request, res: Response) => {
-  try {
-    await User.findByIdAndDelete(req.params.id);
-    res.status(204).send();
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const updateUser = async (req: Request, res: Response) => {
-  try {
-    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    res.json(updatedUser);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-
-export const loginUser = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      res.status(400).json({ message: "Email y contraseña obligatorios" });
-      return;
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      res.status(401).json({ message: "Usuario no encontrado" });
-      return;
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      res.status(401).json({ message: "Contraseña incorrecta" });
-      return;
-    }
-
-    res.status(200).json({ token: user._id });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-export const getCurrentUser = async (req: Request, res: Response) => {
-  try {
-    const { authorization } = req.headers;
-
-    if (!authorization) {
-      res.status(401).json({ message: "Token no proporcionado" });
-      return;
-    }
-
-    const user = await User.findById(authorization).select("-password");
-
-    if (!user) {
-      res.status(404).json({ message: "Usuario no encontrado" });
-      return;
-    }
-
-    res.status(200).json(user);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
+  await user.save();
+  res.json(user);
 };

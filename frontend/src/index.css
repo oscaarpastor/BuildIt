@@ -7,3 +7,14 @@
   --color-surface: #334155;
   --color-text: #CBD5E1;
 }
+
+/* La app es de tema claro: fijamos fondo y color para que el modo oscuro del
+   navegador no deje texto oscuro sobre fondo oscuro. */
+:root {
+  color-scheme: light;
+}
+
+body {
+  background-color: #ffffff;
+  color: #111827;
+}

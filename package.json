@@ -6,12 +6,17 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "install:all": "npm ci --prefix backend && npm ci --prefix frontend",
+    "install:all": "npm ci --prefix backend && npm ci --prefix frontend && npm ci --prefix e2e",
     "dev:backend": "npm run dev --prefix backend",
     "dev:frontend": "npm run dev --prefix frontend",
     "seed": "npm run seed --prefix backend",
     "build": "npm run build --prefix frontend && node scripts/copy-frontend.mjs && npm run build --prefix backend",
     "start": "npm start --prefix backend",
-    "seed:prod": "npm run seed:prod --prefix backend"
+    "seed:prod": "npm run seed:prod --prefix backend",
+    "db:reset": "npm run db:reset --prefix backend",
+    "test:api": "npm test --prefix backend",
+    "test:e2e": "npm test --prefix e2e",
+    "test": "npm run test:api && npm run test:e2e",
+    "lint": "npm run lint --prefix frontend && npm run typecheck --prefix backend"
   }
 }

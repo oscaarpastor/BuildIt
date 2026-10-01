@@ -10,7 +10,8 @@
     "seed:prod": "node dist/seed.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:reset": "node scripts/reset-db.js"
   },
   "keywords": [],
   "author": "",

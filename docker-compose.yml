@@ -1,29 +1,38 @@
-version: '3.8'
+# Uso:
+#   cp .env.example .env    # y rellena JWT_SECRET
+#   docker compose up -d --build
+#   docker compose run --rm app node dist/seed.js   # cargar plantillas (una vez)
+# La app queda en http://localhost:3000
 
 services:
   mongo:
-    image: mongo:6
+    image: mongo:8.0
     container_name: buildit-mongo
-    ports:
-      - "27017:27017"
+    restart: unless-stopped
     volumes:
       - mongo_data:/data/db
-    environment:
-      MONGO_INITDB_DATABASE: buildit
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  backend:
-    build:
-      context: ./backend
-    container_name: buildit-backend
+  app:
+    build: .
+    container_name: buildit-app
+    restart: unless-stopped
     ports:
       - "3000:3000"
-    depends_on:
-      - mongo
-    volumes:
-      - ./backend:/app
     environment:
-      - MONGODB_URI=mongodb://mongo:27017/buildit
-    command: npm run start
+      NODE_ENV: production
+      PORT: "3000"
+      MONGODB_URI: mongodb://mongo:27017/buildit
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en el archivo .env de la raíz}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+    depends_on:
+      mongo:
+        condition: service_healthy
 
 volumes:
   mongo_data:

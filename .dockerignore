@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+backend/public
+**/.env
+**/.env.*
+!**/.env.example
+.git
+**/.DS_Store
+**/coverage
+**/test-results
+**/playwright-report
+*.pdf

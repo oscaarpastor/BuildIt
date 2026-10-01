@@ -41,7 +41,7 @@ const templates = [
       ],
       inspiration: [],
       program: { title: "From Zero to Launch", image: "", reason: "Most startups fail because of slow execution. We eliminate that bottleneck.", functioning: "Sign up, connect your tools, and start shipping within minutes.", methodology: "Agile-first approach with built-in sprint planning and retrospectives.", selection: "Open to all teams. Enterprise clients get dedicated onboarding support.", cta1: { text: "Get Started", link: "#contact" }, cta2: { text: "Book a Demo", link: "#contact" } },
-      contact: { email: "hello@launchpad.io", phone: "+1 (555) 123-4567", address: "San Francisco, CA", formEnabled: true },
+      contact: { email: "hello@launchpad.io", phone: "+1 (555) 123-4567", address: "San Francisco, CA" },
       footer: { text: "2024 LaunchPad Inc. All rights reserved.", links: [{ label: "Privacy", url: "#" }, { label: "Terms", url: "#" }] }
     }
   },
@@ -73,7 +73,7 @@ const templates = [
       faqs: [],
       inspiration: [],
       program: { title: "", image: "", reason: "", functioning: "", methodology: "", selection: "", cta1: { text: "", link: "" }, cta2: { text: "", link: "" } },
-      contact: { email: "alex@morgandesign.co", phone: "+1 (555) 987-6543", address: "Portland, OR", formEnabled: true },
+      contact: { email: "alex@morgandesign.co", phone: "+1 (555) 987-6543", address: "Portland, OR" },
       footer: { text: "2024 Alex Morgan. Crafted with passion.", links: [{ label: "LinkedIn", url: "#" }, { label: "Dribbble", url: "#" }, { label: "GitHub", url: "#" }] }
     }
   },
@@ -113,7 +113,7 @@ const templates = [
       ],
       inspiration: [],
       program: { title: "", image: "", reason: "", functioning: "", methodology: "", selection: "", cta1: { text: "", link: "" }, cta2: { text: "", link: "" } },
-      contact: { email: "shop@verdestore.com", phone: "+1 (555) 234-5678", address: "Austin, TX", formEnabled: true },
+      contact: { email: "shop@verdestore.com", phone: "+1 (555) 234-5678", address: "Austin, TX" },
       footer: { text: "2024 Verde Store. Fashion for the planet.", links: [{ label: "Shipping", url: "#" }, { label: "Returns", url: "#" }, { label: "Sustainability", url: "#" }] }
     }
   },
@@ -153,7 +153,7 @@ const templates = [
       ],
       inspiration: [],
       program: { title: "", image: "", reason: "", functioning: "", methodology: "", selection: "", cta1: { text: "", link: "" }, cta2: { text: "", link: "" } },
-      contact: { email: "hello@pixelstudio.co", phone: "+1 (555) 345-6789", address: "New York, NY", formEnabled: true },
+      contact: { email: "hello@pixelstudio.co", phone: "+1 (555) 345-6789", address: "New York, NY" },
       footer: { text: "2024 Pixel Studio. Crafting digital experiences.", links: [{ label: "Instagram", url: "#" }, { label: "Behance", url: "#" }, { label: "LinkedIn", url: "#" }] }
     }
   },
@@ -181,7 +181,7 @@ const templates = [
       faqs: [],
       inspiration: [],
       program: { title: "", image: "", reason: "", functioning: "", methodology: "", selection: "", cta1: { text: "", link: "" }, cta2: { text: "", link: "" } },
-      contact: { email: "hello@curiousmind.blog", phone: "", address: "", formEnabled: true },
+      contact: { email: "hello@curiousmind.blog", phone: "", address: "" },
       footer: { text: "2024 The Curious Mind. Written with care.", links: [{ label: "Twitter", url: "#" }, { label: "RSS Feed", url: "#" }] }
     }
   },
@@ -221,7 +221,7 @@ const templates = [
       ],
       inspiration: [],
       program: { title: "", image: "", reason: "", functioning: "", methodology: "", selection: "", cta1: { text: "", link: "" }, cta2: { text: "", link: "" } },
-      contact: { email: "reservas@casadelsol.com", phone: "+1 (555) 456-7890", address: "123 Olive Street, Miami, FL", formEnabled: true },
+      contact: { email: "reservas@casadelsol.com", phone: "+1 (555) 456-7890", address: "123 Olive Street, Miami, FL" },
       footer: { text: "2024 Casa del Sol. All rights reserved.", links: [{ label: "Instagram", url: "#" }, { label: "TripAdvisor", url: "#" }, { label: "Google Maps", url: "#" }] }
     }
   }

@@ -5,7 +5,6 @@ type Props = {
     email: string;
     phone: string;
     address: string;
-    formEnabled: boolean;
   };
   onChange: (path: string, value: unknown) => void;
 };
@@ -45,16 +44,6 @@ export default function ContactSection({ contact, onChange }: Props) {
           onChange={(e) => onChange("config.contact.address", e.target.value)}
           className="w-full border px-3 py-2 rounded"
         />
-      </div>
-
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={contact.formEnabled}
-          onChange={(e) => onChange("config.contact.formEnabled", e.target.checked)}
-          className="w-4 h-4 border-gray-300 rounded"
-        />
-        <label className="text-sm font-medium text-gray-700">{t("contactsection.form_enabled")}</label>
       </div>
     </section>
   );

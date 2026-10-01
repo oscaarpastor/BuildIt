@@ -95,7 +95,6 @@ export const siteConfigDefinition = {
     email: String,
     phone: String,
     address: String,
-    formEnabled: Boolean,
   },
   footer: {
     text: String,

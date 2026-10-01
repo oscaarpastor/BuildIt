@@ -156,13 +156,19 @@ export default function EditProjectPage() {
 
   useEffect(() => {
     const fetchProject = async () => {
-      const res = await fetch(`${API_URL}/api/projects/${id}`);
-      const data = await res.json();
-      setProject(data);
-      setLoading(false);
+      try {
+        const res = await fetch(`${API_URL}/api/projects/${id}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        setProject(await res.json());
+      } catch (err) {
+        console.error("Error cargando el proyecto:", err);
+        setProject(null);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchProject();
-  }, [id]);
+  }, [id, API_URL]);
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -187,11 +193,12 @@ export default function EditProjectPage() {
 
   const autoSave = async (updatedProject: Project) => {
     try {
-      await fetch(`${API_URL}/api/projects/${id}`, {
+      const res = await fetch(`${API_URL}/api/projects/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedProject),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       refreshPreview();
     } catch (err) {
       console.error(err);
@@ -203,11 +210,12 @@ export default function EditProjectPage() {
     if (!project) return;
     setSaving(true);
     try {
-      await fetch(`${API_URL}/api/projects/${id}`, {
+      const res = await fetch(`${API_URL}/api/projects/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(project),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       refreshPreview();
     } catch (err) {
       console.error(err);
@@ -220,9 +228,10 @@ export default function EditProjectPage() {
     if (!window.confirm(t("editPage.delete_confirm"))) return;
     setDeleting(true);
     try {
-      await fetch(`${API_URL}/api/projects/${id}`, {
+      const res = await fetch(`${API_URL}/api/projects/${id}`, {
         method: "DELETE",
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       navigate("/projects");
     } catch (err) {
       console.error(err);

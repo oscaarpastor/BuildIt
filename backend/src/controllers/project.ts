@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { isValidObjectId } from "mongoose";
 import { Project } from "../models/Project";
 import { BaseTemplate } from "../models/BaseTemplate";
 
@@ -89,6 +90,11 @@ export const createProjectFromTemplate = async (req: Request, res: Response) => 
 
     if (!templateId || !userId || !name) {
       res.status(400).json({ message: "Faltan datos necesarios" });
+      return;
+    }
+
+    if (!isValidObjectId(templateId) || !isValidObjectId(userId)) {
+      res.status(400).json({ message: "Identificador de plantilla o usuario no válido" });
       return;
     }
 

@@ -3,12 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 import { PreviewCard } from "../components/PreviewCard";
-import { TEMPLATES } from "../data/templates";
 
 type Project = {
   _id: string;
   name: string;
   createdAt: string;
+};
+
+type BaseTemplate = {
+  _id: string;
+  name: string;
+  icon?: string;
+  gradient?: string;
 };
 
 export default function ProjectsPage() {
@@ -18,24 +24,32 @@ export default function ProjectsPage() {
   const API_URL = import.meta.env.VITE_API_URL;
 
   const [projects, setProjects] = useState<Project[]>([]);
+  const [templates, setTemplates] = useState<BaseTemplate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         if (!user?._id) return;
         const res = await fetch(`${API_URL}/api/projects/user/${user._id}`);
-        const data = await res.json();
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: Project[] = await res.json();
         setProjects(data);
+        if (data.length === 0) {
+          const tplRes = await fetch(`${API_URL}/api/base-templates`);
+          if (tplRes.ok) setTemplates(await tplRes.json());
+        }
       } catch (err) {
         console.error("Error fetching projects:", err);
+        setError("No se pudieron cargar tus proyectos.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchProjects();
-  }, [user]);
+  }, [user, API_URL]);
 
   return (
     <div className="p-6">
@@ -61,7 +75,13 @@ export default function ProjectsPage() {
         </div>
       </div>
 
-      {!loading && projects.length === 0 ? (
+      {error && (
+        <p role="alert" className="mb-6 text-sm text-red-600 bg-red-50 border border-red-200 rounded px-4 py-2">
+          {error}
+        </p>
+      )}
+
+      {!loading && !error && projects.length === 0 ? (
         <div className="text-center py-16">
           <div className="max-w-2xl mx-auto">
             <div className="text-6xl mb-6">🚀</div>
@@ -79,15 +99,15 @@ export default function ProjectsPage() {
             <div className="mt-12">
               <h4 className="text-lg font-semibold mb-4 text-left">Plantillas disponibles</h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {TEMPLATES.map((tpl) => (
+                {templates.map((tpl) => (
                   <button
-                    key={tpl.id}
+                    key={tpl._id}
                     onClick={() => navigate("/projects/new")}
                     className="rounded-xl overflow-hidden shadow-sm hover:shadow-md transition text-left group"
                   >
                     <div
-                      className="h-24 flex items-center justify-center text-white"
-                      style={{ background: tpl.gradient }}
+                      className="h-24 flex items-center justify-center text-white bg-gray-400"
+                      style={tpl.gradient ? { background: tpl.gradient } : undefined}
                     >
                       <span className="text-3xl">{tpl.icon}</span>
                     </div>

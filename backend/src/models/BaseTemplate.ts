@@ -6,6 +6,8 @@ const baseTemplateSchema = new mongoose.Schema(
     description: { type: String },
     previewImage: { type: String },
     view: { type: String, default: "template" },
+    icon: { type: String, default: "" },
+    gradient: { type: String, default: "" },
     config: {
       theme: {
         colorPrimary: String,

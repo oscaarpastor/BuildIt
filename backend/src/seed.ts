@@ -9,6 +9,8 @@ const templates = [
     name: "Landing Page (Startup/SaaS)",
     description: "Hero, features, pricing, CTA — ideal for startups and SaaS products.",
     view: "templateStartup",
+    icon: "🚀",
+    gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     config: {
       theme: { colorPrimary: "#6366f1", colorSecondary: "#818cf8", fontFamily: "Inter", darkMode: false },
       brand: { name: "LaunchPad", logo: "" },
@@ -47,6 +49,8 @@ const templates = [
     name: "Portfolio Personal",
     description: "About, projects, skills, contact — perfect for designers and developers.",
     view: "templatePortfolio",
+    icon: "🎨",
+    gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
     config: {
       theme: { colorPrimary: "#e11d48", colorSecondary: "#fb7185", fontFamily: "Playfair Display", darkMode: false },
       brand: { name: "Alex Morgan", logo: "" },
@@ -77,6 +81,8 @@ const templates = [
     name: "Tienda Online",
     description: "Hero, productos destacados, categorias, CTA — for e-commerce brands.",
     view: "templateShop",
+    icon: "🛒",
+    gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
     config: {
       theme: { colorPrimary: "#059669", colorSecondary: "#34d399", fontFamily: "Montserrat", darkMode: false },
       brand: { name: "Verde Store", logo: "" },
@@ -115,6 +121,8 @@ const templates = [
     name: "Agencia Creativa",
     description: "Servicios, portfolio, equipo, contacto — for creative agencies.",
     view: "templateAgencia",
+    icon: "✨",
+    gradient: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
     config: {
       theme: { colorPrimary: "#dc2626", colorSecondary: "#fbbf24", fontFamily: "Montserrat", darkMode: false },
       brand: { name: "Pixel Studio", logo: "" },
@@ -153,6 +161,8 @@ const templates = [
     name: "Blog / Magazine",
     description: "Hero, posts destacados, categorias, newsletter — for content creators.",
     view: "templateBlog",
+    icon: "📝",
+    gradient: "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)",
     config: {
       theme: { colorPrimary: "#7c3aed", colorSecondary: "#c084fc", fontFamily: "Playfair Display", darkMode: false },
       brand: { name: "The Curious Mind", logo: "" },
@@ -179,6 +189,8 @@ const templates = [
     name: "Restaurante",
     description: "Menu, reservas, galeria, ubicacion — for restaurants and cafes.",
     view: "templateRestaurante",
+    icon: "🍽️",
+    gradient: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
     config: {
       theme: { colorPrimary: "#b45309", colorSecondary: "#f59e0b", fontFamily: "Playfair Display", darkMode: false },
       brand: { name: "Casa del Sol", logo: "" },

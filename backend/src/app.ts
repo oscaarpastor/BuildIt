@@ -59,6 +59,9 @@ const siteSecurity = helmet({
 export function createApp() {
   const app = express();
   app.disable("x-powered-by");
+  // Detrás de un proxy (cloudflared), req.ip sale de X-Forwarded-For solo si la
+  // petición llega de un proxy de confianza. Lo usan los limitadores por IP.
+  app.set("trust proxy", config.trustProxy);
 
   // Sin CORS_ORIGINS solo se aceptan peticiones del mismo origen (desarrollo con
   // proxy de Vite y producción sirviendo el frontend desde aquí).

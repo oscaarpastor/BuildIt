@@ -98,7 +98,7 @@ npm test
 
 | Comando | Qué ejecuta |
 |---|---|
-| `npm run test:api` | 65 tests de la API (Vitest + Supertest): autenticación, permisos entre usuarios, CRUD de proyectos, validación, web pública, exportación, estadísticas y cabeceras de seguridad |
+| `npm run test:api` | 78 tests de la API (Vitest + Supertest): autenticación, permisos entre usuarios, CRUD de proyectos, validación, web pública, exportación, estadísticas, cabeceras de seguridad e IP del cliente detrás de un proxy |
 | `npm run test:e2e` | Playwright: compila la app, la arranca en el puerto 3100 y recorre el flujo completo con dos usuarios en Google Chrome |
 | `npm run lint` | ESLint del frontend y comprobación de tipos del backend |
 
@@ -120,6 +120,9 @@ Ver `backend/.env.example`.
 | `CORS_ORIGINS` | No | vacío | Orígenes externos autorizados, separados por comas. Vacío = solo el mismo origen, que es lo normal |
 | `AUTH_RATE_LIMIT_MAX` | No | `10` | Intentos de login y registro por IP en cada ventana |
 | `AUTH_RATE_LIMIT_WINDOW_MS` | No | `900000` | Duración de esa ventana (15 minutos) |
+| `TRUST_PROXY` | No | vacío | Proxies de confianza para leer la IP real de `X-Forwarded-For` (`trust proxy` de Express). Vacío o `false` = ninguno |
+
+Detrás de un proxy inverso todas las peticiones llegan con la IP del proxy, así que los límites por IP tratarían a todos los usuarios como uno solo. En producción detrás de `cloudflared` pon en `TRUST_PROXY` la IP desde la que conecta el proxy, por ejemplo `TRUST_PROXY=10.10.10.1`. También admite `loopback`, varias IPs o subredes separadas por comas o un número de saltos (`1`). No uses `true`: confía en cualquier `X-Forwarded-For` y permite saltarse los límites.
 
 ### `frontend/.env` (opcional)
 

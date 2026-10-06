@@ -1,8 +1,14 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import AppLayout from "../components/layout/AppLayout";
+import SiteThumbnail from "../components/SiteThumbnail";
+import Button from "../components/ui/Button";
+import { buttonClass } from "../components/ui/buttonClass";
+import Icon from "../components/ui/Icon";
 import { api, templatePreviewUrl } from "../lib/api";
 import { errorKey } from "../lib/errors";
+import { templateDescription, templateName } from "../lib/templates";
 import type { BaseTemplate, Project } from "../types";
 
 export default function NewProjectPage() {
@@ -11,8 +17,9 @@ export default function NewProjectPage() {
   const [templates, setTemplates] = useState<BaseTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
+  const [previewing, setPreviewing] = useState<BaseTemplate | null>(null);
   const [creating, setCreating] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     api<BaseTemplate[]>("/api/base-templates")
@@ -21,13 +28,18 @@ export default function NewProjectPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // <dialog> nativo: atrapa el foco y se cierra con Escape
+  useEffect(() => {
+    if (previewing) dialogRef.current?.showModal();
+  }, [previewing]);
+
   const createProject = async (tpl: BaseTemplate) => {
     setCreating(tpl._id);
     setError("");
     try {
       const project = await api<Project>("/api/projects", {
         method: "POST",
-        body: { templateId: tpl._id, name: tpl.name },
+        body: { templateId: tpl._id, name: templateName(t, tpl) },
       });
       navigate(`/projects/${project._id}/edit`);
     } catch (err) {
@@ -37,85 +49,83 @@ export default function NewProjectPage() {
   };
 
   return (
-    <div className="p-6">
-      <button
-        onClick={() => navigate("/projects")}
-        className="mb-4 text-sm text-primary border border-primary px-4 py-2 rounded hover:bg-primary/10 transition"
-      >
-        &larr; {t("common.back")}
-      </button>
+    <AppLayout>
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+        <Link to="/projects" className={buttonClass("quiet", "sm", "-ml-3 mb-6 pl-1.5")}>
+          <Icon name="back" className="size-4" />
+          {t("nav.sites")}
+        </Link>
+        <h1 className="titular text-3xl">{t("newProject.title")}</h1>
+        <p className="mt-3 max-w-xl text-andamio">{t("newProject.subtitle")}</p>
 
-      <h1 className="text-2xl font-bold mb-2">{t("newProject.title")}</h1>
-      <p className="text-gray-500 mb-6">{t("newProject.subtitle")}</p>
+        {error && (
+          <p role="alert" className="mt-8 rounded-bloque border border-derribo/30 bg-[#fdf1f0] px-4 py-3 text-sm text-derribo">
+            {t(error)}
+          </p>
+        )}
 
-      {error && (
-        <p role="alert" className="mb-6 text-sm text-red-600 bg-red-50 border border-red-200 rounded px-4 py-2">
-          {t(error)}
-        </p>
-      )}
+        {loading ? (
+          <p className="mt-10 text-andamio">{t("newProject.loading")}</p>
+        ) : (
+          <ul className="mt-10 grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            {templates.map((tpl) => {
+              const name = templateName(t, tpl);
+              return (
+                <li key={tpl._id}>
+                  <article aria-labelledby={`tpl-${tpl._id}`} className="flex h-full flex-col">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewing(tpl)}
+                      aria-label={t("newProject.view_template_named", { name })}
+                      className="block overflow-hidden rounded-lg border border-junta bg-papel text-left transition-colors hover:border-grafito"
+                    >
+                      <SiteThumbnail src={templatePreviewUrl(tpl._id)} title={t("newProject.preview_of", { name })} />
+                    </button>
+                    <h2 id={`tpl-${tpl._id}`} className="mt-4 text-lg font-semibold">
+                      {name}
+                    </h2>
+                    <p className="mt-1 text-sm text-andamio">{templateDescription(t, tpl)}</p>
+                    <div className="mt-auto flex flex-wrap gap-2 pt-4">
+                      <Button size="sm" onClick={() => createProject(tpl)} disabled={creating !== null}>
+                        {creating === tpl._id ? t("newProject.creating") : t("newProject.use_template")}
+                      </Button>
+                      <Button variant="secondary" size="sm" onClick={() => setPreviewing(tpl)}>
+                        {t("newProject.view_template")}
+                      </Button>
+                    </div>
+                  </article>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
 
-      {loading ? (
-        <p className="text-gray-500">{t("newProject.loading")}</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates.map((tpl) => (
-            <div
-              key={tpl._id}
-              className="border rounded-2xl shadow-sm hover:shadow-lg transition-shadow p-4 flex flex-col bg-white"
-            >
-              <div
-                className="rounded-xl mb-4 relative h-[200px] overflow-hidden flex flex-col items-center justify-center p-6 text-white bg-gray-400"
-                style={tpl.gradient ? { background: tpl.gradient } : undefined}
-              >
-                <span className="text-5xl mb-3">{tpl.icon}</span>
-                <span className="font-bold text-lg text-center drop-shadow">{tpl.name}</span>
-              </div>
-
-              <h3 className="text-lg font-semibold mb-1">{tpl.name}</h3>
-              <p className="text-sm text-gray-500 mb-4">{tpl.description}</p>
-
-              <div className="flex flex-col gap-2 mt-auto">
-                <button
-                  onClick={() => setPreviewTemplateId(tpl._id)}
-                  className="bg-white border border-primary text-primary px-4 py-2 rounded hover:bg-primary/10 text-sm font-medium"
-                >
-                  {t("newProject.view_template")}
-                </button>
-                <button
-                  onClick={() => createProject(tpl)}
-                  disabled={creating !== null}
-                  className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 text-sm font-medium disabled:opacity-50"
-                >
-                  {creating === tpl._id ? t("newProject.creating") : t("newProject.use_template")}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {previewTemplateId && (
-        <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label={t("newProject.preview_title")}
+      {previewing && (
+        <dialog
+          ref={dialogRef}
+          aria-label={t("newProject.preview_of", { name: templateName(t, previewing) })}
+          onClose={() => setPreviewing(null)}
+          className="m-auto h-[90dvh] w-[min(80rem,94vw)] max-w-none overflow-hidden rounded-lg border border-junta bg-papel p-0 backdrop:bg-grafito/70"
         >
-          <div className="relative w-full max-w-5xl h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden">
+          <div className="flex h-full flex-col">
+            <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-junta px-4 py-2.5">
+              <p className="titular min-w-0 flex-1 truncate text-lg">{templateName(t, previewing)}</p>
+              <Button size="sm" onClick={() => createProject(previewing)} disabled={creating !== null}>
+                {creating === previewing._id ? t("newProject.creating") : t("newProject.use_template")}
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => dialogRef.current?.close()}>
+                {t("common.close")}
+              </Button>
+            </div>
             <iframe
-              src={templatePreviewUrl(previewTemplateId)}
-              className="w-full h-full border-0"
-              title={t("newProject.preview_title")}
+              src={templatePreviewUrl(previewing._id)}
+              className="min-h-0 w-full flex-1 border-0"
+              title={t("newProject.preview_of", { name: templateName(t, previewing) })}
             />
-            <button
-              onClick={() => setPreviewTemplateId(null)}
-              className="absolute top-4 right-4 bg-white text-black px-4 py-2 rounded-lg shadow hover:bg-gray-100 font-medium"
-            >
-              {t("common.close")}
-            </button>
           </div>
-        </div>
+        </dialog>
       )}
-    </div>
+    </AppLayout>
   );
 }

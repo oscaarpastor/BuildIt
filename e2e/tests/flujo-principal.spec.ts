@@ -12,11 +12,11 @@ let proyectoAna = { editUrl: "", publicUrl: "" };
 
 async function registrar(page: Page, cuenta: Cuenta) {
   await page.goto("/register");
-  await page.getByPlaceholder("Nombre de usuario").fill(cuenta.name);
-  await page.getByPlaceholder("Correo electrónico").fill(cuenta.email);
-  await page.getByPlaceholder("Contraseña", { exact: true }).fill(cuenta.password);
-  await page.getByPlaceholder("Repite la contraseña").fill(cuenta.password);
-  await page.getByRole("button", { name: "Registrarse" }).click();
+  await page.getByLabel("Nombre").fill(cuenta.name);
+  await page.getByLabel("Correo electrónico").fill(cuenta.email);
+  await page.getByLabel("Contraseña", { exact: true }).fill(cuenta.password);
+  await page.getByLabel("Repite la contraseña").fill(cuenta.password);
+  await page.getByRole("button", { name: "Crear cuenta" }).click();
   await expect(page).toHaveURL(/\/projects$/);
 }
 
@@ -24,27 +24,26 @@ test.describe.configure({ mode: "serial" });
 
 test("flujo principal: crear, editar, ocultar, publicar, medir, exportar y salir", async ({ page }) => {
   await registrar(page, ana);
-  await expect(page.getByRole("heading", { name: "Crea tu primer proyecto" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Aún no tienes ninguna web" })).toBeVisible();
 
-  // Crear un proyecto desde la plantilla Restaurante (las plantillas vienen de la API)
-  await page.getByRole("button", { name: "Crear mi primer proyecto" }).click();
-  const tarjeta = page.locator("div.border", { has: page.getByRole("heading", { name: "Restaurante" }) });
-  await tarjeta.getByRole("button", { name: "Usar plantilla" }).click();
+  // Crear una web desde la plantilla Restaurante (las plantillas vienen de la API)
+  await page.getByRole("link", { name: "Elegir plantilla" }).click();
+  const tarjeta = page.getByRole("article").filter({ has: page.getByRole("heading", { name: "Restaurante" }) });
+  await tarjeta.getByRole("button", { name: "Usar esta plantilla" }).click();
   await expect(page).toHaveURL(/\/projects\/[a-f0-9]{24}\/edit$/);
   proyectoAna.editUrl = new URL(page.url()).pathname;
 
-  // Editar la marca: autoguardado y vista previa actualizada
+  // Editar la cabecera (la sección que abre el editor): autoguardado y vista previa actualizada
   const vistaPrevia = page.frameLocator('iframe[title="Vista previa"]');
   await expect(vistaPrevia.getByText("Casa del Sol").first()).toBeVisible();
-  await page.getByPlaceholder("Introduce el nombre de tu marca").fill("Casa de Ana");
+  await page.getByLabel("Nombre de la marca").fill("Casa de Ana");
   await expect(page.getByRole("status").getByText("Cambios guardados")).toBeVisible();
   await expect(vistaPrevia.getByText("Casa de Ana").first()).toBeVisible();
 
-  // Ocultar la sección de testimonios
-  await page.getByRole("button", { name: /Mostrar\/ocultar secciones/ }).click();
-  const chipTestimonios = page.getByRole("button", { name: "Testimonios", exact: true });
-  await chipTestimonios.click();
-  await expect(chipTestimonios).toHaveAttribute("aria-pressed", "false");
+  // Ocultar la sección de testimonios desde la pila de secciones
+  const interruptor = page.getByRole("switch", { name: "Mostrar Testimonios en la web" });
+  await interruptor.click();
+  await expect(interruptor).toHaveAttribute("aria-checked", "false");
   await expect(page.getByRole("status").getByText("Cambios guardados")).toBeVisible();
 
   // Exportar a HTML
@@ -58,9 +57,9 @@ test("flujo principal: crear, editar, ocultar, publicar, medir, exportar y salir
   expect(html).not.toContain("track.js");
 
   // Abrir la web pública por el enlace de la tarjeta
-  await page.getByRole("button", { name: "Volver" }).click();
+  await page.getByRole("link", { name: "Mis webs" }).click();
   await expect(page).toHaveURL(/\/projects$/);
-  const ver = page.getByRole("link", { name: "Ver" });
+  const ver = page.getByRole("link", { name: "Ver", exact: true });
   proyectoAna.publicUrl = (await ver.getAttribute("href"))!;
   expect(proyectoAna.publicUrl).toMatch(/^\/project\/[\w-]{16}\/view$/);
 
@@ -78,8 +77,8 @@ test("flujo principal: crear, editar, ocultar, publicar, medir, exportar y salir
     await expect(stats).toContainText("1 clic", { timeout: 1000 });
   }).toPass({ timeout: 15_000 });
 
-  // Cerrar sesión desde Ajustes
-  await page.getByRole("button", { name: "Configuración" }).click();
+  // Cerrar sesión desde la cuenta
+  await page.getByRole("link", { name: "Cuenta" }).click();
   await page.getByRole("button", { name: "Cerrar sesión" }).click();
   await expect(page).toHaveURL(/\/login$/);
   await page.goto("/projects");
@@ -91,9 +90,9 @@ test("otro usuario no puede ver ni tocar el proyecto ajeno", async ({ page, requ
   await registrar(page, beto);
 
   // Su lista está vacía y la URL del editor de Ana no muestra nada
-  await expect(page.getByRole("heading", { name: "Crea tu primer proyecto" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Aún no tienes ninguna web" })).toBeVisible();
   await page.goto(proyectoAna.editUrl);
-  await expect(page.getByText("Proyecto no encontrado")).toBeVisible();
+  await expect(page.getByText("No encontramos esta web")).toBeVisible();
 
   // Tampoco por la API, ni para leer, ni para modificar, ni para borrar
   const token = await page.evaluate(() => localStorage.getItem("token"));

@@ -1,23 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import ThemeSection from "../components/editors/ThemeSection";
-import BrandSection from "../components/editors/BrandSection";
-import HeroSection from "../components/editors/HeroSection";
-import AboutSection from "../components/editors/AboutSection";
-import FeatureSection from "../components/editors/FeatureSection";
-import ProductSection from "../components/editors/ProductSection";
-import GallerySection from "../components/editors/GallerySection";
-import VideoSection from "../components/editors/VideoSection";
-import TestimonialsSection from "../components/editors/TestimonialsSection";
-import DocumentationSection from "../components/editors/DocumentationSection";
-import FaqsSection from "../components/editors/FaqsSection";
-import InspirationSection from "../components/editors/InspirationSection";
-import ProgramSection from "../components/editors/ProgramSection";
-import ContactSection from "../components/editors/ContactSection";
-import FooterSection from "../components/editors/FooterSection";
+import SectionStack, { type EditorTarget } from "../components/editor/SectionStack";
+import SectionEditor from "../components/editor/SectionEditor";
+import StyleEditor from "../components/editor/StyleEditor";
+import Button from "../components/ui/Button";
+import { buttonClass } from "../components/ui/buttonClass";
+import Icon from "../components/ui/Icon";
+import Segmented from "../components/ui/Segmented";
 import { api, ApiError, downloadFile, siteUrl } from "../lib/api";
 import { errorKey } from "../lib/errors";
+import { sectionName, sectionsOf } from "../lib/templates";
 import type { HideableSection, Project, SectionKey } from "../types";
 
 function setNestedValue<T>(obj: T, path: string, value: unknown): T {
@@ -37,31 +30,58 @@ function setNestedValue<T>(obj: T, path: string, value: unknown): T {
   return newObj;
 }
 
-const HIDEABLE_SECTIONS: HideableSection[] = [
-  "hero",
-  "about",
-  "features",
-  "products",
-  "gallery",
-  "video",
-  "testimonials",
-  "documentation",
-  "faqs",
-  "inspiration",
-  "program",
-  "contact",
-  "footer",
-];
+const projectBody = (p: Project) => ({ name: p.name, config: p.config, hiddenSections: p.hiddenSections });
 
-// Vacía = sin texto en ningún campo, también en objetos anidados (p. ej. program.cta1).
-const isEmpty = (section: unknown): boolean => {
-  if (section == null || section === "") return true;
-  if (Array.isArray(section)) return section.length === 0;
-  if (typeof section === "object") return Object.values(section).every(isEmpty);
-  return false;
-};
+type SaveState = "idle" | "pending" | "saving" | "saved" | "error";
+type Device = "desktop" | "mobile";
 
-type SaveState = "idle" | "saving" | "saved" | "error";
+// Dónde empieza cada sección dentro de la web generada (ver backend/src/views)
+function sectionAnchor(doc: Document, key: SectionKey): Element | null {
+  if (key === "footer") return doc.querySelector("footer");
+  return doc.getElementById(key === "faqs" ? "faq" : key);
+}
+
+/** Lleva la vista previa a la sección que se está editando. */
+function scrollToSection(frame: HTMLIFrameElement | undefined, key: EditorTarget, smooth: boolean) {
+  if (!frame || key === "style") return;
+  try {
+    const win = frame.contentWindow;
+    const doc = frame.contentDocument;
+    if (!win || !doc) return;
+    const target = key === "brand" ? null : sectionAnchor(doc, key);
+    if (key !== "brand" && !target) return; // sección oculta: no está en la página
+    const top = target ? target.getBoundingClientRect().top + win.scrollY : 0;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    win.scrollTo({ top, behavior: smooth && !reduce ? "smooth" : "auto" });
+  } catch {
+    // La vista previa es de otro origen (API en otro dominio): no se puede desplazar
+  }
+}
+
+function SaveStatus({ state }: { state: SaveState }) {
+  const { t } = useTranslation();
+  const text: Record<SaveState, string> = {
+    idle: t("editPage.autosave"),
+    pending: t("editPage.unsaved"),
+    saving: t("editPage.saving"),
+    saved: t("editPage.saved"),
+    error: t("editPage.not_saved"),
+  };
+  // Mismo código que la pila: hueco = por construir, relleno = hecho
+  const mark: Record<SaveState, string> = {
+    idle: "border border-andamio/60",
+    pending: "border border-grafito",
+    saving: "bg-azul",
+    saved: "bg-verde",
+    error: "bg-derribo",
+  };
+  return (
+    <p role="status" className="flex shrink-0 items-center gap-2 text-sm text-andamio">
+      <span aria-hidden="true" className={`size-2.5 rounded-[1px] ${mark[state]}`} />
+      {text[state]}
+    </p>
+  );
+}
 
 export default function EditProjectPage() {
   const { id } = useParams();
@@ -73,9 +93,19 @@ export default function EditProjectPage() {
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveError, setSaveError] = useState("");
   const [deleting, setDeleting] = useState(false);
-  const [iframeKey, setIframeKey] = useState(Date.now());
-  const [showSectionToggle, setShowSectionToggle] = useState(false);
+  const [selected, setSelected] = useState<EditorTarget>("brand");
+  const [device, setDevice] = useState<Device>("desktop");
+  const [mobilePane, setMobilePane] = useState<"edit" | "preview">("edit");
+
+  // Vista previa con doble búfer: cada versión guardada carga oculta y sustituye
+  // a la anterior cuando termina, así no parpadea mientras se escribe.
+  const [version, setVersion] = useState(0);
+  const [shownVersion, setShownVersion] = useState(0);
+  const frames = useRef(new Map<number, HTMLIFrameElement>());
+  const formRef = useRef<HTMLDivElement>(null);
+
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingRef = useRef<Project | null>(null);
 
   useEffect(() => {
     api<Project>(`/api/projects/${id}`)
@@ -84,21 +114,25 @@ export default function EditProjectPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  useEffect(() => () => {
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-  }, []);
+  // Al salir del editor no se pierde lo escrito en los últimos instantes
+  useEffect(
+    () => () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      const pending = pendingRef.current;
+      if (pending) api(`/api/projects/${pending._id}`, { method: "PUT", body: projectBody(pending) }).catch(() => {});
+    },
+    []
+  );
 
   const save = useCallback(
     async (data: Project) => {
+      pendingRef.current = null;
       setSaveState("saving");
       setSaveError("");
       try {
-        await api<Project>(`/api/projects/${id}`, {
-          method: "PUT",
-          body: { name: data.name, config: data.config, hiddenSections: data.hiddenSections },
-        });
+        await api<Project>(`/api/projects/${id}`, { method: "PUT", body: projectBody(data) });
         setSaveState("saved");
-        setIframeKey(Date.now());
+        setVersion((v) => v + 1);
       } catch (err) {
         setSaveState("error");
         if (err instanceof ApiError && err.status === 400 && err.errors?.length) {
@@ -112,25 +146,38 @@ export default function EditProjectPage() {
     [id, t]
   );
 
-  const handleChange = (path: string, value: unknown) => {
-    if (!project) return;
-    const updated = setNestedValue(project, path, value);
+  const queueSave = (updated: Project, delay: number) => {
     setProject(updated);
-
+    pendingRef.current = updated;
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    saveTimeoutRef.current = setTimeout(() => save(updated), 800);
+    if (delay === 0) {
+      save(updated);
+    } else {
+      setSaveState("pending");
+      saveTimeoutRef.current = setTimeout(() => save(updated), delay);
+    }
   };
 
-  const saveNow = () => {
+  const handleChange = (path: string, value: unknown) => {
+    if (project) queueSave(setNestedValue(project, path, value), 800);
+  };
+
+  // Ocultar o mostrar una sección en la web generada; se guarda al momento.
+  const toggleSection = (key: HideableSection) => {
     if (!project) return;
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    save(project);
+    const hidden = project.hiddenSections ?? [];
+    queueSave(
+      { ...project, hiddenSections: hidden.includes(key) ? hidden.filter((k) => k !== key) : [...hidden, key] },
+      0
+    );
   };
 
   const deleteProject = async () => {
-    if (!window.confirm(t("editPage.delete_confirm"))) return;
+    if (!project || !window.confirm(t("editPage.delete_confirm", { name: project.name }))) return;
     setDeleting(true);
     try {
+      pendingRef.current = null;
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
       await api(`/api/projects/${id}`, { method: "DELETE" });
       navigate("/projects");
     } catch (err) {
@@ -148,153 +195,211 @@ export default function EditProjectPage() {
     }
   };
 
-  // Ocultar o mostrar una sección en la web generada; se guarda al momento.
-  const toggleSection = (key: HideableSection) => {
-    if (!project) return;
-    const hidden = project.hiddenSections ?? [];
-    const updated: Project = {
-      ...project,
-      hiddenSections: hidden.includes(key) ? hidden.filter((k) => k !== key) : [...hidden, key],
-    };
-    setProject(updated);
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    save(updated);
+  const select = (target: EditorTarget) => {
+    setSelected(target);
+    formRef.current?.scrollTo({ top: 0 });
+    scrollToSection(frames.current.get(shownVersion), target, true);
   };
 
-  if (loading) return <p className="p-6">{t("editPage.loading")}</p>;
+  const onFrameLoad = (v: number) => {
+    const frame = frames.current.get(v);
+    if (v === shownVersion) {
+      scrollToSection(frame, selected, false);
+      return;
+    }
+    if (v !== version) return; // ya hay una versión más nueva en camino
+    try {
+      const y = frames.current.get(shownVersion)?.contentWindow?.scrollY ?? 0;
+      frame?.contentWindow?.scrollTo(0, y);
+    } catch {
+      // otro origen
+    }
+    setShownVersion(v);
+  };
+
+  if (loading) {
+    return <p className="p-6 text-andamio">{t("editPage.loading")}</p>;
+  }
+
   if (!project) {
     return (
-      <div className="p-6 space-y-4">
-        <p>{t("editPage.not_found")}</p>
-        <button onClick={() => navigate("/projects")} className="text-sm text-primary hover:underline">
-          ← {t("editPage.back")}
-        </button>
-      </div>
+      <main className="mx-auto max-w-xl px-4 py-24 sm:px-6">
+        <h1 className="titular text-3xl">{t("editPage.not_found")}</h1>
+        <p className="mt-3 text-andamio">{t("editPage.not_found_hint")}</p>
+        <Link to="/projects" className={buttonClass("primary", "md", "mt-8")}>
+          {t("editPage.back_to_sites")}
+        </Link>
+      </main>
     );
   }
 
   const { config } = project;
-  const hiddenSections = new Set<SectionKey>(project.hiddenSections ?? []);
-  const visible = (key: SectionKey) => !hiddenSections.has(key) && !isEmpty(config[key]);
+  const sections = sectionsOf(project);
+  const hidden = new Set<SectionKey>(project.hiddenSections ?? []);
+  const current: EditorTarget = selected === "style" || sections.includes(selected) ? selected : (sections[0] ?? "style");
+  const frameVersions = version === shownVersion ? [version] : [shownVersion, version];
 
   return (
-    <div className="flex h-screen">
-      <div className="w-1/2 border-r overflow-y-auto">
-        <iframe
-          key={iframeKey}
-          src={siteUrl(project.publicId, true)}
-          className="w-full h-full"
-          title={t("editPage.preview_title")}
+    <div className="flex h-dvh flex-col">
+      <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-junta bg-papel px-3 py-2 sm:px-4">
+        <Link to="/projects" className={buttonClass("quiet", "sm", "pl-1.5")}>
+          <Icon name="back" className="size-4" />
+          {t("editPage.back")}
+        </Link>
+        <span aria-hidden="true" className="hidden h-6 w-px bg-junta sm:block" />
+        <label htmlFor="project-name" className="sr-only">
+          {t("editPage.project_name")}
+        </label>
+        <input
+          id="project-name"
+          value={project.name}
+          maxLength={120}
+          onChange={(e) => handleChange("name", e.target.value)}
+          className="titular min-w-0 flex-1 basis-40 rounded-sm border border-transparent bg-transparent px-1.5 py-1 text-xl hover:border-junta focus:border-azul focus:outline-none sm:max-w-sm"
         />
-      </div>
-
-      <div className="w-1/2 overflow-y-auto p-6 space-y-6">
-        <div className="flex justify-between items-center mb-2 gap-2">
-          <h1 className="text-xl font-bold">{t("editPage.title", { name: project.name })}</h1>
-          <div className="flex gap-2">
-            <button
-              onClick={() => navigate("/projects")}
-              className="text-sm border border-gray-400 text-gray-700 px-4 py-2 rounded hover:bg-gray-100 transition"
-            >
-              {t("editPage.back")}
-            </button>
-            <button
-              onClick={exportHtml}
-              className="text-sm border border-blue-600 text-blue-600 px-4 py-2 rounded hover:bg-blue-50 transition"
-            >
-              {t("editPage.export")}
-            </button>
-            <button
-              onClick={deleteProject}
-              className="text-sm border border-red-500 text-red-500 px-4 py-2 rounded hover:bg-red-50 transition"
-              disabled={deleting}
-            >
-              {deleting ? t("editPage.deleting") : t("editPage.delete")}
-            </button>
-          </div>
+        <SaveStatus state={saveState} />
+        <div className="ml-auto flex items-center gap-1">
+          <a
+            href={`/project/${project.publicId}/view`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonClass("quiet", "sm")}
+          >
+            <Icon name="external" className="size-4" />
+            <span className="max-sm:sr-only">{t("editPage.open_site")}</span>
+          </a>
+          <Button variant="quiet" size="sm" onClick={exportHtml}>
+            <Icon name="download" className="size-4" />
+            <span className="max-sm:sr-only">{t("editPage.export")}</span>
+          </Button>
+          <Button variant="danger" size="sm" onClick={deleteProject} disabled={deleting}>
+            {deleting ? t("editPage.deleting") : t("editPage.delete")}
+          </Button>
         </div>
+      </header>
 
-        <p role="status" className="text-xs text-gray-500 min-h-4">
-          {saveState === "saving" && t("editPage.saving")}
-          {saveState === "saved" && t("editPage.saved")}
-        </p>
-        {saveError && (
-          <p role="alert" className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-4 py-2">
-            {saveError}
-          </p>
-        )}
+      {saveError && (
+        <div role="alert" className="flex shrink-0 items-center gap-3 border-b border-derribo/25 bg-[#fdf1f0] px-4 py-2 text-sm text-derribo">
+          <span className="min-w-0 flex-1">{saveError}</span>
+          {saveState === "error" && (
+            <Button variant="secondary" size="sm" onClick={() => save(project)}>
+              {t("editPage.retry")}
+            </Button>
+          )}
+        </div>
+      )}
 
-        <div>
-          <label htmlFor="project-name" className="font-semibold">
-            {t("editPage.project_name")}
-          </label>
-          <input
-            id="project-name"
-            value={project.name}
-            maxLength={120}
-            onChange={(e) => handleChange("name", e.target.value)}
-            className="w-full px-3 py-2 border rounded"
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+        <aside className="shrink-0 border-b border-junta bg-papel p-4 lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+          <SectionStack
+            view={project.view}
+            sections={sections}
+            hidden={hidden}
+            selected={current}
+            onSelect={select}
+            onToggle={toggleSection}
+          />
+        </aside>
+
+        <div className="flex shrink-0 justify-center border-b border-junta bg-papel p-2 lg:hidden">
+          <Segmented
+            label={t("editPage.pane")}
+            value={mobilePane}
+            onChange={setMobilePane}
+            options={[
+              { value: "edit", label: t("editPage.tab_edit") },
+              { value: "preview", label: t("editPage.tab_preview") },
+            ]}
           />
         </div>
 
-        <div className="border-t pt-4">
-          <button
-            onClick={() => setShowSectionToggle(!showSectionToggle)}
-            className="text-sm font-medium text-primary hover:underline flex items-center gap-2"
-            aria-expanded={showSectionToggle}
-          >
-            {showSectionToggle ? "▼" : "▶"} {t("editPage.toggle_sections")}
-          </button>
-          {showSectionToggle && (
-            <>
-            <p className="mt-2 text-xs text-gray-500">{t("editPage.hidden_hint")}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {HIDEABLE_SECTIONS.filter((key) => !isEmpty(config[key])).map((key) => (
-                <button
-                  key={key}
-                  onClick={() => toggleSection(key)}
-                  aria-pressed={!hiddenSections.has(key)}
-                  className={`text-xs px-3 py-1.5 rounded-full font-medium transition ${
-                    hiddenSections.has(key)
-                      ? "bg-gray-200 text-gray-500 line-through"
-                      : "bg-primary/10 text-primary border border-primary/30"
-                  }`}
-                >
-                  {t(`editPage.sections.${key}`)}
-                </button>
-              ))}
+        <div
+          ref={formRef}
+          className={`${mobilePane === "edit" ? "block" : "hidden"} min-h-0 flex-1 overflow-y-auto bg-papel lg:block lg:w-[min(30rem,40vw)] lg:flex-none lg:border-r lg:border-junta`}
+        >
+          <div className="px-5 py-6 sm:px-8">
+            <h2 className="titular text-2xl">
+              {current === "style" ? t("editPage.style") : sectionName(t, project.view, current)}
+            </h2>
+            {current === "style" && <p className="mt-1 text-sm text-andamio">{t("editPage.style_hint")}</p>}
+
+            {current !== "style" && current !== "brand" && hidden.has(current) && (
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-bloque border border-dashed border-andamio/60 px-4 py-3">
+                <p className="text-sm">{t("editPage.hidden_notice")}</p>
+                <Button variant="secondary" size="sm" onClick={() => toggleSection(current)}>
+                  {t("editPage.show")}
+                </Button>
+              </div>
+            )}
+
+            <div className="mt-6">
+              {current === "style" ? (
+                <StyleEditor theme={config.theme} onChange={handleChange} />
+              ) : (
+                <SectionEditor key={current} section={current} value={config[current]} onChange={handleChange} />
+              )}
             </div>
-            </>
-          )}
+          </div>
         </div>
 
-        <ThemeSection theme={config.theme} onChange={handleChange} />
-        {visible("brand") && <BrandSection brand={config.brand} onChange={handleChange} />}
-        {visible("hero") && <HeroSection hero={config.hero} onChange={handleChange} />}
-        {visible("about") && <AboutSection about={config.about} onChange={handleChange} />}
-        {visible("features") && <FeatureSection features={config.features} onChange={handleChange} />}
-        {visible("products") && <ProductSection products={config.products} onChange={handleChange} />}
-        {visible("gallery") && <GallerySection gallery={config.gallery} onChange={handleChange} />}
-        {visible("video") && <VideoSection video={config.video} onChange={handleChange} />}
-        {visible("testimonials") && (
-          <TestimonialsSection testimonials={config.testimonials} onChange={handleChange} />
-        )}
-        {visible("documentation") && (
-          <DocumentationSection documentation={config.documentation} onChange={handleChange} />
-        )}
-        {visible("faqs") && <FaqsSection faqs={config.faqs} onChange={handleChange} />}
-        {visible("inspiration") && <InspirationSection inspiration={config.inspiration} onChange={handleChange} />}
-        {visible("program") && <ProgramSection program={config.program} onChange={handleChange} />}
-        {visible("contact") && <ContactSection contact={config.contact} onChange={handleChange} />}
-        {visible("footer") && <FooterSection footer={config.footer} onChange={handleChange} />}
-
-        <button
-          onClick={saveNow}
-          className="bg-primary text-white px-6 py-2 rounded hover:bg-primary/90"
-          disabled={saveState === "saving"}
+        <section
+          aria-label={t("editPage.preview_title")}
+          className={`${mobilePane === "preview" ? "flex" : "hidden"} min-h-0 min-w-0 flex-1 flex-col lg:flex`}
         >
-          {saveState === "saving" ? t("editPage.saving") : t("editPage.save")}
-        </button>
+          <div className="hidden items-center gap-3 px-4 py-2.5 lg:flex">
+            <Segmented
+              label={t("editPage.device")}
+              value={device}
+              onChange={setDevice}
+              options={[
+                {
+                  value: "desktop",
+                  label: (
+                    <>
+                      <Icon name="desktop" className="size-4" />
+                      {t("editPage.device_desktop")}
+                    </>
+                  ),
+                },
+                {
+                  value: "mobile",
+                  label: (
+                    <>
+                      <Icon name="phone" className="size-4" />
+                      {t("editPage.device_mobile")}
+                    </>
+                  ),
+                },
+              ]}
+            />
+          </div>
+          <div className="min-h-0 flex-1 lg:px-4 lg:pb-4">
+            <div
+              className={`relative h-full overflow-hidden bg-papel lg:rounded-lg lg:border lg:border-junta ${
+                device === "mobile" ? "lg:mx-auto lg:max-w-[390px]" : ""
+              }`}
+            >
+              {frameVersions.map((v) => (
+                <iframe
+                  key={v}
+                  ref={(el) => {
+                    if (!el) return;
+                    frames.current.set(v, el);
+                    return () => {
+                      frames.current.delete(v);
+                    };
+                  }}
+                  src={`${siteUrl(project.publicId, true)}&v=${v}`}
+                  title={v === shownVersion ? t("editPage.preview_title") : t("editPage.preview_updating")}
+                  aria-hidden={v === shownVersion ? undefined : true}
+                  tabIndex={v === shownVersion ? undefined : -1}
+                  onLoad={() => onFrameLoad(v)}
+                  className={`absolute inset-0 size-full border-0 ${v === shownVersion ? "" : "invisible"}`}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

@@ -1,20 +1,144 @@
 @import "tailwindcss";
+/* Archivo variable autoalojada (la CSP de la app solo permite fuentes propias).
+   Este archivo trae los ejes de peso y de anchura. */
+@import "@fontsource-variable/archivo/wdth.css";
 
+/* Tokens del rediseño: ver DISENO.md */
 @theme {
-  --color-primary: #3B82F6;
-  --color-primary-hover: #60A5FA;
-  --color-background: #0F172A;
-  --color-surface: #334155;
-  --color-text: #CBD5E1;
+  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-yeso: #edf0f3;
+  --color-papel: #ffffff;
+  --color-grafito: #252a32;
+  --color-azul: #2a5bd7;
+  --color-azul-hondo: #2049b3;
+  --color-azul-claro: #e3eafb;
+  --color-andamio: #5b6472;
+  --color-junta: #d2d8e0;
+  --color-derribo: #b42318;
+  --color-verde: #1e7a4c;
+
+  /* Escala de The Elements of Typographic Style: 12 14 16 18 21 24 36 48 72 */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.4;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.45;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.45;
+  --text-xl: 1.3125rem;
+  --text-xl--line-height: 1.3;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.2;
+  --text-3xl: 2.25rem;
+  --text-3xl--line-height: 1.08;
+  --text-4xl: 3rem;
+  --text-4xl--line-height: 1;
+  --text-5xl: 4.5rem;
+  --text-5xl--line-height: 0.95;
+
+  --radius-bloque: 2px;
 }
 
-/* La app es de tema claro: fijamos fondo y color para que el modo oscuro del
-   navegador no deje texto oscuro sobre fondo oscuro. */
-:root {
-  color-scheme: light;
+/* Titulares: Archivo expandida, como los rótulos de obra y el «BUILD IT» del logo */
+@utility titular {
+  font-stretch: 125%;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
-body {
-  background-color: #ffffff;
-  color: #111827;
+@layer base {
+  /* La app es de tema claro: el modo oscuro solo existe para las webs generadas */
+  :root {
+    color-scheme: light;
+  }
+
+  body {
+    background-color: var(--color-yeso);
+    color: var(--color-grafito);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-azul);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-azul-claro);
+  }
+}
+
+@layer components {
+  /* Campo de formulario */
+  .campo {
+    display: block;
+    width: 100%;
+    min-height: 2.5rem;
+    padding: 0.4375rem 0.75rem;
+    border: 1px solid var(--color-junta);
+    border-radius: 4px;
+    background-color: var(--color-papel);
+    color: var(--color-grafito);
+    font-size: var(--text-base);
+    line-height: 1.5;
+    transition: border-color 120ms;
+  }
+  .campo:hover {
+    border-color: #aab3bf;
+  }
+  .campo:focus {
+    border-color: var(--color-azul);
+    outline: 1px solid var(--color-azul);
+    outline-offset: 0;
+  }
+  .campo::placeholder {
+    color: #7d8693;
+  }
+  .campo[aria-invalid="true"] {
+    border-color: var(--color-derribo);
+  }
+  textarea.campo {
+    resize: vertical;
+  }
+}
+
+/* La pila de la bienvenida se monta de abajo arriba, como una obra:
+   es el único movimiento que ocurre sin que la persona haga nada. */
+@keyframes apilar {
+  from {
+    opacity: 0;
+    transform: translateY(-28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.bloque-apilado {
+  animation: apilar 460ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  animation-delay: calc(var(--orden) * 110ms + 150ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

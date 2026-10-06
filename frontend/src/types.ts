@@ -115,6 +115,7 @@ export type ProjectSummary = Pick<Project, "_id" | "name" | "publicId" | "create
 export type BaseTemplate = {
   _id: string;
   name: string;
+  view: string;
   description?: string;
   icon?: string;
   gradient?: string;

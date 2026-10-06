@@ -7,7 +7,7 @@ export default function LogoutButton() {
   const { t } = useTranslation();
 
   return (
-    <Button type="button" variant="danger" onClick={logout}>
+    <Button variant="secondary" onClick={logout}>
       {t("loguin.logout")}
     </Button>
   );

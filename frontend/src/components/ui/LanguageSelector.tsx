@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
+import Segmented from "./Segmented";
 
 export default function LanguageSelector() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
@@ -9,19 +10,14 @@ export default function LanguageSelector() {
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <img
-        src="/es.png"
-        alt="Español"
-        className="w-7 h-5 cursor-pointer rounded shadow"
-        onClick={() => changeLanguage("es")}
-      />
-      <img
-        src="/en.png"
-        alt="English"
-        className="w-7 h-5 cursor-pointer rounded shadow"
-        onClick={() => changeLanguage("en")}
-      />
-    </div>
+    <Segmented
+      label={t("language.label")}
+      value={i18n.resolvedLanguage ?? "es"}
+      onChange={changeLanguage}
+      options={[
+        { value: "es", label: "ES", title: "Español", lang: "es" },
+        { value: "en", label: "EN", title: "English", lang: "en" },
+      ]}
+    />
   );
 }

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import Input from "../components/ui/Input";
+import AuthLayout from "../components/layout/AuthLayout";
+import { TextField } from "../components/ui/Field";
 import Button from "../components/ui/Button";
-import LanguageSelector from "../components/ui/LanguageSelector";
 import { useAuth } from "../context/useAuth";
 import { ApiError } from "../lib/api";
 import { errorKey } from "../lib/errors";
@@ -40,52 +40,41 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-text">
-      <header className="absolute top-0 left-0 w-full flex justify-between items-center p-4">
-        <button onClick={() => navigate("/")} className="text-sm text-primary hover:underline">
-          ← {t("loguin.back")}
-        </button>
-        <LanguageSelector />
-      </header>
-
-      <div className="bg-surface shadow-xl rounded-xl p-10 w-full max-w-md mt-20">
-        <h2 className="text-2xl font-bold text-center mb-6">{t("loguin.title")}</h2>
-
-        <form className="flex flex-col gap-4" onSubmit={handleLogin} noValidate>
-          <Input
-            type="email"
-            autoComplete="email"
-            placeholder={t("loguin.email_placeholder")}
-            aria-label={t("loguin.email_placeholder")}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Input
-            type="password"
-            autoComplete="current-password"
-            placeholder={t("loguin.password_placeholder")}
-            aria-label={t("loguin.password_placeholder")}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button type="submit" variant="primary" disabled={submitting}>
-            {t("loguin.submit")}
-          </Button>
-        </form>
-
-        {error && (
-          <div role="alert" className="text-red-400 text-sm mt-4 text-center">
-            {error}
-          </div>
-        )}
-
-        <div className="text-sm text-center text-text/70 mt-6">
+    <AuthLayout
+      title={t("loguin.title")}
+      footer={
+        <>
           {t("loguin.no_account")}{" "}
-          <button onClick={() => navigate("/register")} className="text-primary hover:underline font-medium">
+          <Link to="/register" className="font-semibold text-azul hover:underline">
             {t("loguin.create_account")}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Link>
+        </>
+      }
+    >
+      <form className="flex flex-col gap-5" onSubmit={handleLogin} noValidate>
+        <TextField
+          label={t("loguin.email_placeholder")}
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <TextField
+          label={t("loguin.password_placeholder")}
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        {error && (
+          <p role="alert" className="text-sm text-derribo">
+            {error}
+          </p>
+        )}
+        <Button type="submit" size="lg" disabled={submitting} className="mt-1">
+          {submitting ? t("loguin.submitting") : t("loguin.submit")}
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }

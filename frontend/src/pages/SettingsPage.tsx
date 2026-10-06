@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import Input from "../components/ui/Input";
+import AppLayout from "../components/layout/AppLayout";
+import { TextField } from "../components/ui/Field";
 import Button from "../components/ui/Button";
 import LogoutButton from "../components/ui/LogoutButton";
-import LanguageSelector from "../components/ui/LanguageSelector";
 import { useAuth } from "../context/useAuth";
 import { api, ApiError } from "../lib/api";
 import { errorKey } from "../lib/errors";
@@ -17,7 +16,6 @@ type Message = { type: "ok" | "error"; text: string } | null;
 export default function SettingsPage() {
   const { user, updateUser } = useAuth();
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
@@ -63,75 +61,71 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
-      <div className="absolute top-4 left-4">
-        <button onClick={() => navigate("/projects")} className="text-sm text-primary hover:underline font-medium">
-          ← {t("settings.back")}
-        </button>
-      </div>
+    <AppLayout>
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+        <h1 className="titular text-3xl">{t("settings.title")}</h1>
 
-      <div className="absolute top-4 right-4">
-        <LanguageSelector />
-      </div>
+        <form onSubmit={handleUpdate} noValidate className="mt-10 max-w-xl">
+          <fieldset className="grid gap-5 rounded-lg border border-junta bg-papel p-6">
+            <legend className="float-left mb-1 text-lg font-semibold">{t("settings.details")}</legend>
+            <TextField
+              label={t("settings.name_placeholder")}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
+            />
+            <TextField
+              label={t("settings.email_placeholder")}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+            />
+          </fieldset>
 
-      <div className="p-6 max-w-lg w-full bg-surface text-text shadow-xl rounded-xl">
-        <h2 className="text-2xl font-bold mb-6 text-primary text-center">{t("settings.title")}</h2>
-
-        <form onSubmit={handleUpdate} className="flex flex-col gap-4">
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t("settings.name_placeholder")}
-            aria-label={t("settings.name_placeholder")}
-            autoComplete="name"
-          />
-          <Input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={t("settings.email_placeholder")}
-            aria-label={t("settings.email_placeholder")}
-            autoComplete="email"
-          />
-
-          <fieldset className="flex flex-col gap-3 border-t border-text/20 pt-4">
-            <legend className="text-sm text-text/70 px-1">{t("settings.change_password")}</legend>
-            <Input
+          <fieldset className="mt-6 grid gap-5 rounded-lg border border-junta bg-papel p-6">
+            <legend className="float-left text-lg font-semibold">{t("settings.change_password")}</legend>
+            <p className="-mt-3 text-sm text-andamio">{t("settings.password_hint")}</p>
+            <TextField
+              label={t("settings.current_password")}
               type="password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder={t("settings.current_password")}
-              aria-label={t("settings.current_password")}
               autoComplete="current-password"
             />
-            <Input
+            <TextField
+              label={t("settings.new_password")}
+              hint={t("loguin.password_hint")}
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder={t("settings.new_password")}
-              aria-label={t("settings.new_password")}
               autoComplete="new-password"
             />
           </fieldset>
 
-          <Button type="submit" variant="primary" disabled={saving}>
-            {t("settings.save_button")}
-          </Button>
+          <div className="mt-6 flex flex-wrap items-center gap-4">
+            <Button type="submit" disabled={saving}>
+              {saving ? t("settings.saving") : t("settings.save_button")}
+            </Button>
+            {message && (
+              <p
+                role={message.type === "error" ? "alert" : "status"}
+                className={`text-sm ${message.type === "error" ? "text-derribo" : "text-verde"}`}
+              >
+                {message.text}
+              </p>
+            )}
+          </div>
         </form>
 
-        <div className="mt-4 flex flex-col">
-          <LogoutButton />
-        </div>
-
-        {message && (
-          <p
-            role={message.type === "error" ? "alert" : "status"}
-            className={`mt-4 text-sm text-center ${message.type === "error" ? "text-red-400" : "text-green-400"}`}
-          >
-            {message.text}
-          </p>
-        )}
+        <section className="mt-14 max-w-xl border-t border-junta pt-8">
+          <h2 className="text-lg font-semibold">{t("settings.session")}</h2>
+          <p className="mt-1 text-sm text-andamio">{t("settings.session_hint")}</p>
+          <div className="mt-4">
+            <LogoutButton />
+          </div>
+        </section>
       </div>
-    </div>
+    </AppLayout>
   );
 }

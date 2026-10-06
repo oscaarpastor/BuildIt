@@ -4,23 +4,51 @@ export type User = {
   email: string;
 };
 
+export type Heading = { eyebrow: string; title: string; subtitle: string };
+
+/** Secciones con cabecera editable (antetítulo, título y entradilla). */
+export type HeadingKey =
+  | "about"
+  | "features"
+  | "products"
+  | "gallery"
+  | "video"
+  | "stats"
+  | "steps"
+  | "team"
+  | "testimonials"
+  | "faqs"
+  | "program"
+  | "contact";
+
+export type SiteLanguage = "es" | "en";
+
 export type SiteConfig = {
   theme: {
     colorPrimary: string;
     colorSecondary: string;
+    /** Letra de los títulos */
     fontFamily: string;
+    /** Letra del texto */
+    fontBody?: string;
     darkMode?: boolean;
+    /** Idioma de los textos fijos de la web */
+    language?: SiteLanguage;
   };
+  headings: Record<HeadingKey, Heading>;
   brand: {
     name: string;
     logo: string;
   };
   hero: {
+    eyebrow: string;
     title: string;
     subtitle: string;
     backgroundImage: string;
     ctaText: string;
     ctaLink: string;
+    secondaryCtaText: string;
+    secondaryCtaLink: string;
   };
   about: {
     heading: string;
@@ -37,16 +65,34 @@ export type SiteConfig = {
     description: string;
     price: string;
     image: string;
+    badge: string;
+    link: string;
   }[];
   gallery: {
     image: string;
+    caption: string;
   }[];
   video: {
     url: string;
     thumbnail: string;
   };
+  stats: {
+    value: string;
+    label: string;
+  }[];
+  steps: {
+    label: string;
+    title: string;
+    description: string;
+  }[];
+  team: {
+    name: string;
+    role: string;
+    image: string;
+  }[];
   testimonials: {
     name: string;
+    role: string;
     quote: string;
     avatar: string;
   }[];
@@ -75,10 +121,18 @@ export type SiteConfig = {
     cta1: { text: string; link: string };
     cta2: { text: string; link: string };
   };
+  cta: {
+    title: string;
+    text: string;
+    buttonText: string;
+    buttonLink: string;
+  };
   contact: {
     email: string;
     phone: string;
     address: string;
+    hours: string;
+    whatsapp: string;
   };
   footer: {
     text: string;
@@ -86,7 +140,7 @@ export type SiteConfig = {
   };
 };
 
-export type SectionKey = Exclude<keyof SiteConfig, "theme">;
+export type SectionKey = Exclude<keyof SiteConfig, "theme" | "headings">;
 
 /** Secciones que se pueden ocultar en la web generada (la marca va en la cabecera). */
 export type HideableSection = Exclude<SectionKey, "brand">;
@@ -95,6 +149,23 @@ export type ProjectStats = {
   views: number;
   clicks: number;
   lastAccess: string | null;
+};
+
+export type TemplateCategory = "business" | "food" | "health" | "creative" | "shop" | "events" | "education";
+
+type TemplateText = {
+  name: string;
+  description: string;
+  /** Nombre de las secciones en esa plantilla («Carta» en vez de «Productos») */
+  sections: Partial<Record<SectionKey, string>>;
+};
+
+/** Lo que la API cuenta de una plantilla: categoría, secciones y nombres en cada idioma. */
+export type TemplateInfo = {
+  view: string;
+  category: TemplateCategory;
+  sections: SectionKey[];
+  text: Record<SiteLanguage, TemplateText>;
 };
 
 export type Project = {
@@ -106,17 +177,16 @@ export type Project = {
   createdAt: string;
   updatedAt: string;
   config: SiteConfig;
+  /** Plantilla de la web (null si ya no existe en el catálogo) */
+  template?: TemplateInfo | null;
 };
 
 export type ProjectSummary = Pick<Project, "_id" | "name" | "publicId" | "createdAt" | "updatedAt"> & {
   stats: ProjectStats;
 };
 
-export type BaseTemplate = {
+export type BaseTemplate = TemplateInfo & {
   _id: string;
   name: string;
-  view: string;
   description?: string;
-  icon?: string;
-  gradient?: string;
 };

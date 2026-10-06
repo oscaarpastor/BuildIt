@@ -6,8 +6,9 @@ import type { SectionKey } from "../../types";
  * text, textarea, email y tel son campos normales.
  * image: dirección de una imagen, con miniatura.
  * link: enlace, que admite #seccion, mailto: y tel:.
+ * icon: selector de la colección de iconos de las webs.
  */
-export type FieldKind = "text" | "textarea" | "image" | "link" | "email" | "tel";
+export type FieldKind = "text" | "textarea" | "image" | "link" | "email" | "tel" | "icon";
 
 export type FieldDef = {
   /** Ruta dentro de la sección; puede llevar puntos (cta1.text). */
@@ -17,6 +18,8 @@ export type FieldDef = {
   placeholder?: string;
   /** Ocupa media fila en pantallas anchas (pares como texto + enlace del botón). */
   half?: boolean;
+  /** Pista bajo el campo (clave de traducción). */
+  hint?: string;
 };
 
 export type ListDef = {
@@ -40,17 +43,20 @@ export const SECTION_FIELDS: Record<SectionKey, SectionDef> = {
   },
   hero: {
     fields: [
+      { key: "eyebrow", label: "herosection.eyebrow", hint: "herosection.eyebrow_hint" },
       { key: "title", label: "herosection.main_title" },
       { key: "subtitle", label: "herosection.subtitle", kind: "textarea" },
       { key: "backgroundImage", label: "herosection.background", kind: "image" },
       { key: "ctaText", label: "herosection.cta_text", half: true },
       { key: "ctaLink", label: "herosection.cta_link", kind: "link", half: true },
+      { key: "secondaryCtaText", label: "herosection.cta2_text", half: true },
+      { key: "secondaryCtaLink", label: "herosection.cta2_link", kind: "link", half: true },
     ],
   },
   about: {
     fields: [
       { key: "heading", label: "aboutsection.heading" },
-      { key: "content", label: "aboutsection.content", kind: "textarea" },
+      { key: "content", label: "aboutsection.content", kind: "textarea", hint: "aboutsection.content_hint" },
       { key: "image", label: "aboutsection.image", kind: "image" },
     ],
   },
@@ -60,7 +66,7 @@ export const SECTION_FIELDS: Record<SectionKey, SectionDef> = {
       add: "featuresection.add",
       empty: { icon: "", title: "", description: "" },
       fields: [
-        { key: "icon", label: "featuresection.icon", placeholder: "featuresection.icon_placeholder" },
+        { key: "icon", label: "featuresection.icon", kind: "icon" },
         { key: "title", label: "featuresection.item_title", placeholder: "featuresection.title_placeholder" },
         {
           key: "description",
@@ -75,7 +81,7 @@ export const SECTION_FIELDS: Record<SectionKey, SectionDef> = {
     list: {
       item: "productsection.item",
       add: "productsection.add",
-      empty: { title: "", description: "", price: "", image: "" },
+      empty: { title: "", description: "", price: "", image: "", badge: "", link: "" },
       fields: [
         { key: "title", label: "productsection.title_label", placeholder: "productsection.title_placeholder" },
         {
@@ -83,9 +89,12 @@ export const SECTION_FIELDS: Record<SectionKey, SectionDef> = {
           label: "productsection.description",
           kind: "textarea",
           placeholder: "productsection.description_placeholder",
+          hint: "productsection.description_hint",
         },
-        { key: "price", label: "productsection.price", placeholder: "productsection.price_placeholder" },
+        { key: "price", label: "productsection.price", placeholder: "productsection.price_placeholder", half: true },
+        { key: "badge", label: "productsection.badge", placeholder: "productsection.badge_placeholder", half: true },
         { key: "image", label: "productsection.image", kind: "image", placeholder: "productsection.image_placeholder" },
+        { key: "link", label: "productsection.link", kind: "link" },
       ],
     },
   },
@@ -93,25 +102,62 @@ export const SECTION_FIELDS: Record<SectionKey, SectionDef> = {
     list: {
       item: "gallerysection.item",
       add: "gallerysection.add",
-      empty: { image: "" },
+      empty: { image: "", caption: "" },
       fields: [
         { key: "image", label: "gallerysection.image_label", kind: "image", placeholder: "gallerysection.image_placeholder" },
+        { key: "caption", label: "gallerysection.caption" },
       ],
     },
   },
   video: {
     fields: [
-      { key: "url", label: "videosection.url", placeholder: "videosection.url_placeholder" },
+      { key: "url", label: "videosection.url", placeholder: "videosection.url_placeholder", hint: "videosection.url_hint" },
       { key: "thumbnail", label: "videosection.thumbnail", kind: "image", placeholder: "videosection.thumbnail_placeholder" },
     ],
+  },
+  stats: {
+    list: {
+      item: "statssection.item",
+      add: "statssection.add",
+      empty: { value: "", label: "" },
+      fields: [
+        { key: "value", label: "statssection.value", placeholder: "statssection.value_placeholder", half: true },
+        { key: "label", label: "statssection.label", placeholder: "statssection.label_placeholder", half: true },
+      ],
+    },
+  },
+  steps: {
+    list: {
+      item: "stepssection.item",
+      add: "stepssection.add",
+      empty: { label: "", title: "", description: "" },
+      fields: [
+        { key: "label", label: "stepssection.label", hint: "stepssection.label_hint" },
+        { key: "title", label: "stepssection.title" },
+        { key: "description", label: "stepssection.description", kind: "textarea" },
+      ],
+    },
+  },
+  team: {
+    list: {
+      item: "teamsection.item",
+      add: "teamsection.add",
+      empty: { name: "", role: "", image: "" },
+      fields: [
+        { key: "name", label: "teamsection.name", half: true },
+        { key: "role", label: "teamsection.role", half: true },
+        { key: "image", label: "teamsection.image", kind: "image" },
+      ],
+    },
   },
   testimonials: {
     list: {
       item: "testimonialssection.item",
       add: "testimonialssection.add_button",
-      empty: { name: "", quote: "", avatar: "" },
+      empty: { name: "", role: "", quote: "", avatar: "" },
       fields: [
-        { key: "name", label: "testimonialssection.name", placeholder: "testimonialssection.name_placeholder" },
+        { key: "name", label: "testimonialssection.name", placeholder: "testimonialssection.name_placeholder", half: true },
+        { key: "role", label: "testimonialssection.role", placeholder: "testimonialssection.role_placeholder", half: true },
         {
           key: "quote",
           label: "testimonialssection.quote",
@@ -195,11 +241,21 @@ export const SECTION_FIELDS: Record<SectionKey, SectionDef> = {
       { key: "cta2.link", label: "programsection.cta2_link", kind: "link", half: true },
     ],
   },
+  cta: {
+    fields: [
+      { key: "title", label: "ctasection.title" },
+      { key: "text", label: "ctasection.text", kind: "textarea" },
+      { key: "buttonText", label: "ctasection.button_text", half: true },
+      { key: "buttonLink", label: "ctasection.button_link", kind: "link", half: true },
+    ],
+  },
   contact: {
     fields: [
-      { key: "email", label: "contactsection.email", kind: "email" },
-      { key: "phone", label: "contactsection.phone", kind: "tel" },
+      { key: "email", label: "contactsection.email", kind: "email", half: true },
+      { key: "phone", label: "contactsection.phone", kind: "tel", half: true },
+      { key: "whatsapp", label: "contactsection.whatsapp", kind: "tel", hint: "contactsection.whatsapp_hint" },
       { key: "address", label: "contactsection.address" },
+      { key: "hours", label: "contactsection.hours", kind: "textarea", hint: "contactsection.hours_hint" },
     ],
   },
   footer: {
@@ -215,4 +271,22 @@ export const SECTION_FIELDS: Record<SectionKey, SectionDef> = {
       ],
     },
   },
+};
+
+/**
+ * Campos de la cabecera de cada sección (config.headings). En «Nosotros» el
+ * título es el propio campo de la sección, así que solo tiene antetítulo y entradilla.
+ */
+export const HEADING_FIELDS: Partial<Record<SectionKey, ("eyebrow" | "title" | "subtitle")[]>> = {
+  about: ["eyebrow", "subtitle"],
+  features: ["eyebrow", "title", "subtitle"],
+  products: ["eyebrow", "title", "subtitle"],
+  gallery: ["eyebrow", "title", "subtitle"],
+  video: ["eyebrow", "title", "subtitle"],
+  stats: ["eyebrow", "title", "subtitle"],
+  steps: ["eyebrow", "title", "subtitle"],
+  team: ["eyebrow", "title", "subtitle"],
+  testimonials: ["eyebrow", "title", "subtitle"],
+  faqs: ["eyebrow", "title", "subtitle"],
+  contact: ["eyebrow", "title", "subtitle"],
 };

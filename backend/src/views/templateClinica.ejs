@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html <%- htmlAttrs %>>
+<head>
+  <%- head %>
+  <style>
+    /* Clínica: sanitaria pero cálida. Blanco roto y arena, verde azulado
+       (principal) y titulares Manrope muy compactos. Lenguaje de formas: una
+       sola esquina muy redondeada en fotos y paneles, como una marca propia. */
+    :root {
+      --bg: #fcfaf7;
+      --surface: #f3ede4;
+      --surface-2: #e9e0d2;
+      --text: #132b2a;
+      --muted: #566664;
+      --border: #e2d8c9;
+      --radius-sm: 10px;
+      --radius: 18px;
+      --radius-lg: 28px;
+      --radius-btn: 999px;
+      --corner: clamp(4.5rem, 11vw, 9.5rem);
+      --deep: color-mix(in srgb, var(--primary) 36%, #03100f);
+      --card: #ffffff;
+    }
+    html.bi-dark {
+      --bg: #0b1414;
+      --surface: #111d1d;
+      --surface-2: #182827;
+      --text: #e7efee;
+      --muted: #9db0ae;
+      --border: #233433;
+      --card: #142221;
+      --deep: color-mix(in srgb, var(--primary) 28%, #020909);
+    }
+
+    /* La página llena siempre la pantalla: si hay poco contenido, la última
+       sección se estira hasta el pie (sin franja vacía debajo). */
+    body { display: flex; flex-direction: column; }
+    main { flex: 1 0 auto; display: flex; flex-direction: column; }
+    main > :last-child { flex-grow: 1; }
+
+    h1, h2, h3, .title { letter-spacing: -0.03em; }
+    .title { font-weight: 800; font-size: clamp(2rem, 1.35rem + 2.5vw, 3.125rem); line-height: 1.06; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.625rem;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      font-size: 0.9375rem;
+      font-weight: 700;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 18%, transparent);
+    }
+
+    /* Cabecera */
+    .site-header .brand { font-weight: 800; letter-spacing: -0.03em; }
+    .site-header .nav-links a { color: var(--muted); }
+    .site-header .nav-links a:hover { color: var(--text); }
+    /* La base ya limita el ancho; el texto va en un span para que la elipsis funcione dentro del botón flex */
+    .nav-cta span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Cabecera de sección partida: título a la izquierda, entradilla a la derecha */
+    .section-head.split { max-width: none; display: grid; gap: 1.25rem 4rem; }
+    .section-head.split .lead { margin-top: 0; max-width: 34rem; }
+    @media (min-width: 900px) {
+      .section-head.split { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: end; }
+      .section-head.split > div:only-child { grid-column: 1 / -1; max-width: 44rem; }
+    }
+
+    /* ---------- Portada ---------- */
+    .hero { display: flex; align-items: center; padding: clamp(2.5rem, 5vw, 4.5rem) 0 clamp(4rem, 8vw, 7rem); background: var(--surface); overflow: hidden; }
+    .hero-grid { display: grid; gap: clamp(2.5rem, 5vw, 4rem); align-items: center; }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      max-width: 100%;
+      padding: 0.375rem 1rem 0.375rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--card);
+      font-size: 0.875rem;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+    .hero-badge svg { width: 1.375rem; height: 1.375rem; color: var(--primary-ink); }
+    .hero-title {
+      max-width: 16ch;
+      font-size: clamp(2.5rem, 1.55rem + 3.3vw, 4.25rem);
+      font-weight: 800;
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+    }
+    .hero-badge + .hero-title { margin-top: 1.5rem; }
+    .hero-title.long { max-width: 24ch; font-size: clamp(2.25rem, 1.6rem + 2.2vw, 3.25rem); line-height: 1.08; }
+    .hero-sub { max-width: 34rem; margin-top: 1.5rem; color: var(--muted); font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem); }
+    .hero .actions { margin-top: 2.25rem; }
+    .hero .btn-outline { background: var(--card); border-color: var(--border); }
+    .hero .btn-outline:hover { border-color: var(--text); }
+
+    .hero-media { position: relative; }
+    .hero-photo {
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      border-top-left-radius: var(--corner);
+    }
+    .hero-photo > img, .hero-photo > .ph { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Tarjeta de cita previa sobre la foto */
+    .appt {
+      position: relative;
+      z-index: 1;
+      width: min(21rem, 100%);
+      padding: 1.5rem 1.625rem;
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: 0 24px 60px -24px rgb(10 40 38 / 0.35), 0 2px 6px rgb(10 40 38 / 0.06);
+    }
+    html.bi-dark .appt { box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.7); border: 1px solid var(--border); }
+    .appt-label { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); font-size: 0.875rem; font-weight: 600; }
+    .appt-label svg { width: 1.125rem; height: 1.125rem; color: var(--primary-ink); }
+    .appt-phone {
+      display: block;
+      margin-top: 0.5rem;
+      font-family: var(--font-heading);
+      font-size: clamp(1.5rem, 1.3rem + 0.8vw, 1.875rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+    }
+    .appt-phone:hover { color: var(--primary-ink); }
+    .appt-list { display: grid; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.9375rem; color: var(--muted); }
+    .appt-list li { display: flex; gap: 0.625rem; align-items: flex-start; }
+    .appt-list svg { width: 1.125rem; height: 1.125rem; margin-top: 0.2rem; color: var(--primary-ink); }
+    .appt-list a { color: var(--text); font-weight: 600; }
+    .appt-list a:hover { color: var(--primary-ink); }
+    .appt-phone + .appt-list { margin-top: 1.125rem; }
+    .appt-label + .appt-list { margin-top: 0.75rem; padding-top: 0; border-top: 0; }
+
+    .hero-media .appt { margin: -4.5rem 0 0 auto; margin-right: clamp(0.75rem, 4vw, 2rem); }
+    @media (min-width: 960px) {
+      .hero-grid.with-aside { grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); }
+      .hero-media .appt { position: absolute; left: -2.5rem; bottom: 2.5rem; margin: 0; }
+      .hero-aside .appt { margin-left: auto; padding: 2rem; width: 100%; max-width: 23rem; }
+    }
+    @media (max-width: 959px) {
+      .hero-photo { aspect-ratio: 4 / 3; border-top-left-radius: var(--corner); }
+      .hero-aside .appt { width: 100%; max-width: 32rem; }
+    }
+    @media (max-width: 520px) {
+      .hero-photo { aspect-ratio: 1; }
+      .hero-media .appt { width: calc(100% - 1.5rem); margin-top: -3.5rem; }
+      .hero .actions .btn { flex: 1 1 100%; }
+    }
+
+    /* ---------- Tratamientos ---------- */
+    .treat-grid { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .treat {
+      flex: 1 1 calc(100% / var(--cols, 3) - 1rem);
+      min-width: min(100%, 15.5rem);
+      padding: clamp(1.5rem, 2.5vw, 2rem);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+    .treat-grid.solo .treat { max-width: 40rem; }
+    .treat-icon {
+      display: grid;
+      place-items: center;
+      width: 3.25rem;
+      height: 3.25rem;
+      margin-bottom: 1.5rem;
+      border-radius: 50%;
+      background: var(--card);
+      color: var(--primary-ink);
+    }
+    .treat-icon .icon-emoji { font-size: 1.5rem; }
+    .treat h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+    .treat p { margin-top: 0.625rem; color: var(--muted); font-size: 0.98rem; line-height: 1.6; }
+    @media (max-width: 560px) {
+      .treat { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 1rem; align-items: start; padding: 1.25rem; }
+      .treat-icon { grid-row: span 2; width: 2.75rem; height: 2.75rem; margin: 0; }
+      .treat-icon svg { width: 1.25rem; height: 1.25rem; }
+      .treat h3 { align-self: center; font-size: 1.125rem; }
+      .treat p { margin-top: 0.375rem; }
+    }
+
+    /* ---------- La clínica ---------- */
+    .about { background: var(--surface); }
+    .about-grid { display: grid; gap: clamp(2.5rem, 6vw, 6rem); align-items: center; }
+    .about-photo {
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      border-bottom-right-radius: var(--corner);
+    }
+    .about-photo > img, .about-photo > .ph { width: 100%; height: 100%; object-fit: cover; }
+    .about-title { font-size: clamp(2rem, 1.35rem + 2.5vw, 3.125rem); font-weight: 800; line-height: 1.06; }
+    .about-copy .lead { margin-top: 1.25rem; }
+    .about-copy .prose { margin-top: 1.5rem; color: var(--muted); font-size: 1.0625rem; max-width: 36rem; }
+    @media (min-width: 900px) { .about-grid.with-photo { grid-template-columns: 5fr 6fr; } }
+    @media (max-width: 899px) { .about-photo { aspect-ratio: 4 / 3; } }
+    /* Sin foto: título a la izquierda y texto a la derecha */
+    @media (min-width: 900px) {
+      .about-grid:not(.with-photo) .about-copy { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 5rem; align-items: start; }
+      .about-grid:not(.with-photo) .prose { margin-top: 0; }
+      .about-grid:not(.with-photo) .about-head:only-child, .about-grid:not(.with-photo) .prose:only-child { grid-column: 1 / -1; max-width: 46rem; }
+    }
+
+    /* ---------- Cifras ---------- */
+    .stats-sec:has(+ .team) { padding-bottom: 0; }
+    .stats-panel {
+      display: grid;
+      gap: clamp(2rem, 4vw, 3rem);
+      padding: clamp(2rem, 5vw, 4rem);
+      border-radius: var(--radius-lg);
+      border-top-right-radius: var(--corner);
+      background: var(--deep);
+      color: #fff;
+    }
+    .stats-panel .eyebrow { color: color-mix(in srgb, var(--primary-on-dark) 70%, #fff); }
+    .stats-panel .eyebrow::before { background: color-mix(in srgb, var(--primary-on-dark) 70%, #fff); box-shadow: 0 0 0 4px rgb(255 255 255 / 0.12); }
+    .stats-panel .title { color: #fff; font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.625rem); }
+    .stats-panel .lead { color: rgb(255 255 255 / 0.75); }
+    .stats-panel .section-head { margin: 0; }
+    /* Separadores: borde izquierdo y superior de cada cifra. La lista se
+       desplaza hacia arriba y a la izquierda dentro de un envoltorio que recorta,
+       así la primera fila y la primera columna quedan sin raya y alineadas con
+       el título, tenga la lista las filas que tenga. */
+    .stat-wrap { overflow: hidden; align-self: center; }
+    .stat-list { display: flex; flex-wrap: wrap; margin: -1px 0 0 calc(-1.75rem - 1px); }
+    .stat {
+      flex: 1 1 calc(100% / var(--cols-lg) - 1px);
+      padding: 1.5rem 1rem 1.5rem 1.75rem;
+      border-top: 1px solid rgb(255 255 255 / 0.16);
+      border-left: 1px solid rgb(255 255 255 / 0.16);
+    }
+    .stat-value {
+      font-family: var(--font-heading);
+      font-size: clamp(2.25rem, 1.7rem + 2vw, 3.25rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-label { margin-top: 0.625rem; color: rgb(255 255 255 / 0.74); font-size: 0.9375rem; line-height: 1.5; max-width: 16rem; }
+    @media (min-width: 960px) {
+      .stats-panel.with-head { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); align-items: center; gap: 4rem; }
+      .stats-panel.with-head .stat { flex-basis: calc(100% / var(--cols-side) - 1px); }
+    }
+    @media (max-width: 959px) { .stat { flex-basis: calc(100% / var(--cols-md) - 1px); } }
+    @media (max-width: 559px) { .stat { flex-basis: 100%; } }
+
+    /* ---------- Equipo médico ---------- */
+    .team-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(1.75rem, 3vw, 2.5rem) clamp(1rem, 2vw, 1.5rem); }
+    .doc { flex: 0 1 calc(100% / var(--cols) - 1.5rem); max-width: 19rem; }
+    @media (max-width: 899px) {
+      .team-grid[data-cols="4"] .doc { flex-basis: calc(50% - 1rem); }
+    }
+    .doc-photo { aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--radius); background: var(--surface); }
+    .doc:first-child .doc-photo { border-top-left-radius: calc(var(--corner) * 0.6); }
+    .doc-photo > img, .doc-photo > .ph { width: 100%; height: 100%; object-fit: cover; }
+    .doc h3 { margin-top: 1.125rem; font-size: 1.1875rem; font-weight: 700; letter-spacing: -0.02em; }
+    .doc p { margin-top: 0.25rem; color: var(--muted); font-size: 0.9375rem; line-height: 1.5; }
+    /* Sin ninguna foto: fichas con iniciales */
+    .team-grid.no-photos .doc {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 1 1 calc(33.333% - 1rem);
+      min-width: min(100%, 17rem);
+      max-width: 26rem;
+      padding: 1.25rem;
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+    .team-grid.no-photos .avatar { width: 3.75rem; height: 3.75rem; background: var(--card); font-family: var(--font-heading); font-size: 1.125rem; }
+    .team-grid.no-photos .doc h3 { margin-top: 0; font-size: 1.0625rem; }
+    @media (max-width: 560px) {
+      .team-grid:not(.no-photos) .doc { flex-basis: calc(50% - 0.5rem); }
+      .doc h3 { font-size: 1.0625rem; }
+      .doc p { font-size: 0.875rem; }
+    }
+
+    /* ---------- Primera visita y planes ---------- */
+    .plans-sec { background: var(--surface); }
+    .plans { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.25rem; }
+    .plan {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 18rem;
+      max-width: 25rem;
+      padding: clamp(1.75rem, 3vw, 2.25rem);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--card);
+    }
+    .plans.solo .plan { max-width: 34rem; }
+    .plan.has-badge { border: 2px solid var(--primary); }
+    .plan-badge {
+      align-self: flex-start;
+      margin-bottom: 1.25rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      background: var(--primary);
+      color: var(--on-primary);
+      font-size: 0.8125rem;
+      font-weight: 700;
+    }
+    .plan-media { margin: calc(clamp(1.75rem, 3vw, 2.25rem) * -1) calc(clamp(1.75rem, 3vw, 2.25rem) * -1) 1.5rem; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+    .plan-media > * { width: 100%; height: 100%; object-fit: cover; }
+    .plan h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+    .plan-price {
+      margin-top: 0.75rem;
+      font-family: var(--font-heading);
+      font-size: clamp(2.25rem, 1.9rem + 1.4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      color: var(--primary-ink);
+    }
+    .plan-price.long { font-size: clamp(1.75rem, 1.5rem + 1vw, 2.25rem); }
+    .plan-desc { flex: 1; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.9688rem; }
+    .plan-desc.checklist li { color: var(--text); }
+    .plan .btn { margin-top: 1.75rem; width: 100%; }
+
+    /* ---------- Pacientes ---------- */
+    .voices { columns: 3 19rem; column-gap: 1.25rem; }
+    .voices.few { columns: auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.25rem; }
+    .voice {
+      display: flex;
+      flex-direction: column;
+      break-inside: avoid;
+      margin-bottom: 1.25rem;
+      padding: clamp(1.75rem, 3vw, 2.25rem);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+    }
+    .voices.few .voice { flex: 1 1 22rem; max-width: 38rem; margin: 0; }
+    .voice-mark { width: 2rem; height: 2rem; color: var(--primary-ink); }
+    .voice blockquote { margin-top: 1rem; font-size: 1.0938rem; line-height: 1.6; }
+    .voice figcaption { display: flex; align-items: center; gap: 0.875rem; margin-top: 1.5rem; }
+    .voice .avatar { background: var(--card); width: 2.75rem; height: 2.75rem; font-size: 0.875rem; }
+    .voice strong { display: block; font-weight: 600; line-height: 1.3; }
+    .voice figcaption span:not(.avatar) { display: block; color: var(--muted); font-size: 0.875rem; }
+
+    /* ---------- Dudas ---------- */
+    .faqs-sec { background: var(--surface); }
+    .faq-grid { display: grid; gap: 2.5rem; }
+    .faq-grid .section-head { margin-bottom: 0; }
+    .faq-help {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      margin-top: 2rem;
+      padding: 1.25rem 1.5rem;
+      border-radius: var(--radius);
+      background: var(--card);
+      max-width: 26rem;
+    }
+    .faq-help .treat-icon { flex-shrink: 0; width: 2.75rem; height: 2.75rem; margin: 0; background: var(--primary-soft); }
+    .faq-help strong { display: block; font-family: var(--font-heading); font-weight: 700; }
+    .faq-help p { color: var(--muted); font-size: 0.9375rem; }
+    .faq-help a { display: inline-block; margin-top: 0.375rem; color: var(--primary-ink); font-weight: 700; }
+    .faq-list { display: grid; gap: 0.625rem; align-content: start; }
+    .faq-item { border-radius: var(--radius); background: var(--card); }
+    .faq-item > summary {
+      padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+      font-family: var(--font-heading);
+      font-size: 1.0938rem;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      line-height: 1.4;
+    }
+    .faq-item > summary .faq-icon {
+      width: 2rem;
+      height: 2rem;
+      padding: 0.375rem;
+      border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary-ink);
+    }
+    .faq-answer { padding: 0 4.25rem 1.5rem 1.5rem; color: var(--muted); }
+    @media (max-width: 520px) { .faq-answer { padding-right: 1.5rem; } }
+    @media (min-width: 900px) {
+      .faq-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 5rem; }
+      .faq-grid > div:first-child { position: sticky; top: calc(var(--header-h) + 2rem); align-self: start; }
+    }
+
+    /* ---------- Pedir cita ---------- */
+    .cta-sec:not(:last-child) { padding-bottom: 0; }
+    .cta-panel {
+      display: grid;
+      gap: 2rem;
+      align-items: center;
+      padding: clamp(2.25rem, 6vw, 4.5rem);
+      border-radius: var(--radius-lg);
+      border-bottom-left-radius: var(--corner);
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+    .cta-title { font-size: clamp(2.25rem, 1.5rem + 3vw, 4rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.02; }
+    .cta-panel p { max-width: 36rem; margin-top: 1rem; font-size: 1.125rem; opacity: 0.9; }
+    .cta-panel .actions { flex-direction: column; align-items: stretch; }
+    .cta-panel .btn-invert { background: var(--on-primary); color: var(--primary); }
+    .cta-panel .btn-invert:hover { background: color-mix(in srgb, var(--on-primary) 88%, var(--primary)); }
+    .cta-call { text-align: center; font-size: 0.9375rem; opacity: 0.92; }
+    .cta-call a { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+    @media (min-width: 900px) {
+      .cta-panel { grid-template-columns: minmax(0, 1fr) auto; gap: 4rem; }
+      .cta-panel .actions { min-width: 17rem; }
+    }
+
+    /* ---------- Contacto ---------- */
+    .contact-grid { display: grid; gap: clamp(2rem, 5vw, 4rem); }
+    .contact-lines { display: grid; gap: 0.5rem; }
+    .contact-line { display: flex; gap: 1rem; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border); }
+    .contact-line:last-child { border-bottom: 0; }
+    .contact-line .treat-icon { flex-shrink: 0; width: 2.75rem; height: 2.75rem; margin: 0; background: var(--surface); }
+    .contact-line small { display: block; color: var(--muted); font-size: 0.8125rem; font-weight: 600; }
+    .contact-line a, .contact-line span { display: block; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+    .contact-line a:hover { color: var(--primary-ink); }
+    .contact-line .link-arrow { display: inline-flex; margin-top: 0.125rem; font-size: 0.9375rem; }
+    .hours-card { align-self: start; padding: clamp(1.75rem, 3vw, 2.5rem); border-radius: var(--radius-lg); border-top-right-radius: calc(var(--corner) * 0.7); background: var(--surface); }
+    .hours-card h3 { display: flex; align-items: center; gap: 0.625rem; font-size: 1.25rem; font-weight: 700; }
+    .hours-card h3 svg { color: var(--primary-ink); }
+    .hours { margin-top: 1.25rem; }
+    .hours li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1.5rem; padding: 0.875rem 0; border-top: 1px solid var(--border); font-size: 0.9688rem; }
+    .hours li span:first-child { color: var(--muted); }
+    .hours li span:last-child { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .hours li.urgent { margin-top: 0.75rem; padding: 0.875rem 1rem; border: 0; border-radius: var(--radius-sm); background: var(--primary); color: var(--on-primary); }
+    .hours li.urgent span { color: inherit; }
+    .hours li.urgent a { text-decoration: underline; text-underline-offset: 3px; }
+    @media (min-width: 900px) {
+      .contact-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); align-items: start; }
+    }
+
+    /* ---------- Pie ---------- */
+    .site-footer { padding: clamp(3.5rem, 7vw, 5rem) 0 2rem; background: var(--deep); color: rgb(255 255 255 / 0.72); }
+    .footer-top { display: grid; gap: 2rem; padding-bottom: 2.5rem; border-bottom: 1px solid rgb(255 255 255 / 0.14); }
+    .footer-brand { color: #fff; font-family: var(--font-heading); font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.125rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+    .footer-brand img { height: 2.75rem; width: auto; }
+    .footer-text { max-width: 34rem; margin-top: 0.875rem; font-size: 0.9375rem; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 0.625rem 1.5rem; align-content: start; }
+    .footer-links a { color: #fff; font-weight: 600; }
+    .footer-links a:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem; padding-top: 1.5rem; font-size: 0.875rem; }
+    @media (min-width: 820px) { .footer-top { grid-template-columns: 1fr auto; align-items: end; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main"><%= t("skip") %></a>
+
+  <%
+    // Cabecera de sección. "split": título a la izquierda y entradilla a la derecha.
+    function sectionHead(key, extraClass) {
+      const h = heading(key);
+      if (!h.eyebrow && !h.title && !h.subtitle) return;
+      const split = extraClass === "split";
+  %>
+    <div class="section-head <%= extraClass || '' %>">
+      <% if (split) { %>
+        <% if (h.eyebrow || h.title) { %><div>
+          <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+          <% if (h.title) { %><h2 class="title"><%= h.title %></h2><% } %>
+        </div><% } %>
+        <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+      <% } else { %>
+        <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+        <% if (h.title) { %><h2 class="title"><%= h.title %></h2><% } %>
+        <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+      <% } %>
+    </div>
+  <% } %>
+
+  <%
+    const c = config.contact;
+    const hero = config.hero;
+    const showContact = show("contact");
+    const hourLines = lines(c.hours);
+    // "Lunes a jueves: 9:00–14:00" → ["Lunes a jueves", "9:00–14:00"]
+    const splitLine = (line) => { const m = line.match(/^(.{1,40}?):\s+(.+)$/); return m ? [m[1], m[2]] : ["", line]; };
+    const isUrgent = (label) => /urgenc|emergenc/i.test(label);
+    const regularHours = hourLines.filter((l) => !isUrgent(splitLine(l)[0]));
+    const urgentLines = hourLines.filter((l) => isUrgent(splitLine(l)[0]));
+    const firstHours = regularHours[0] || "";
+    const hasAppt = showContact && (c.phone || firstHours || c.whatsapp);
+    const navCta = show("hero") && hero.ctaText
+      ? { text: hero.ctaText, href: hero.ctaLink }
+      : show("cta") && config.cta.buttonText ? { text: config.cta.buttonText, href: config.cta.buttonLink } : null;
+    // Columnas de los tratamientos: que la última fila nunca quede con una sola tarjeta
+    // Iniciales sin el tratamiento («Dra. Carmen Ruiz» → «CR»)
+    const nameInitials = (name) => initials(String(name || "").replace(/^(dra?|dña|doña|don|sra?)\.?\s+/i, ""));
+    const colsFor = (n) => n <= 3 ? n : n % 3 === 0 ? 3 : n % 4 === 0 ? 4 : n % 3 === 2 ? 3 : 4;
+  %>
+
+  <%
+    // Tarjeta de cita previa: teléfono, primer tramo de horario y WhatsApp
+    function apptCard() {
+  %>
+    <div class="appt">
+      <p class="appt-label"><%- icon("calendar") %><%= t("appointment") %></p>
+      <% if (c.phone) { %><a class="appt-phone" href="<%= telHref(c.phone) %>"><%= c.phone %></a><% } %>
+      <% if (firstHours || c.whatsapp || urgentLines.length) { %>
+      <ul class="appt-list">
+        <% if (firstHours) { %><li><%- icon("clock") %><span><%= firstHours %></span></li><% } %>
+        <% if (c.whatsapp) { %><li><%- icon("message-circle") %><a <%- linkAttrs(waHref(c.whatsapp)) %>><%= t("writeWhatsapp") %></a></li><% } %>
+      </ul>
+      <% } %>
+    </div>
+  <% } %>
+
+  <header class="site-header" data-section="brand">
+    <div class="container nav">
+      <a class="brand" href="#main">
+        <% if (config.brand.logo) { %><%- img(config.brand.logo, config.brand.name, { eager: true, sizes: "160px", width: 480 }) %><% } %>
+        <% if (config.brand.name || !config.brand.logo) { %><span><%= config.brand.name %></span><% } %>
+      </a>
+      <%- navLinks({ limit: 5, exclude: ["contact", "stats"] }) %>
+      <% if (navCta) { %>
+        <a class="btn btn-primary btn-sm nav-cta" <%- linkAttrs(navCta.href) %>><span><%= navCta.text %></span></a>
+      <% } %>
+      <%- mobileMenu({ cta: navCta || undefined }) %>
+    </div>
+  </header>
+
+  <main id="main">
+    <% if (show("hero")) { const withPhoto = !!hero.backgroundImage; const aside = withPhoto || hasAppt; %>
+    <section class="hero" id="hero" data-section="hero">
+      <div class="container hero-grid<%= aside ? ' with-aside' : '' %>">
+        <div>
+          <% if (hero.eyebrow) { %><p class="hero-badge rise"><%- icon("badge-check") %><span><%= hero.eyebrow %></span></p><% } %>
+          <% if (hero.title) { %><h1 class="hero-title rise-2<%= hero.title.length > 70 ? ' long' : '' %>"><%= hero.title %></h1><% } %>
+          <% if (hero.subtitle) { %><p class="hero-sub rise-3"><%= hero.subtitle %></p><% } %>
+          <% if (hero.ctaText || hero.secondaryCtaText) { %>
+          <div class="actions rise-3">
+            <% if (hero.ctaText) { %><a class="btn btn-primary btn-lg" <%- linkAttrs(hero.ctaLink) %>><%= hero.ctaText %></a><% } %>
+            <% if (hero.secondaryCtaText) { %><a class="btn btn-outline btn-lg" <%- linkAttrs(hero.secondaryCtaLink) %>><%= hero.secondaryCtaText %></a><% } %>
+          </div>
+          <% } %>
+        </div>
+        <% if (withPhoto) { %>
+        <div class="hero-media rise-2">
+          <div class="hero-photo"><%- img(hero.backgroundImage, "", { eager: true, sizes: "(min-width: 960px) 45vw, 100vw", width: 1600 }) %></div>
+          <% if (hasAppt) { apptCard(); } %>
+        </div>
+        <% } else if (hasAppt) { %>
+        <div class="hero-aside rise-3"><% apptCard(); %></div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("features")) { const n = config.features.length; %>
+    <section class="section" id="features" data-section="features">
+      <div class="container">
+        <% sectionHead("features", "split") %>
+        <ul class="treat-grid<%= n === 1 ? ' solo' : '' %>" style="--cols: <%= colsFor(n) %>">
+          <% config.features.forEach((f) => { %>
+            <li class="treat">
+              <span class="treat-icon"><%- icon(f.icon || "heart-pulse") %></span>
+              <% if (f.title) { %><h3><%= f.title %></h3><% } %>
+              <% if (f.description) { %><p><%= f.description %></p><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("about")) { const a = config.about; const h = heading("about"); %>
+    <section class="section about" id="about" data-section="about">
+      <div class="container about-grid<%= a.image ? ' with-photo' : '' %>">
+        <% if (a.image) { %>
+        <div class="about-photo"><%- img(a.image, a.heading, { sizes: "(min-width: 900px) 42vw, 100vw" }) %></div>
+        <% } %>
+        <div class="about-copy">
+          <% if (h.eyebrow || a.heading || h.subtitle) { %>
+          <div class="about-head">
+            <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+            <% if (a.heading) { %><h2 class="about-title"><%= a.heading %></h2><% } %>
+            <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+          </div>
+          <% } %>
+          <% if (a.content) { %><div class="prose"><%- paras(a.content) %></div><% } %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("stats")) { const n = config.stats.length; const h = heading("stats"); const withHead = !!(h.eyebrow || h.title || h.subtitle); %>
+    <section class="section stats-sec" id="stats" data-section="stats">
+      <div class="container">
+        <div class="stats-panel<%= withHead ? ' with-head' : '' %>">
+          <% sectionHead("stats") %>
+          <div class="stat-wrap"><ul class="stat-list" style="--cols-lg: <%= Math.min(colsFor(n), 4) %>; --cols-side: <%= n === 1 ? 1 : n % 3 === 0 ? 3 : 2 %>; --cols-md: <%= n === 1 ? 1 : n % 3 === 0 ? 3 : 2 %>">
+            <% config.stats.forEach((s) => { %>
+              <li class="stat">
+                <% if (s.value) { %><p class="stat-value"><%= s.value %></p><% } %>
+                <% if (s.label) { %><p class="stat-label"><%= s.label %></p><% } %>
+              </li>
+            <% }) %>
+          </ul></div>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("team")) { const withPhotos = config.team.some((m) => m.image); const teamCols = colsFor(config.team.length); %>
+    <section class="section team" id="team" data-section="team">
+      <div class="container">
+        <% sectionHead("team", "split") %>
+        <ul class="team-grid<%= withPhotos ? '' : ' no-photos' %>" data-cols="<%= teamCols %>" style="--cols: <%= teamCols %>">
+          <% config.team.forEach((m) => { %>
+            <li class="doc">
+              <% if (withPhotos) { %>
+                <div class="doc-photo"><%- img(m.image, m.name, { sizes: "(min-width: 1100px) 280px, (min-width: 560px) 33vw, 50vw", width: 800, placeholder: "user" }) %></div>
+              <% } else { %>
+                <span class="avatar" aria-hidden="true"><%= nameInitials(m.name) %></span>
+              <% } %>
+              <div>
+                <% if (m.name) { %><h3><%= m.name %></h3><% } %>
+                <% if (m.role) { %><p><%= m.role %></p><% } %>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("products")) { const n = config.products.length; %>
+    <section class="section plans-sec" id="products" data-section="products">
+      <div class="container">
+        <% sectionHead("products", "split") %>
+        <ul class="plans<%= n === 1 ? ' solo' : '' %>">
+          <% config.products.forEach((p) => { const items = lines(p.description); %>
+            <li class="plan<%= p.badge ? ' has-badge' : '' %>">
+              <% if (p.image) { %><div class="plan-media"><%- img(p.image, p.title, { sizes: "(min-width: 900px) 400px, 100vw", width: 1200 }) %></div><% } %>
+              <% if (p.badge) { %><span class="plan-badge"><%= p.badge %></span><% } %>
+              <% if (p.title) { %><h3><%= p.title %></h3><% } %>
+              <% if (p.price) { %><p class="plan-price<%= p.price.length > 9 ? ' long' : '' %>"><%= p.price %></p><% } %>
+              <% if (items.length > 1) { %>
+                <ul class="plan-desc checklist"><% items.forEach((line) => { %><li><%- icon("check", "") %><%= line %></li><% }) %></ul>
+              <% } else if (p.description) { %>
+                <p class="plan-desc"><%= p.description %></p>
+              <% } else { %>
+                <span class="plan-desc" aria-hidden="true" style="border:0;padding:0"></span>
+              <% } %>
+              <% if (p.link) { %><a class="btn <%= p.badge ? 'btn-primary' : 'btn-outline' %>" <%- linkAttrs(p.link) %>><%= t("bookVisit") %></a><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("testimonials")) { const few = config.testimonials.length < 3; %>
+    <section class="section" id="testimonials" data-section="testimonials">
+      <div class="container">
+        <% sectionHead("testimonials", "split") %>
+        <div class="voices<%= few ? ' few' : '' %>">
+          <% config.testimonials.forEach((r) => { %>
+            <figure class="voice">
+              <%- icon("quote", "voice-mark") %>
+              <% if (r.quote) { %><blockquote><%= r.quote %></blockquote><% } %>
+              <% if (r.name || r.role) { %>
+              <figcaption>
+                <span class="avatar"><% if (r.avatar) { %><%- img(r.avatar, r.name, { sizes: "48px", width: 480 }) %><% } else { %><%= nameInitials(r.name) %><% } %></span>
+                <span><% if (r.name) { %><strong><%= r.name %></strong><% } %><% if (r.role) { %><span><%= r.role %></span><% } %></span>
+              </figcaption>
+              <% } %>
+            </figure>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("faqs")) { %>
+    <section class="section faqs-sec" id="faqs" data-section="faqs">
+      <div class="container faq-grid">
+        <div>
+          <% sectionHead("faqs") %>
+          <% if (showContact && c.phone) { %>
+          <div class="faq-help">
+            <span class="treat-icon"><%- icon("phone") %></span>
+            <div>
+              <strong><%= t("moreDoubts") %></strong>
+              <p><%= t("callAndAsk") %></p>
+              <a href="<%= telHref(c.phone) %>"><%= c.phone %></a>
+            </div>
+          </div>
+          <% } %>
+        </div>
+        <div class="faq-list">
+          <% config.faqs.forEach((f, i) => { %>
+            <details class="faq-item"<%= i === 0 ? " open" : "" %>>
+              <summary><span><%= f.question || t("question") %></span><%- icon("plus", "faq-icon") %></summary>
+              <% if (f.answer) { %><div class="faq-answer"><%- paras(f.answer) %></div><% } %>
+            </details>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("cta")) { const cta = config.cta; const callLine = showContact && c.phone; %>
+    <section class="section cta-sec" id="cta" data-section="cta">
+      <div class="container">
+        <div class="cta-panel">
+          <div>
+            <% if (cta.title) { %><h2 class="cta-title"><%= cta.title %></h2><% } %>
+            <% if (cta.text) { %><p><%= cta.text %></p><% } %>
+          </div>
+          <% if (cta.buttonText || callLine) { %>
+          <div class="actions">
+            <% if (cta.buttonText) { %><a class="btn btn-lg btn-invert" <%- linkAttrs(cta.buttonLink) %>><%= cta.buttonText %></a><% } %>
+            <% if (callLine) { %><p class="cta-call"><%= cta.buttonText ? t("orCall") : t("callUs") %> <a href="<%= telHref(c.phone) %>"><%= c.phone %></a></p><% } %>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (showContact) { %>
+    <section class="section" id="contact" data-section="contact">
+      <div class="container contact-grid">
+        <div>
+          <% sectionHead("contact") %>
+          <% if (c.address || c.phone || c.email || c.whatsapp) { %>
+          <ul class="contact-lines">
+            <% if (c.address) { %>
+            <li class="contact-line">
+              <span class="treat-icon"><%- icon("map-pin") %></span>
+              <div>
+                <small><%= t("address") %></small>
+                <span><%= c.address %></span>
+                <a class="link-arrow" <%- linkAttrs(mapsHref(c.address)) %>><%= t("directions") %><%- icon("arrow-up-right", "") %></a>
+              </div>
+            </li>
+            <% } %>
+            <% if (c.phone) { %>
+            <li class="contact-line">
+              <span class="treat-icon"><%- icon("phone") %></span>
+              <div><small><%= t("phone") %></small><a href="<%= telHref(c.phone) %>"><%= c.phone %></a></div>
+            </li>
+            <% } %>
+            <% if (c.whatsapp) { %>
+            <li class="contact-line">
+              <span class="treat-icon"><%- icon("message-circle") %></span>
+              <div><small><%= t("whatsapp") %></small><a <%- linkAttrs(waHref(c.whatsapp)) %>><%= c.whatsapp %></a></div>
+            </li>
+            <% } %>
+            <% if (c.email) { %>
+            <li class="contact-line">
+              <span class="treat-icon"><%- icon("mail") %></span>
+              <div><small><%= t("email") %></small><a href="<%= mailHref(c.email) %>"><%= c.email %></a></div>
+            </li>
+            <% } %>
+          </ul>
+          <% } %>
+        </div>
+        <% if (hourLines.length) { %>
+        <div class="hours-card">
+          <h3><%- icon("clock") %><%= t("hours") %></h3>
+          <ul class="hours">
+            <% regularHours.forEach((line) => { const [label, value] = splitLine(line); %>
+              <li><% if (label) { %><span><%= label %></span><% } %><span><%= value %></span></li>
+            <% }) %>
+            <% urgentLines.forEach((line) => { const [label, value] = splitLine(line); const tel = telHref(value); %>
+              <li class="urgent"><span><%= label %></span><span><% if (/\d{6,}/.test(value.replace(/\s/g, "")) && tel) { %><a href="<%= tel %>"><%= value %></a><% } else { %><%= value %><% } %></span></li>
+            <% }) %>
+          </ul>
+        </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+  </main>
+
+  <% if (show("footer")) { %>
+  <footer class="site-footer" id="footer" data-section="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div>
+          <p class="footer-brand"><% if (config.brand.logo && !config.brand.name) { %><%- img(config.brand.logo, "", { sizes: "160px", width: 480 }) %><% } else { %><%= config.brand.name %><% } %></p>
+          <% if (config.footer.text) { %><p class="footer-text"><%= config.footer.text %></p><% } %>
+        </div>
+        <% if (config.footer.links.length) { %>
+        <nav class="footer-links" aria-label="<%= config.brand.name || t('menu') %>">
+          <% config.footer.links.forEach((l) => { %><a <%- linkAttrs(l.url) %>><%= l.label || l.url %></a><% }) %>
+        </nav>
+        <% } %>
+      </div>
+      <div class="footer-bottom">
+        <p><%- copyright(config.brand.name) %></p>
+        <%- madeWith %>
+      </div>
+    </div>
+  </footer>
+  <% } %>
+
+  <%- foot %>
+</body>
+</html>

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SectionStack, { type EditorTarget } from "../components/editor/SectionStack";
-import SectionEditor from "../components/editor/SectionEditor";
+import SectionEditor, { HeadingEditor } from "../components/editor/SectionEditor";
 import StyleEditor from "../components/editor/StyleEditor";
 import Button from "../components/ui/Button";
 import { buttonClass } from "../components/ui/buttonClass";
@@ -11,6 +11,7 @@ import Segmented from "../components/ui/Segmented";
 import { api, ApiError, downloadFile, siteUrl } from "../lib/api";
 import { errorKey } from "../lib/errors";
 import { sectionName, sectionsOf } from "../lib/templates";
+import { useFrameScale, useMediaQuery } from "../lib/useFrameScale";
 import type { HideableSection, Project, SectionKey } from "../types";
 
 function setNestedValue<T>(obj: T, path: string, value: unknown): T {
@@ -35,10 +36,10 @@ const projectBody = (p: Project) => ({ name: p.name, config: p.config, hiddenSec
 type SaveState = "idle" | "pending" | "saving" | "saved" | "error";
 type Device = "desktop" | "mobile";
 
-// Dónde empieza cada sección dentro de la web generada (ver backend/src/views)
+// Dónde empieza cada sección dentro de la web generada: todas las plantillas
+// marcan su elemento raíz con data-section (ver backend/src/views/README.md)
 function sectionAnchor(doc: Document, key: SectionKey): Element | null {
-  if (key === "footer") return doc.querySelector("footer");
-  return doc.getElementById(key === "faqs" ? "faq" : key);
+  return doc.querySelector(`[data-section="${key}"]`);
 }
 
 /** Lleva la vista previa a la sección que se está editando. */
@@ -86,7 +87,7 @@ function SaveStatus({ state }: { state: SaveState }) {
 export default function EditProjectPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -103,6 +104,9 @@ export default function EditProjectPage() {
   const [shownVersion, setShownVersion] = useState(0);
   const frames = useRef(new Map<number, HTMLIFrameElement>());
   const formRef = useRef<HTMLDivElement>(null);
+  // En pantallas anchas, «Escritorio» enseña la web a 1280 px reducida al hueco
+  const wide = useMediaQuery("(min-width: 1024px)");
+  const { ref: previewBoxRef, style: frameStyle } = useFrameScale(wide && device === "desktop");
 
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingRef = useRef<Project | null>(null);
@@ -171,6 +175,13 @@ export default function EditProjectPage() {
       0
     );
   };
+
+  // Al cambiar entre escritorio y móvil la web se recoloca: vuelve a la sección que se edita
+  useEffect(() => {
+    const id = window.setTimeout(() => scrollToSection(frames.current.get(shownVersion), selected, false), 60);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo al cambiar de dispositivo
+  }, [device]);
 
   const deleteProject = async () => {
     if (!project || !window.confirm(t("editPage.delete_confirm", { name: project.name }))) return;
@@ -292,7 +303,7 @@ export default function EditProjectPage() {
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <aside className="shrink-0 border-b border-junta bg-papel p-4 lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r">
           <SectionStack
-            view={project.view}
+            template={project.template}
             sections={sections}
             hidden={hidden}
             selected={current}
@@ -319,7 +330,7 @@ export default function EditProjectPage() {
         >
           <div className="px-5 py-6 sm:px-8">
             <h2 className="titular text-2xl">
-              {current === "style" ? t("editPage.style") : sectionName(t, project.view, current)}
+              {current === "style" ? t("editPage.style") : sectionName(t, i18n.language, project.template, current)}
             </h2>
             {current === "style" && <p className="mt-1 text-sm text-andamio">{t("editPage.style_hint")}</p>}
 
@@ -336,7 +347,14 @@ export default function EditProjectPage() {
               {current === "style" ? (
                 <StyleEditor theme={config.theme} onChange={handleChange} />
               ) : (
-                <SectionEditor key={current} section={current} value={config[current]} onChange={handleChange} />
+                <div key={current} className="space-y-8">
+                  <HeadingEditor
+                    section={current}
+                    value={config.headings?.[current as keyof typeof config.headings]}
+                    onChange={handleChange}
+                  />
+                  <SectionEditor section={current} value={config[current]} onChange={handleChange} />
+                </div>
               )}
             </div>
           </div>
@@ -375,6 +393,7 @@ export default function EditProjectPage() {
           </div>
           <div className="min-h-0 flex-1 lg:px-4 lg:pb-4">
             <div
+              ref={previewBoxRef}
               className={`relative h-full overflow-hidden bg-papel lg:rounded-lg lg:border lg:border-junta ${
                 device === "mobile" ? "lg:mx-auto lg:max-w-[390px]" : ""
               }`}
@@ -394,7 +413,8 @@ export default function EditProjectPage() {
                   aria-hidden={v === shownVersion ? undefined : true}
                   tabIndex={v === shownVersion ? undefined : -1}
                   onLoad={() => onFrameLoad(v)}
-                  className={`absolute inset-0 size-full border-0 ${v === shownVersion ? "" : "invisible"}`}
+                  style={frameStyle}
+                  className={`absolute top-0 left-0 border-0 ${v === shownVersion ? "" : "invisible"}`}
                 />
               ))}
             </div>

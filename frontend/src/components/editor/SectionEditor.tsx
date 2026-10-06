@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TextAreaField, TextField } from "../ui/Field";
 import Button from "../ui/Button";
 import Icon from "../ui/Icon";
-import { SECTION_FIELDS, type FieldDef } from "./sectionFields";
-import type { SectionKey } from "../../types";
+import SiteIcon from "./SiteIcon";
+import { HEADING_FIELDS, SECTION_FIELDS, type FieldDef } from "./sectionFields";
+import { PICKER_ICONS, SITE_ICONS } from "../../lib/siteIcons";
+import type { Heading, SectionKey } from "../../types";
 
 type OnChange = (path: string, value: unknown) => void;
 type Item = Record<string, string>;
@@ -42,14 +44,76 @@ function ImageField({ label, value, placeholder, onChange }: { label: string; va
   );
 }
 
+/** Selector de icono: los de la colección de las webs, en una rejilla desplegable. */
+function IconField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  const known = Boolean(SITE_ICONS[value]);
+
+  return (
+    <div>
+      <p id={id} className="mb-1.5 text-sm font-medium">
+        {label}
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <span
+          aria-hidden="true"
+          className="grid size-10 shrink-0 place-items-center rounded-bloque border border-junta bg-yeso text-lg"
+        >
+          {known ? <SiteIcon name={value} /> : value || <span className="text-andamio">–</span>}
+        </span>
+        <Button variant="secondary" size="sm" aria-expanded={open} aria-controls={`${id}-rejilla`} onClick={() => setOpen(!open)}>
+          {open ? t("iconpicker.close") : t("iconpicker.choose")}
+        </Button>
+        {value && (
+          <Button variant="quiet" size="sm" onClick={() => onChange("")}>
+            {t("iconpicker.none")}
+          </Button>
+        )}
+      </div>
+      {open && (
+        <div
+          id={`${id}-rejilla`}
+          role="group"
+          aria-labelledby={id}
+          className="mt-3 grid max-h-64 grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1 overflow-y-auto rounded-bloque border border-junta bg-papel p-2"
+        >
+          {PICKER_ICONS.map((name) => (
+            <button
+              key={name}
+              type="button"
+              title={name}
+              aria-label={t("iconpicker.icon", { name })}
+              aria-pressed={value === name}
+              onClick={() => {
+                onChange(name);
+                setOpen(false);
+              }}
+              className="grid size-10 place-items-center rounded-sm text-grafito transition-colors hover:bg-yeso aria-pressed:bg-azul aria-pressed:text-white"
+            >
+              <SiteIcon name={name} />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FieldInput({ def, value, onChange }: { def: FieldDef; value: string; onChange: (v: string) => void }) {
   const { t } = useTranslation();
   const label = t(def.label);
   const placeholder = def.placeholder ? t(def.placeholder) : undefined;
+  const hint = def.hint ? t(def.hint) : undefined;
 
   switch (def.kind) {
+    case "icon":
+      return <IconField label={label} value={value} onChange={onChange} />;
     case "textarea":
-      return <TextAreaField label={label} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />;
+      return (
+        <TextAreaField label={label} value={value} placeholder={placeholder} hint={hint} onChange={(e) => onChange(e.target.value)} />
+      );
     case "image":
       return <ImageField label={label} value={value} placeholder={placeholder} onChange={onChange} />;
     case "link":
@@ -58,7 +122,7 @@ function FieldInput({ def, value, onChange }: { def: FieldDef; value: string; on
           label={label}
           value={value}
           placeholder={placeholder ?? "https://"}
-          hint={t("editPage.link_hint")}
+          hint={hint ?? t("editPage.link_hint")}
           onChange={(e) => onChange(e.target.value)}
         />
       );
@@ -69,6 +133,7 @@ function FieldInput({ def, value, onChange }: { def: FieldDef; value: string; on
           label={label}
           value={value}
           placeholder={placeholder}
+          hint={hint}
           onChange={(e) => onChange(e.target.value)}
         />
       );
@@ -84,6 +149,31 @@ function FieldGrid({ fields, source, onField }: { fields: FieldDef[]; source: un
         </div>
       ))}
     </div>
+  );
+}
+
+/** Antetítulo, título y entradilla de una sección (config.headings). */
+export function HeadingEditor({ section, value, onChange }: { section: SectionKey; value?: Heading; onChange: OnChange }) {
+  const { t } = useTranslation();
+  const fields = HEADING_FIELDS[section];
+  if (!fields) return null;
+  const heading: Heading = value ?? { eyebrow: "", title: "", subtitle: "" };
+  const defs: FieldDef[] = fields.map((key) => ({
+    key,
+    label: `headings.${key}`,
+    kind: key === "subtitle" ? "textarea" : "text",
+    hint: key === "eyebrow" ? "headings.eyebrow_hint" : undefined,
+  }));
+
+  return (
+    <fieldset className="rounded-bloque border border-junta p-4">
+      <legend className="px-1 text-sm font-semibold">{t("headings.legend")}</legend>
+      <FieldGrid
+        fields={defs}
+        source={heading}
+        onField={(key, v) => onChange(`config.headings.${section}`, { ...heading, [key]: v })}
+      />
+    </fieldset>
   );
 }
 

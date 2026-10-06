@@ -1,168 +1,672 @@
 <!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title><%= config.brand.name %> - Tienda Online</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      html { scroll-behavior: smooth; }
-    </style>
-  </head>
-  <body style="font-family: <%= config.theme.fontFamily %>; background-color: <%= background %>; color: <%= textColor %>" class="antialiased">
-    <% if (previewMode) { %>
-      <style>
-        #preview-wrapper {
-          transform: scale(0.6);
-          transform-origin: top center;
-          width: 166.66vw;
-          margin-left: -33.33vw;
-        }
-      </style>
-      <div id="preview-wrapper">
+<html <%- htmlAttrs %>>
+<head>
+  <%- head %>
+  <style>
+    /* Tienda artesana: cálida y hecha a mano. Paneles de barro oscuro
+       (secundario) con textura moteada, acento mostaza (principal), arcos como
+       la boca de un horno, una pegatina circular y anillos de torno. */
+    :root {
+      --bg: #f7f2ec;
+      --surface: #efe6db;
+      --surface-2: #e6d9ca;
+      --text: #2b1e16;
+      --muted: #75645a;
+      --border: #e2d4c4;
+      --radius-sm: 10px;
+      --radius: 18px;
+      --radius-lg: 30px;
+      --radius-btn: 999px;
+      /* Paneles oscuros: siempre oscuros sea cual sea el color secundario */
+      --clay: color-mix(in srgb, var(--secondary) 45%, #140d09);
+      --on-clay: #f7efe5;
+      --on-clay-muted: rgb(247 239 229 / 0.74);
+      --clay-line: rgb(255 255 255 / 0.14);
+      --accent: var(--primary-on-dark);
+      --chip: color-mix(in srgb, var(--primary) 26%, var(--bg));
+      --inset: clamp(0.5rem, 1.4vw, 1.25rem);
+      --speckle: radial-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1.6px) 0 0 / 17px 17px,
+        radial-gradient(rgb(0 0 0 / 0.12) 1px, transparent 1.6px) 8px 9px / 23px 23px;
+    }
+    html.bi-dark {
+      --bg: #16100c;
+      --surface: #1f1712;
+      --surface-2: #2a1f18;
+      --text: #f4ece2;
+      --muted: #b8a796;
+      --border: #382a21;
+      --clay: color-mix(in srgb, var(--secondary) 45%, #2c1f17);
+      --chip: color-mix(in srgb, var(--primary) 22%, var(--bg));
+    }
+
+    h1, h2, h3 { font-weight: 750; letter-spacing: -0.035em; line-height: 1.04; }
+    .title { max-width: 20ch; font-size: clamp(2.25rem, 1.4rem + 3vw, 3.75rem); }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      background: var(--chip);
+      color: var(--text);
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0;
+      line-height: 1.25;
+      text-transform: none;
+    }
+    .on-clay .eyebrow { background: rgb(255 255 255 / 0.1); color: var(--on-clay); }
+    .lead { max-width: 36rem; }
+    @media (min-width: 1000px) {
+      .section-head.row { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 4rem; align-items: end; max-width: none; }
+      .section-head.row .lead { margin-top: 0; }
+    }
+    .btn-clay { background: var(--clay); color: var(--on-clay); }
+    .btn-clay:hover { background: color-mix(in srgb, var(--clay) 82%, #000); }
+    .btn-invert { background: var(--on-primary); color: var(--primary); }
+    .btn-invert:hover { background: color-mix(in srgb, var(--on-primary) 86%, var(--primary)); }
+
+    /* Paneles de barro (portada, opiniones y pie) */
+    .on-clay { background: var(--clay); color: var(--on-clay); }
+    .panel { position: relative; isolation: isolate; overflow: hidden; border-radius: var(--radius-lg); }
+    .panel::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--speckle); pointer-events: none; }
+
+    /* Cabecera */
+    .site-header .brand { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.04em; }
+    .site-header .nav-links a { color: var(--text); opacity: 0.72; }
+    .site-header .nav-links a:hover { opacity: 1; }
+    .nav-cta { display: inline-block; max-width: 16rem; overflow: hidden; padding-block: 0; line-height: 2.5rem; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Portada */
+    .hero { padding: var(--inset) var(--inset) 0; }
+    .hero-panel { padding-block: clamp(3rem, 7vw, 6rem); }
+    .hero-grid { display: grid; gap: clamp(3rem, 6vw, 4rem); align-items: center; }
+    .hero-copy .eyebrow { margin-bottom: 1.5rem; }
+    .hero-title { max-width: 13ch; font-size: clamp(2.75rem, 1.3rem + 4.8vw, 5.75rem); font-weight: 800; letter-spacing: -0.045em; line-height: 0.98; }
+    .hero-title.is-long { max-width: 20ch; font-size: clamp(2.25rem, 1.3rem + 2.8vw, 4rem); line-height: 1.02; }
+    .hero-title.is-xlong { max-width: 28ch; font-size: clamp(1.875rem, 1.2rem + 1.9vw, 3rem); line-height: 1.06; }
+    .hero-sub { max-width: 34rem; margin-top: 1.5rem; color: var(--on-clay-muted); font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem); }
+    .hero .actions { margin-top: 2.25rem; }
+    .hero-visual { position: relative; justify-self: center; width: min(100%, 30rem); }
+    .arch { aspect-ratio: 4 / 5; overflow: hidden; border-radius: 999px 999px var(--radius) var(--radius); background: var(--surface-2); }
+    .arch > img, .arch > .ph { width: 100%; height: 100%; object-fit: cover; }
+    .hero .arch > .ph { background: radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--primary) 45%, transparent), transparent 70%), rgb(255 255 255 / 0.08); }
+    .sticker { position: absolute; left: -1.25rem; bottom: 1.5rem; width: clamp(7rem, 22vw, 9.5rem); height: auto; transform: rotate(-14deg); filter: drop-shadow(0 10px 18px rgb(0 0 0 / 0.3)); }
+    .sticker-bg { fill: var(--primary); }
+    .sticker-text { fill: var(--on-primary); font-family: var(--font-body); font-size: 15px; font-weight: 700; letter-spacing: 0.06em; }
+    .sticker-star { fill: none; stroke: var(--on-primary); stroke-width: 5; stroke-linecap: round; }
+    @media (min-width: 900px) {
+      .hero-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 4rem; }
+      .hero-visual { justify-self: end; }
+      .sticker { left: -3.5rem; bottom: 3rem; }
+    }
+    @media (max-width: 899px) {
+      .hero-visual { width: min(100%, 24rem); }
+      .hero-visual .arch { aspect-ratio: 1; }
+    }
+    @media (max-width: 520px) {
+      .hero .actions .btn { flex: 1 1 100%; }
+    }
+
+    /* Productos */
+    .shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.25rem 1rem; }
+    .prod { position: relative; display: flex; flex-direction: column; min-width: 0; }
+    .prod-media { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--radius); background: var(--surface); }
+    .prod-media > img, .prod-media > .ph { width: 100%; height: 100%; object-fit: cover; }
+    .prod-media > img { transition: transform 0.8s var(--ease); }
+    .prod:hover .prod-media > img { transform: scale(1.04); }
+    .prod-media > .ph {
+      background:
+        radial-gradient(color-mix(in srgb, var(--text) 16%, transparent) 1px, transparent 1.7px) 0 0 / 15px 15px,
+        radial-gradient(color-mix(in srgb, var(--text) 10%, transparent) 1px, transparent 1.7px) 7px 8px / 21px 21px,
+        var(--surface);
+      color: color-mix(in srgb, var(--text) 30%, transparent);
+    }
+    .prod-badge {
+      position: absolute;
+      top: 0.75rem;
+      left: 0.75rem;
+      max-width: calc(100% - 1.5rem);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      background: var(--primary);
+      color: var(--on-primary);
+      font-family: var(--font-heading);
+      font-size: 0.8125rem;
+      font-weight: 700;
+      line-height: 1.2;
+      box-shadow: 0 8px 16px -8px rgb(0 0 0 / 0.45);
+      transform: rotate(-4deg);
+      transform-origin: left center;
+    }
+    .prod-info { display: flex; flex: 1; flex-direction: column; padding-top: 1rem; }
+    .prod-line { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 1rem; }
+    .prod h3 { min-width: 0; font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.3125rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+    .prod-price { font-family: var(--font-heading); font-size: 1.0625rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .prod-desc { margin-top: 0.375rem; color: var(--muted); font-size: 0.9375rem; line-height: 1.5; }
+    .prod-buy {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      align-self: flex-start;
+      margin-top: auto;
+      padding-top: 0.875rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      text-decoration: underline;
+      text-decoration-color: var(--primary);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 5px;
+    }
+    .prod-buy svg { width: 1rem; height: 1rem; }
+    .prod-buy::after { content: ""; position: absolute; inset: 0; }
+    .prod:hover .prod-buy { text-decoration-color: currentColor; }
+    @media (max-width: 999px) {
+      /* El último impar ocupa la fila entera como ficha horizontal */
+      .shop-grid > .prod:last-child:nth-child(odd) { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.25rem; align-items: center; }
+      .shop-grid > .prod:last-child:nth-child(odd) .prod-media { aspect-ratio: 1; }
+      .shop-grid > .prod:last-child:nth-child(odd) .prod-info { padding-top: 0; }
+    }
+    @media (max-width: 600px) {
+      .prod h3 { font-size: 1rem; }
+      .prod-price { font-size: 1rem; }
+      .prod-desc { font-size: 0.875rem; }
+      .prod-badge { top: 0.5rem; left: 0.5rem; max-width: calc(100% - 1rem); padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+    }
+    @media (max-width: 359px) {
+      .shop-grid { grid-template-columns: 1fr; }
+      .shop-grid > .prod:last-child:nth-child(odd) { display: flex; }
+    }
+    @media (min-width: 1000px) {
+      .shop-grid { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 3rem 1.5rem; }
+      .shop-grid.cols-1 .prod { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4rem; align-items: center; }
+      .shop-grid.cols-1 .prod-media { aspect-ratio: 1; }
+      .shop-grid.cols-1 .prod-info { padding-top: 0; }
+      .shop-grid.cols-1 .prod h3 { font-size: clamp(2rem, 1.4rem + 1.6vw, 3rem); }
+      .shop-grid.cols-1 .prod-price { font-size: 1.5rem; }
+      .shop-grid.cols-1 .prod-desc { margin-top: 1rem; font-size: 1.125rem; }
+      .shop-grid.cols-1 .prod-buy { margin-top: 1.5rem; }
+    }
+
+    /* Ventajas */
+    .perks { padding-block: clamp(3.5rem, 7vw, 5.5rem); border-block: 1px solid var(--border); }
+    .perks-wrap { display: grid; gap: 2.5rem; }
+    .perks .section-head { margin-bottom: 0; }
+    .perks .title { font-size: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem); }
+    .perk-grid { display: grid; gap: 1.75rem 2.5rem; }
+    .perk { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.25rem 1rem; align-items: start; }
+    .perk-icon { display: grid; place-items: center; grid-row: span 2; width: 3rem; height: 3rem; border-radius: 50%; background: var(--primary); color: var(--on-primary); }
+    .perk-icon svg { width: 1.375rem; height: 1.375rem; }
+    .perk h3 { align-self: center; font-size: 1.1875rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
+    .perk p { grid-column: 2; color: var(--muted); font-size: 0.9375rem; line-height: 1.55; }
+    .perk.no-icon { grid-template-columns: minmax(0, 1fr); }
+    .perk.no-icon p { grid-column: 1; }
+    @media (min-width: 640px) { .perk-grid:not(.cols-1) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (min-width: 1000px) {
+      .perk-grid { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); }
+      .perks-wrap.has-head { grid-template-columns: minmax(0, 19rem) minmax(0, 1fr); gap: 4rem; align-items: start; }
+    }
+
+    /* El taller */
+    .about { background: var(--surface); overflow-x: clip; }
+    .about-grid { display: grid; gap: clamp(3rem, 6vw, 5rem); align-items: center; }
+    .about-media { position: relative; isolation: isolate; width: min(100%, 30rem); }
+    .about-media::before {
+      content: "";
+      position: absolute;
+      right: -14%;
+      bottom: -10%;
+      z-index: -1;
+      width: 72%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: repeating-radial-gradient(circle, color-mix(in srgb, var(--primary) 60%, transparent) 0 2px, transparent 2px 15px);
+    }
+    .about-media .ph { background: radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--primary) 30%, transparent), transparent 70%), var(--surface-2); }
+    .about-copy .eyebrow { margin-bottom: 1.25rem; }
+    .about-title { max-width: 18ch; font-size: clamp(2rem, 1.3rem + 2.6vw, 3.5rem); }
+    .about-copy .prose { max-width: 36rem; margin-top: 1.5rem; color: var(--muted); font-size: 1.0625rem; }
+    @media (min-width: 900px) {
+      .about-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+      .about-grid.no-media { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 899px) {
+      .about-media { width: min(82%, 24rem); }
+    }
+
+    /* Lookbook: filas justificadas con proporciones alternas */
+    .lb { --h: clamp(13rem, 26vw, 22rem); display: flex; flex-wrap: wrap; gap: clamp(0.625rem, 1.2vw, 1rem); }
+    .lb-item { --r: 1; position: relative; flex: calc(var(--r) * 100) 1 calc(var(--h) * var(--r)); min-width: 0; height: var(--h); overflow: hidden; border-radius: var(--radius); background: var(--surface); }
+    .lb-item:nth-child(6n + 1) { --r: 0.8; border-radius: 999px 999px var(--radius) var(--radius); }
+    .lb-item:nth-child(6n + 2) { --r: 1.35; }
+    .lb-item:nth-child(6n + 3) { --r: 1; }
+    .lb-item:nth-child(6n + 4) { --r: 1.5; }
+    .lb-item:nth-child(6n + 5) { --r: 0.75; border-radius: 999px 999px var(--radius) var(--radius); }
+    .lb-item:nth-child(6n) { --r: 1.2; }
+    .lb-item:only-child { border-radius: var(--radius); }
+    .lb-item > img, .lb-item > .ph { width: 100%; height: 100%; object-fit: cover; }
+    .lb-item > img { transition: transform 0.8s var(--ease); }
+    .lb-item:hover > img { transform: scale(1.035); }
+    .lb-item figcaption {
+      position: absolute;
+      left: 0.75rem;
+      bottom: 0.75rem;
+      max-width: calc(100% - 1.5rem);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      background: rgb(255 255 255 / 0.92);
+      color: #2b1e16;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .lb-item figcaption span { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    @media (max-width: 640px) {
+      .lb { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 11rem; gap: 0.625rem; }
+      .lb-item { height: auto; }
+      .lb-item:nth-child(3n + 1), .lb-item:last-child:nth-child(3n + 2) { grid-column: span 2; }
+      .lb-item:nth-child(6n + 1), .lb-item:nth-child(6n + 5) { border-radius: var(--radius); }
+      .lb-item:nth-child(3n + 2):not(:last-child), .lb-item:nth-child(3n) { border-radius: 999px 999px var(--radius) var(--radius); }
+      .lb-item figcaption { left: 0.5rem; bottom: 0.5rem; max-width: calc(100% - 1rem); font-size: 0.75rem; }
+    }
+
+    /* Opiniones */
+    .reviews { padding: 0 var(--inset); }
+    .reviews-panel { padding-block: var(--section-y); }
+    .reviews .lead { color: var(--on-clay-muted); }
+    .review-grid { display: grid; gap: 1.25rem; }
+    .review {
+      display: flex;
+      flex-direction: column;
+      padding: clamp(1.5rem, 2.5vw, 2rem);
+      border: 1px solid var(--clay-line);
+      border-radius: var(--radius);
+      background: rgb(255 255 255 / 0.05);
+    }
+    .stars { display: inline-flex; gap: 0.2rem; color: var(--accent); }
+    .stars svg { width: 1rem; height: 1rem; fill: currentColor; }
+    .review blockquote { flex: 1; margin-top: 0.875rem; font-size: 1.0625rem; line-height: 1.6; }
+    .review-author { display: flex; align-items: center; gap: 0.875rem; margin-top: 1.375rem; }
+    .review-author .avatar { width: 2.75rem; height: 2.75rem; background: var(--primary); color: var(--on-primary); font-size: 0.9375rem; }
+    .review-author strong { display: block; font-weight: 700; line-height: 1.3; }
+    .review-author div span { display: block; color: var(--on-clay-muted); font-size: 0.875rem; }
+    .review-grid.cols-1 .review { max-width: 52rem; margin: 0 auto; padding: 0; border: 0; background: none; text-align: center; }
+    .review-grid.cols-1 blockquote { font-family: var(--font-heading); font-size: clamp(1.5rem, 1.1rem + 1.5vw, 2.375rem); font-weight: 600; letter-spacing: -0.025em; line-height: 1.25; }
+    .review-grid.cols-1 .review-author { justify-content: center; text-align: left; }
+    @media (min-width: 700px) {
+      .review-grid:not(.cols-1) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .review-grid:not(.cols-1) > .review:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    }
+    @media (min-width: 1000px) {
+      .review-grid:not(.cols-1) { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); }
+      .review-grid:not(.cols-1) > .review:last-child:nth-child(odd) { grid-column: auto; }
+      .review-grid.cols-2 > .review:last-child:nth-child(odd),
+      .review-grid.cols-3 > .review:last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
+    }
+
+    /* Preguntas */
+    .faq-grid { display: grid; gap: 2.5rem; }
+    .faq-grid .section-head { margin-bottom: 0; }
+    .faq-list { display: grid; gap: 0.75rem; align-content: start; }
+    .faq-item { border-radius: var(--radius); background: var(--surface); }
+    .faq-item > summary {
+      padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+      font-family: var(--font-heading);
+      font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+      font-weight: 650;
+      letter-spacing: -0.015em;
+      line-height: 1.3;
+    }
+    .faq-plus { display: grid; place-items: center; flex-shrink: 0; width: 2.25rem; height: 2.25rem; border-radius: 50%; background: var(--chip); color: var(--text); }
+    .faq-plus svg { width: 1.125rem; height: 1.125rem; }
+    .faq-item[open] .faq-plus { background: var(--primary); color: var(--on-primary); }
+    .faq-answer { padding: 0 1.5rem 1.5rem; color: var(--muted); }
+    @media (min-width: 1000px) {
+      .faq-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 5rem; }
+      .faq-grid .section-head { position: sticky; top: calc(var(--header-h) + 2rem); align-self: start; }
+    }
+
+    /* Llamada a la acción: panel mostaza con anillos de torno */
+    .cta-sec { padding-block: clamp(0.5rem, 2vw, 1.5rem); }
+    .cta-panel { position: relative; isolation: isolate; overflow: hidden; padding: clamp(2.5rem, 6vw, 5rem); border-radius: var(--radius-lg); background: var(--primary); color: var(--on-primary); }
+    .cta-panel::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -12%;
+      z-index: -1;
+      width: min(38rem, 75%);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: repeating-radial-gradient(circle, color-mix(in srgb, var(--on-primary) 18%, transparent) 0 1.5px, transparent 1.5px 16px);
+      transform: translateY(-50%);
+    }
+    .cta-title { max-width: 15ch; font-size: clamp(2.25rem, 1.4rem + 3.2vw, 4.25rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+    .cta-panel p { max-width: 34rem; margin-top: 1.25rem; font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem); opacity: 0.88; }
+    .cta-panel .actions { margin-top: 2rem; }
+
+    /* Contacto */
+    .contact-grid { display: grid; gap: clamp(2.5rem, 5vw, 4rem); }
+    .contact-grid .section-head { margin-bottom: 0; }
+    .visit { margin-top: 2rem; }
+    .visit-address { max-width: 22rem; font-family: var(--font-heading); font-size: clamp(1.375rem, 1.2rem + 0.7vw, 1.75rem); font-weight: 650; letter-spacing: -0.02em; line-height: 1.25; }
+    .visit .btn { margin-top: 1.5rem; }
+    .contact-list { border-top: 1px solid var(--border); }
+    .contact-list > div { display: grid; gap: 0.25rem 1.5rem; padding: 1.25rem 0; border-bottom: 1px dashed var(--border); }
+    .contact-list dt { color: var(--muted); font-size: 0.875rem; font-weight: 600; }
+    .contact-list dd { font-size: 1.0625rem; font-weight: 500; overflow-wrap: anywhere; }
+    .contact-list dd span { display: block; }
+    .contact-list dd span + span { margin-top: 0.25rem; }
+    .contact-list a { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--primary) 80%, transparent); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+    .contact-list a:hover { text-decoration-color: currentColor; }
+    @media (min-width: 600px) { .contact-list > div { grid-template-columns: 9rem minmax(0, 1fr); align-items: baseline; } }
+    @media (min-width: 1000px) {
+      .contact-grid.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 5rem; align-items: start; }
+    }
+
+    /* Pie */
+    .site-footer { padding: 0 var(--inset) var(--inset); }
+    /* Si la página acaba en un panel, separa el pie */
+    main > .hero:last-child, main > .reviews:last-child { padding-bottom: var(--inset); }
+    .footer-panel { padding-block: clamp(3rem, 6vw, 4.5rem) 1.75rem; color: var(--on-clay-muted); }
+    .footer-top { display: grid; gap: 2rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--clay-line); }
+    .footer-brand { color: var(--on-clay); font-family: var(--font-heading); font-size: clamp(2.25rem, 1.5rem + 3vw, 4rem); font-weight: 800; letter-spacing: -0.045em; line-height: 1; }
+    .footer-brand img { width: auto; height: 3rem; }
+    .footer-text { max-width: 26rem; margin-top: 1rem; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 0.75rem 1.75rem; align-content: start; }
+    .footer-links a { color: var(--on-clay); font-weight: 600; }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem 2rem; padding-top: 1.5rem; font-size: 0.875rem; }
+    @media (min-width: 820px) { .footer-top { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main"><%= t("skip") %></a>
+
+  <%
+    const hero = config.hero;
+    const c = config.contact;
+    const showHero = show("hero");
+    const hourLines = lines(c.hours);
+
+    const sizeClass = (text, long, xlong) => {
+      const n = String(text || "").length;
+      return n > xlong ? " is-xlong" : n > long ? " is-long" : "";
+    };
+    // Columnas en escritorio para que ninguna fila quede con un elemento suelto
+    const colsFor = (n) => (n <= 4 ? n : n % 4 === 0 ? 4 : n % 3 === 0 ? 3 : n % 4 >= 2 ? 4 : 3);
+    // Texto del enlace de compra según adónde lleve
+    const buyLabel = (link) => {
+      const l = String(link).toLowerCase();
+      if (/etsy\./.test(l)) return t("buyEtsy");
+      if (/wa\.me|whatsapp\./.test(l)) return t("buyWhatsapp");
+      if (/wallapop\./.test(l)) return t("buyWallapop");
+      if (/instagram\./.test(l)) return t("buyInstagram");
+      if (l.startsWith("mailto:")) return t("buyEmail");
+      if (l.startsWith("tel:")) return t("buyPhone");
+      return t("buy");
+    };
+  %>
+
+  <% function sectionHead(key, extraClass) {
+       const h = heading(key);
+       if (!h.eyebrow && !h.title && !h.subtitle) return;
+  %>
+    <div class="section-head <%= extraClass || '' %>">
+      <% if (h.eyebrow || h.title) { %>
+      <div>
+        <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+        <% if (h.title) { %><h2 class="title"><%= h.title %></h2><% } %>
+      </div>
+      <% } %>
+      <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+    </div>
+  <% } %>
+
+  <header class="site-header" data-section="brand">
+    <div class="container nav">
+      <a class="brand" href="#main">
+        <% if (config.brand.logo) { %><%- img(config.brand.logo, config.brand.name, { eager: true, sizes: "160px", width: 480 }) %><% } %>
+        <% if (config.brand.name || !config.brand.logo) { %><span><%= config.brand.name %></span><% } %>
+      </a>
+      <%- navLinks({ limit: 4, exclude: ["features", "faqs"] }) %>
+      <% if (hero.ctaText && showHero) { %>
+        <a class="btn btn-primary btn-sm nav-cta" <%- linkAttrs(hero.ctaLink) %>><%= hero.ctaText %></a>
+      <% } %>
+      <%- mobileMenu({ cta: showHero && hero.ctaText ? { text: hero.ctaText, href: hero.ctaLink } : undefined }) %>
+    </div>
+  </header>
+
+  <main id="main">
+    <% if (showHero) {
+         const eb = hero.eyebrow.trim();
+         const useSticker = eb.length > 0 && eb.length <= 40;
+         const stickerText = useSticker
+           ? Array(Math.max(1, Math.round(40 / (eb.length + 3)))).fill(eb.toLocaleUpperCase(lang)).join("  ✦  ") + "  ✦  "
+           : "";
+    %>
+    <section class="hero" id="hero" data-section="hero">
+      <div class="panel on-clay hero-panel">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <% if (eb && !useSticker) { %><p class="eyebrow rise"><%= eb %></p><% } %>
+            <% if (hero.title) { %><h1 class="hero-title rise-2<%= sizeClass(hero.title, 48, 100) %>"><%= hero.title %></h1><% } %>
+            <% if (hero.subtitle) { %><p class="hero-sub rise-3"><%= hero.subtitle %></p><% } %>
+            <% if (hero.ctaText || hero.secondaryCtaText) { %>
+            <div class="actions rise-3">
+              <% if (hero.ctaText) { %><a class="btn btn-primary btn-lg" <%- linkAttrs(hero.ctaLink) %>><%= hero.ctaText %></a><% } %>
+              <% if (hero.secondaryCtaText) { %><a class="btn btn-ghost-light btn-lg" <%- linkAttrs(hero.secondaryCtaLink) %>><%= hero.secondaryCtaText %></a><% } %>
+            </div>
+            <% } %>
+          </div>
+          <div class="hero-visual">
+            <div class="arch"><%- img(hero.backgroundImage, "", { eager: true, sizes: "(min-width: 900px) 480px, 90vw", width: 1200, placeholder: "" }) %></div>
+            <% if (useSticker) { %>
+            <svg class="sticker" viewBox="0 0 200 200" role="img" aria-label="<%= eb %>">
+              <circle class="sticker-bg" cx="100" cy="100" r="99"/>
+              <path id="sticker-arc" d="M100,100 m-72,0 a72,72 0 1,1 144,0 a72,72 0 1,1 -144,0" fill="none"/>
+              <text class="sticker-text"><textPath href="#sticker-arc" textLength="446"><%= stickerText %></textPath></text>
+              <path class="sticker-star" d="M100 80v40M80 100h40M86 86l28 28M114 86l-28 28"/>
+            </svg>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </section>
     <% } %>
 
-    <!-- Header -->
-    <header class="max-w-7xl mx-auto flex justify-between items-center px-6 py-6 border-b border-gray-200">
-      <div class="flex items-center gap-4">
-        <% if (config.brand.logo) { %>
-          <img src="<%= config.brand.logo %>" alt="Logo" class="h-10 rounded">
+    <% if (show("products")) { const n = config.products.length; const cols = colsFor(n); %>
+    <section class="section" id="products" data-section="products">
+      <div class="container">
+        <% sectionHead("products", "row") %>
+        <ul class="shop-grid cols-<%= cols %>" style="--cols: <%= cols %>">
+          <% config.products.forEach((p) => { %>
+            <li class="prod">
+              <div class="prod-media">
+                <%- img(p.image, p.title, { sizes: n === 1 ? "(min-width: 1000px) 560px, 100vw" : "(min-width: 1000px) 300px, 50vw", width: 1200, placeholder: "package" }) %>
+                <% if (p.badge) { %><span class="prod-badge"><%= p.badge %></span><% } %>
+              </div>
+              <div class="prod-info">
+                <% if (p.title || p.price) { %>
+                <div class="prod-line">
+                  <% if (p.title) { %><h3><%= p.title %></h3><% } %>
+                  <% if (p.price) { %><span class="prod-price"><%= p.price %></span><% } %>
+                </div>
+                <% } %>
+                <% if (p.description) { %><p class="prod-desc"><%= p.description %></p><% } %>
+                <% if (p.link) { %>
+                  <a class="prod-buy" <%- linkAttrs(p.link) %>><%= buyLabel(p.link) %><%- icon(p.link.startsWith("#") ? "arrow-right" : "arrow-up-right", "") %></a>
+                <% } %>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("features")) {
+         const n = config.features.length;
+         const h = heading("features");
+         const hasHead = Boolean(h.eyebrow || h.title || h.subtitle);
+         const cols = hasHead ? (n <= 3 ? n : n % 3 === 0 ? 3 : 2) : colsFor(n);
+    %>
+    <section class="perks" id="features" data-section="features">
+      <div class="container perks-wrap<%= hasHead ? ' has-head' : '' %>">
+        <% sectionHead("features") %>
+        <ul class="perk-grid cols-<%= cols %>" style="--cols: <%= cols %>">
+          <% config.features.forEach((f) => { %>
+            <li class="perk<%= f.icon ? '' : ' no-icon' %>">
+              <% if (f.icon) { %><span class="perk-icon"><%- icon(f.icon) %></span><% } %>
+              <% if (f.title) { %><h3><%= f.title %></h3><% } %>
+              <% if (f.description) { %><p><%= f.description %></p><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("about")) { const a = config.about; const h = heading("about"); %>
+    <section class="section about" id="about" data-section="about">
+      <div class="container about-grid">
+        <div class="about-media">
+          <div class="arch"><%- img(a.image, a.heading, { sizes: "(min-width: 900px) 480px, 82vw", width: 1200, placeholder: "" }) %></div>
+        </div>
+        <div class="about-copy">
+          <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+          <% if (a.heading) { %><h2 class="about-title"><%= a.heading %></h2><% } %>
+          <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+          <% if (a.content) { %><div class="prose"><%- paras(a.content) %></div><% } %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("gallery")) { %>
+    <section class="section" id="gallery" data-section="gallery">
+      <div class="container">
+        <% sectionHead("gallery", "row") %>
+        <div class="lb">
+          <% config.gallery.forEach((g) => { %>
+            <figure class="lb-item">
+              <%- img(g.image, g.caption, { sizes: "(min-width: 1000px) 480px, 60vw", width: 1200, placeholder: "image" }) %>
+              <% if (g.caption) { %><figcaption><span><%= g.caption %></span></figcaption><% } %>
+            </figure>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("testimonials")) { const n = config.testimonials.length; const cols = n <= 3 ? n : n % 3 === 0 ? 3 : n % 2 === 0 ? 2 : 3; %>
+    <section class="reviews" id="testimonials" data-section="testimonials">
+      <div class="panel on-clay reviews-panel">
+        <div class="container">
+          <% sectionHead("testimonials", "row") %>
+          <div class="review-grid cols-<%= cols %>" style="--cols: <%= cols %>">
+            <% config.testimonials.forEach((r) => { %>
+              <figure class="review">
+                <span class="stars" aria-hidden="true"><% for (let i = 0; i < 5; i++) { %><%- icon("star", "") %><% } %></span>
+                <% if (r.quote) { %><blockquote>“<%= r.quote %>”</blockquote><% } %>
+                <% if (r.name || r.role) { %>
+                <figcaption class="review-author">
+                  <span class="avatar"><% if (r.avatar) { %><%- img(r.avatar, r.name, { sizes: "48px", width: 480 }) %><% } else { %><%= initials(r.name || r.role) %><% } %></span>
+                  <div><% if (r.name) { %><strong><%= r.name %></strong><% } %><% if (r.role) { %><span><%= r.role %></span><% } %></div>
+                </figcaption>
+                <% } %>
+              </figure>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("faqs")) { %>
+    <section class="section" id="faqs" data-section="faqs">
+      <div class="container faq-grid">
+        <div><% sectionHead("faqs") %></div>
+        <div class="faq-list">
+          <% config.faqs.forEach((f, i) => { %>
+            <details class="faq-item"<%= i === 0 ? " open" : "" %>>
+              <summary><span><%= f.question || t("question") %></span><span class="faq-plus"><%- icon("plus", "faq-icon") %></span></summary>
+              <% if (f.answer) { %><div class="faq-answer"><%- paras(f.answer) %></div><% } %>
+            </details>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("cta")) { const cta = config.cta; %>
+    <section class="cta-sec" id="cta" data-section="cta">
+      <div class="container">
+        <div class="cta-panel">
+          <% if (cta.title) { %><h2 class="cta-title"><%= cta.title %></h2><% } %>
+          <% if (cta.text) { %><p><%= cta.text %></p><% } %>
+          <% if (cta.buttonText) { %>
+            <div class="actions"><a class="btn btn-lg btn-invert" <%- linkAttrs(cta.buttonLink) %>><%= cta.buttonText %></a></div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("contact")) {
+         const h = heading("contact");
+         const hasLeft = Boolean(h.eyebrow || h.title || h.subtitle || c.address);
+         const hasList = Boolean(hourLines.length || c.phone || c.email || c.whatsapp);
+    %>
+    <section class="section" id="contact" data-section="contact">
+      <div class="container contact-grid<%= hasLeft && hasList ? ' two' : '' %>">
+        <% if (hasLeft) { %>
+        <div>
+          <% sectionHead("contact") %>
+          <% if (c.address) { %>
+          <div class="visit">
+            <p class="visit-address"><%= c.address %></p>
+            <a class="btn btn-clay" <%- linkAttrs(mapsHref(c.address)) %>><%- icon("map-pin", "") %><%= t("directions") %></a>
+          </div>
+          <% } %>
+        </div>
         <% } %>
-        <span class="text-2xl font-extrabold tracking-tight"><%= config.brand.name %></span>
+        <% if (hasList) { %>
+        <dl class="contact-list">
+          <% if (hourLines.length) { %><div><dt><%= t("hours") %></dt><dd><% hourLines.forEach((line) => { %><span><%= line %></span><% }) %></dd></div><% } %>
+          <% if (c.phone) { %><div><dt><%= t("phone") %></dt><dd><a href="<%= telHref(c.phone) %>"><%= c.phone %></a></dd></div><% } %>
+          <% if (c.email) { %><div><dt><%= t("email") %></dt><dd><a href="<%= mailHref(c.email) %>"><%= c.email %></a></dd></div><% } %>
+          <% if (c.whatsapp) { %><div><dt><%= t("whatsapp") %></dt><dd><a <%- linkAttrs(waHref(c.whatsapp)) %>><%= t("writeWhatsapp") %></a></dd></div><% } %>
+        </dl>
+        <% } %>
       </div>
-      <nav class="hidden md:flex gap-6 text-sm font-medium">
-        <% if (show("hero")) { %><a href="#hero">Inicio</a><% } %>
-        <% if (show("products")) { %><a href="#products">Productos</a><% } %>
-        <% if (show("features")) { %><a href="#features">Ventajas</a><% } %>
-        <% if (show("gallery")) { %><a href="#gallery">Galería</a><% } %>
-        <% if (show("testimonials")) { %><a href="#testimonials">Opiniones</a><% } %>
-        <% if (show("faqs")) { %><a href="#faq">FAQ</a><% } %>
-        <% if (show("contact")) { %><a href="#contact">Contacto</a><% } %>
-      </nav>
-    </header>
-
-    <main class="space-y-24">
-      <!-- HERO -->
-      <% if (show("hero")) { %>
-      <section id="hero" class="text-center px-6 py-32 bg-cover bg-center rounded-b-[3rem] shadow-lg" style="<%= heroStyle %>">
-        <h1 class="text-5xl font-extrabold mb-4 text-white drop-shadow"><%= config.hero.title %></h1>
-        <p class="text-xl mb-6 text-white drop-shadow-md"><%= config.hero.subtitle %></p>
-        <a href="<%= config.hero.ctaLink %>" class="inline-block bg-[<%= config.theme.colorPrimary %>] text-white px-8 py-3 rounded-full shadow-lg hover:scale-105 transition-transform duration-300">
-          <%= config.hero.ctaText %>
-        </a>
-      </section>
-      <% } %>
-
-      <!-- PRODUCTS -->
-      <% if (show("products")) { %>
-      <section id="products" class="px-6">
-        <div class="max-w-6xl mx-auto">
-          <h2 class="text-3xl font-bold text-center mb-10">Catálogo de productos</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <% config.products.forEach(p => { %>
-              <div class="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all border border-gray-200">
-                <% if (p.image) { %><img src="<%= p.image %>" alt="<%= p.title %><% } %>" class="rounded mb-4 mx-auto max-h-40 object-contain" />
-                <h3 class="text-xl font-semibold mb-2"><%= p.title %></h3>
-                <p class="text-sm text-gray-600 mb-3"><%= p.description %></p>
-                <span class="block text-lg font-bold text-[<%= config.theme.colorPrimary %>] mb-4"><%= p.price %></span>
-                <a href="#" class="inline-block bg-[<%= config.theme.colorPrimary %>] text-white px-5 py-2 rounded-lg font-medium hover:opacity-90 transition">Comprar</a>
-              </div>
-            <% }) %>
-          </div>
-        </div>
-      </section>
-      <% } %>
-
-      <!-- FEATURES -->
-      <% if (show("features")) { %>
-      <section id="features" class="px-6 py-20 bg-[<%= config.theme.colorSecondary %>] text-white">
-        <div class="max-w-7xl mx-auto">
-          <h2 class="text-3xl font-semibold text-center mb-10">Por qué elegirnos</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <% config.features.forEach(f => { %>
-              <div class="bg-white text-black rounded-xl p-6 text-center shadow-md">
-                <div class="text-5xl mb-3"><%= f.icon %></div>
-                <h3 class="text-xl font-bold"><%= f.title %></h3>
-                <p class="mt-2 text-sm"><%= f.description %></p>
-              </div>
-            <% }) %>
-          </div>
-        </div>
-      </section>
-      <% } %>
-
-      <!-- GALLERY -->
-      <% if (show("gallery")) { %>
-      <section id="gallery" class="px-6 py-20 bg-gray-50">
-        <div class="max-w-6xl mx-auto">
-          <h2 class="text-3xl font-semibold text-center mb-10">Galería</h2>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <% config.gallery.forEach(img => { %>
-              <% if (img.image) { %><img src="<%= img.image %>" class="rounded-xl shadow object-cover w-full h-48"><% } %>
-            <% }) %>
-          </div>
-        </div>
-      </section>
-      <% } %>
-
-      <!-- TESTIMONIALS -->
-      <% if (show("testimonials")) { %>
-      <section id="testimonials" class="px-6">
-        <div class="max-w-7xl mx-auto">
-          <h2 class="text-3xl font-semibold text-center mb-10">Qué opinan nuestros clientes</h2>
-          <div class="flex flex-wrap justify-center gap-6">
-            <% config.testimonials.forEach(t => { %>
-              <div class="bg-white p-6 rounded-2xl shadow w-full md:w-1/3 text-center">
-                <% if (t.avatar) { %><img src="<%= t.avatar %>" alt="<%= t.name %><% } %>" class="w-16 h-16 rounded-full mx-auto mb-4">
-                <p class="italic text-gray-700">"<%= t.quote %>"</p>
-                <p class="mt-2 font-semibold"><%= t.name %></p>
-              </div>
-            <% }) %>
-          </div>
-        </div>
-      </section>
-      <% } %>
-
-      <!-- FAQ -->
-      <% if (show("faqs")) { %>
-      <section id="faq" class="px-6 py-20">
-        <div class="max-w-4xl mx-auto">
-          <h2 class="text-3xl font-semibold text-center mb-10">Preguntas frecuentes</h2>
-          <div class="space-y-6">
-            <% config.faqs.forEach(f => { %>
-              <div class="bg-white border-l-4 border-[<%= config.theme.colorPrimary %>] p-4 rounded-xl shadow">
-                <h4 class="font-bold mb-2"><%= f.question %></h4>
-                <p><%= f.answer %></p>
-              </div>
-            <% }) %>
-          </div>
-        </div>
-      </section>
-      <% } %>
-
-      <!-- CONTACT -->
-      <% if (show("contact")) { %>
-      <section id="contact" class="px-6">
-        <div class="max-w-4xl mx-auto text-center bg-white rounded-2xl shadow p-10">
-          <h2 class="text-3xl font-semibold mb-6">Contáctanos</h2>
-          <p>Email: <%= config.contact.email %></p>
-          <p>Teléfono: <%= config.contact.phone %></p>
-          <p>Dirección: <%= config.contact.address %></p>
-        </div>
-      </section>
-      <% } %>
-    </main>
-
-    <!-- FOOTER -->
-    <% if (show("footer")) { %>
-    <footer class="bg-[<%= config.theme.colorPrimary %>] text-white px-6 py-10 mt-24">
-      <div class="max-w-6xl mx-auto text-center">
-        <h3 class="font-bold text-lg mb-2"><%= config.brand.name %></h3>
-        <p class="text-sm"><%= config.footer.text %></p>
-      </div>
-    </footer>
+    </section>
     <% } %>
+  </main>
 
-    <a href="#hero" class="fixed bottom-6 right-6 bg-[<%= config.theme.colorPrimary %>] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
-    <% if (previewMode) { %></div><% } %>
-  </body>
+  <% if (show("footer")) { %>
+  <footer class="site-footer" id="footer" data-section="footer">
+    <div class="panel on-clay footer-panel">
+      <div class="container">
+        <div class="footer-top">
+          <div>
+            <p class="footer-brand"><% if (config.brand.logo && !config.brand.name) { %><%- img(config.brand.logo, "", { sizes: "160px", width: 480 }) %><% } else { %><%= config.brand.name %><% } %></p>
+            <% if (config.footer.text) { %><p class="footer-text"><%= config.footer.text %></p><% } %>
+          </div>
+          <% if (config.footer.links.length) { %>
+          <nav class="footer-links" aria-label="<%= config.brand.name || t('menu') %>">
+            <% config.footer.links.forEach((l) => { %><a <%- linkAttrs(l.url) %>><%= l.label || l.url %></a><% }) %>
+          </nav>
+          <% } %>
+        </div>
+        <div class="footer-bottom">
+          <p><%- copyright(config.brand.name) %></p>
+          <%- madeWith %>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <% } %>
+
+  <%- foot %>
+</body>
 </html>

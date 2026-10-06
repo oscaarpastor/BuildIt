@@ -1,6 +1,8 @@
 # Build It
 
-Creador de páginas web sin código (TFG). Cada usuario se registra, elige una de las 6 plantillas (Startup, Portfolio, Tienda, Agencia, Blog, Restaurante) y la personaliza en un editor con vista previa en directo. Después puede compartirla con un enlace público, ver sus visitas y clics, o descargarla como un único archivo HTML.
+Creador de páginas web sin código (TFG). Cada usuario se registra, elige una de las 17 plantillas y la personaliza en un editor con vista previa en directo (en escritorio y en móvil). Después puede compartirla con un enlace público, ver sus visitas y clics, o descargarla como un único archivo HTML que funciona por sí solo.
+
+Las plantillas salen de un estudio de lo que más piden pequeños negocios, autónomos y estudiantes en España: Restaurante, Peluquería y estética, Reformas, Clínica, Portfolio, Startup y app, Inmobiliaria, Gimnasio y entrenador, Despacho profesional, Terapia y bienestar, Fotografía, Casa rural y alojamiento, Boda y evento, Academia y cursos, Agencia y consultoría, Tienda y Blog. Cada una tiene su propia dirección de arte, se adapta a cualquier pantalla, funciona en modo oscuro y en inglés, y aguanta cualquier contenido: sin fotos, con textos largos o con cualquier color de marca (el contraste del texto se calcula solo). Cómo están hechas y cómo añadir más: [backend/src/views/README.md](backend/src/views/README.md).
 
 La interfaz sigue el plan de diseño de [DISENO.md](DISENO.md), hecho con la skill `frontend-design` de Anthropic (en `.claude/skills/`).
 
@@ -58,7 +60,7 @@ Ejecuta todos los comandos desde la raíz del repositorio.
 
    Pega el resultado en `backend/.env`, en la línea `JWT_SECRET=`. Sin esa variable el backend no arranca.
 
-3. **Carga las 6 plantillas** en la base de datos. Se puede repetir sin problema: actualiza las plantillas sin borrar nada.
+3. **Carga las plantillas** en la base de datos. El servidor también lo hace solo cada vez que arranca; se puede repetir sin problema: actualiza las plantillas sin borrar nada.
 
    ```bash
    npm run seed
@@ -100,9 +102,15 @@ npm test
 
 | Comando | Qué ejecuta |
 |---|---|
-| `npm run test:api` | 78 tests de la API (Vitest + Supertest): autenticación, permisos entre usuarios, CRUD de proyectos, validación, web pública, exportación, estadísticas, cabeceras de seguridad e IP del cliente detrás de un proxy |
+| `npm run test:api` | 138 tests de la API (Vitest + Supertest): autenticación, permisos entre usuarios, CRUD de proyectos, validación, web pública, exportación, estadísticas, cabeceras de seguridad, IP del cliente detrás de un proxy y las 17 plantillas (contenido de ejemplo válido, todas las secciones en orden en cada variante y modo, textos escapados y contraste) |
 | `npm run test:e2e` | Playwright: compila la app, la arranca en el puerto 3100 y recorre el flujo completo con dos usuarios en Google Chrome |
 | `npm run lint` | ESLint del frontend y comprobación de tipos del backend |
+
+Para revisar las plantillas a ojo, con el backend en marcha en desarrollo (`npm run dev:backend`), el script de capturas guarda hojas con cada plantilla recorrida de arriba abajo y un informe de problemas (desbordamientos, imágenes rotas, errores de consola):
+
+```bash
+cd e2e && node scripts/capturas-plantillas.mjs --out /tmp/capturas --widths 1440,768,390 --variants full,noimg,dark,long
+```
 
 Si no tienes Chrome, instala el Chromium de Playwright con `(cd e2e && npx playwright install chromium)` y lanza los tests con `PW_CHANNEL=chromium npm run test:e2e`.
 
@@ -177,20 +185,27 @@ backend/
     middleware/       JWT (requireAuth) y manejo de errores
     models/           User, Project, BaseTemplate, Stat
     validation/       Esquemas zod de entrada
-    lib/              safe.ts (reglas de URLs, colores y fuentes) y render.ts (genera las webs)
-    views/            Plantillas EJS
-    seed.ts           Las 6 plantillas base
+    lib/              safe.ts (URLs, colores y fuentes), render.ts (genera las webs), configShape.ts,
+                      siteIcons.ts, siteStrings.ts y previewVariants.ts (variantes para revisar plantillas)
+    templates/        Catálogo de plantillas: catalog/<plantilla>.ts (secciones, nombres y contenido
+                      de ejemplo), index.ts (orden de la galería) y sync.ts (copia a MongoDB)
+    views/            Vistas EJS de cada plantilla, partials/base.css (base común) y README.md (guía)
+    routes/dev.ts     Solo en desarrollo: pinta cualquier plantilla desde el código con variantes
+    seed.ts           Carga el catálogo en la base de datos
+  scripts/            fotos-unsplash.py (buscar y revisar fotos para el contenido de ejemplo)
   tests/              Tests de la API
 frontend/
   src/
     lib/api.ts        Único punto de acceso a la API
-    lib/templates.ts  Secciones que pinta cada plantilla y cómo se llaman en ella
+    lib/templates.ts  Categorías, secciones y nombres de las plantillas (vienen de la API)
+    lib/siteIcons.ts  Iconos de las webs (copia de la del backend) y lib/fonts.ts (letras permitidas)
     context/          Sesión (AuthProvider, useAuth)
     pages/            Pantallas
     components/       editor/ (pila de secciones y formularios), layout/ y ui/
     index.css         Tokens de diseño: colores, escala tipográfica, fuente Archivo
   public/locales/     Traducciones es/en
-e2e/                  Test de extremo a extremo (Playwright)
+e2e/                  Test de extremo a extremo (Playwright) y scripts/capturas-plantillas.mjs
+                      (capturas de cada plantilla en varios anchos y variantes, con informe)
 scripts/              copy-frontend.mjs (paso del build de producción)
 .claude/skills/       Skill frontend-design de Anthropic
 DISENO.md             Plan de diseño de la interfaz
@@ -205,11 +220,12 @@ DISENO.md             Plan de diseño de la interfaz
 | `GET/POST /api/projects` · `GET/PUT/DELETE /api/projects/:id` · `GET /api/projects/:id/export` | Solo el dueño del proyecto |
 | `GET /api/base-templates` · `GET /api/base-templates/:id/preview` | Público, solo lectura |
 | `GET /api/public/sites/:publicId` · `POST /api/public/sites/:publicId/events` | Público: web compartida y estadísticas |
+| `GET /api/dev/templates` · `GET /api/dev/preview/:view?variant=…` | Solo en desarrollo: revisar plantillas sin base de datos |
 
 ## Mejoras pendientes
 
 - Formulario de contacto en las webs generadas.
 - Subida de imágenes (hoy solo se pegan URLs).
-- Generar el CSS de Tailwind de las webs en lugar de cargar el CDN, que Tailwind desaconseja en producción. Además, el HTML exportado necesita internet.
+- Formulario de reserva o presupuesto propio (hoy los botones enlazan a WhatsApp, teléfono, email o servicios externos).
 - Asociar las etiquetas `<label>` de los formularios del editor con sus campos (accesibilidad).
 - Guardar la sesión en una cookie `httpOnly` en lugar de `localStorage`.

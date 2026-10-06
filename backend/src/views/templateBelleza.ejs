@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html <%- htmlAttrs %>>
+<head>
+  <%- head %>
+  <style>
+    /* Belleza: estudio de peluquería editorial. Bodoni de alto contraste en
+       titulares, Jost ligera en el texto, espresso (principal) y nude
+       (secundario) sobre un blanco roto cálido. Ángulos rectos, filetes finos y
+       mucho aire, como una revista de moda. */
+    :root {
+      --bg: #f8f3ee;
+      --surface: #f1e7de;
+      --surface-2: #e8dbcf;
+      --text: #1f1a17;
+      --muted: #6c5f56;
+      --border: #e2d4c8;
+      --radius-sm: 2px;
+      --radius: 0px;
+      --radius-lg: 0px;
+      --radius-btn: 0px;
+      --header-h: 4.75rem;
+      /* Campo nude de la portada y bloques oscuros (siempre oscuros, sea cual sea el color) */
+      --field: color-mix(in srgb, var(--secondary) 42%, var(--bg));
+      --ink: color-mix(in srgb, var(--primary) 30%, #120e0c);
+      --ink-text: #f4ece5;
+      --ink-muted: rgb(244 236 229 / 0.68);
+      --ink-line: rgb(244 236 229 / 0.16);
+      --accent: var(--secondary-ink);
+    }
+    html.bi-dark {
+      --bg: #151210;
+      --surface: #1d1916;
+      --surface-2: #27211e;
+      --text: #f3ebe4;
+      --muted: #b4a69b;
+      --border: #352d28;
+      --field: color-mix(in srgb, var(--secondary) 16%, var(--bg));
+      --ink: color-mix(in srgb, var(--primary) 16%, #0c0a09);
+    }
+
+    body { font-weight: 400; }
+    h1, h2, h3, .brand, .serif { font-weight: 400; }
+
+    /* Botones rectos, con letra espaciada */
+    .btn { letter-spacing: 0.03em; font-weight: 500; }
+    html.bi-dark .btn-primary { border-color: color-mix(in srgb, var(--primary-ink) 55%, transparent); }
+    .btn-outline { border-color: color-mix(in srgb, var(--text) 35%, transparent); }
+
+    /* Antetítulo: Bodoni cursiva con filete, no versalitas */
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.875rem;
+      margin-bottom: 1.25rem;
+      color: var(--accent);
+      font-family: var(--font-heading);
+      font-size: 1.125rem;
+      font-style: italic;
+      line-height: 1.3;
+    }
+    .kicker::before { content: ""; flex-shrink: 0; width: 2.5rem; height: 1px; background: currentColor; }
+
+    .title { font-size: clamp(2.25rem, 1.35rem + 3.2vw, 4.25rem); font-weight: 400; letter-spacing: -0.025em; line-height: 1.02; }
+    .head { display: grid; gap: 1.25rem 4rem; margin-bottom: clamp(2.75rem, 5vw, 4.5rem); }
+    .head .lead { margin: 0; max-width: 34rem; font-weight: 300; }
+    @media (min-width: 900px) {
+      .head.split { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: end; }
+      .head.split .lead { justify-self: end; }
+    }
+
+    /* Rejilla de elementos iguales: la última fila incompleta queda centrada */
+    .flow { --cols: 1; --gap: clamp(1.25rem, 2.5vw, 2rem); display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(2.25rem, 4vw, 3rem) var(--gap); }
+    .flow > * { flex: 0 0 calc((100% - (var(--cols) - 1) * var(--gap)) / var(--cols) - 0.05px); min-width: 0; }
+    .flow.c1 > * { flex-basis: min(100%, 30rem); }
+    .flow.c2 { --cols: 2; }
+    .flow.c3 { --cols: 3; }
+    .flow.c4 { --cols: 4; }
+    @media (max-width: 1000px) { .flow.c4 { --cols: 2; } }
+    @media (max-width: 640px) { .flow.c3 { --cols: 2; } }
+
+    /* ---------- Cabecera ---------- */
+    .site-header { background: color-mix(in srgb, var(--bg) 90%, transparent); }
+    .site-header .brand { font-size: 1.5rem; letter-spacing: -0.01em; }
+    .nav-links { font-weight: 400; }
+    .nav-links a { color: var(--text); opacity: 0.72; }
+    .nav-links a:hover { opacity: 1; color: var(--text); }
+    .nav-links a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0.25rem; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform 0.3s var(--ease); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+
+    /* ---------- Portada ---------- */
+    .hero { position: relative; isolation: isolate; overflow: hidden; padding: clamp(2.5rem, 6vw, 5.5rem) 0 clamp(4.5rem, 9vw, 8rem); }
+    .hero-grid { display: grid; gap: clamp(3rem, 7vw, 6rem); align-items: center; }
+    .hero-copy { min-width: 0; }
+    .hero-title {
+      max-width: 12ch;
+      font-size: clamp(3rem, 1.5rem + 5.6vw, 7rem);
+      line-height: 0.98;
+      letter-spacing: -0.035em;
+    }
+    .hero-title.t-m { max-width: 16ch; font-size: clamp(2.5rem, 1.4rem + 4vw, 5.25rem); }
+    .hero-title.t-l { max-width: 22ch; font-size: clamp(2.125rem, 1.3rem + 2.8vw, 3.75rem); line-height: 1.05; }
+    .hero-sub { max-width: 34rem; margin-top: clamp(1.5rem, 3vw, 2.25rem); color: var(--muted); font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem); font-weight: 300; }
+    .hero .actions { margin-top: clamp(2rem, 4vw, 2.75rem); gap: 1rem 1.75rem; }
+    .hero .link-more { display: inline-flex; align-items: center; padding: 0.25rem 0; border-bottom: 1px solid currentColor; color: var(--text); font-weight: 500; letter-spacing: 0.03em; }
+    .hero .link-more:hover { color: var(--accent); }
+    .hero-figure { position: relative; isolation: isolate; width: min(100%, 34rem); justify-self: center; }
+    .hero-figure::before {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      inset: 14% -100vw -2.5rem 22%;
+      background: var(--field);
+    }
+    .hero-frame { aspect-ratio: 4 / 5; overflow: hidden; background: var(--surface-2); }
+    .hero-frame > img, .hero-frame > .ph { width: 100%; height: 100%; object-fit: cover; }
+    @media (min-width: 960px) {
+      .hero-grid { grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr); }
+      .hero-figure { justify-self: end; }
+    }
+    /* Sin foto: solo tipografía, con el campo nude como fondo de la columna */
+    .hero.no-media .hero-grid { grid-template-columns: minmax(0, 1fr); }
+    .hero.no-media::before {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      width: min(34%, 28rem);
+      background: var(--field);
+    }
+    @media (max-width: 700px) { .hero.no-media::before { width: 18%; } }
+    .hero.no-media .hero-copy { padding-block: clamp(1rem, 5vw, 4rem); padding-right: min(30%, 24rem); }
+    @media (max-width: 700px) { .hero.no-media .hero-copy { padding-right: 16%; } }
+    .hero-mono {
+      position: absolute;
+      z-index: -1;
+      top: 50%;
+      right: min(17%, 14rem);
+      transform: translate(50%, -50%);
+      color: var(--bg);
+      font-family: var(--font-heading);
+      font-size: clamp(10rem, 4rem + 16vw, 22rem);
+      font-style: italic;
+      line-height: 1;
+      pointer-events: none;
+    }
+    @media (max-width: 700px) { .hero-mono { display: none; } }
+
+    /* ---------- Servicios: índice editorial ---------- */
+    .services { border-top: 1px solid var(--text); }
+    .service { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: 0.5rem 1.25rem; padding: clamp(1.5rem, 3vw, 2.25rem) 0; border-bottom: 1px solid var(--border); }
+    .service-icon { grid-row: span 2; color: var(--accent); padding-top: 0.35rem; }
+    .service-icon .icon { width: 1.75rem; height: 1.75rem; }
+    .service h3 { font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.375rem); letter-spacing: -0.015em; line-height: 1.1; }
+    .service p { color: var(--muted); font-weight: 300; max-width: 36rem; }
+    @media (min-width: 860px) {
+      .service { grid-template-columns: 3.5rem minmax(0, 1fr) minmax(0, 1.15fr); column-gap: 2rem; align-items: baseline; }
+      .service-icon { grid-row: auto; align-self: start; padding-top: 0.25rem; }
+      .service p { padding-top: 0.25rem; }
+    }
+
+    /* ---------- Tarifas ---------- */
+    .prices { background: var(--surface); }
+    .price-list { columns: 2 24rem; column-gap: clamp(3rem, 7vw, 6.5rem); }
+    .price-list.single { columns: auto; max-width: 46rem; }
+    .price { display: flex; gap: 1.25rem; padding: 1.75rem 0; border-bottom: 1px solid var(--border); break-inside: avoid; }
+    .price-thumb { flex-shrink: 0; width: 4.5rem; aspect-ratio: 4 / 5; overflow: hidden; background: var(--surface-2); }
+    .price-thumb > * { width: 100%; height: 100%; object-fit: cover; }
+    .price-body { flex: 1; min-width: 0; }
+    .price-line { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 1.5rem; }
+    .price-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.375rem 0.75rem; flex: 1 1 12rem; min-width: 0; }
+    .price h3 { font-size: clamp(1.375rem, 1.2rem + 0.6vw, 1.625rem); letter-spacing: -0.01em; line-height: 1.2; }
+    .tag {
+      display: inline-block;
+      padding: 0.25rem 0.55rem 0.2rem;
+      background: var(--secondary);
+      color: var(--on-secondary);
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      line-height: 1.2;
+      text-transform: uppercase;
+      transform: translateY(-0.2em);
+    }
+    .price-amount { flex-shrink: 0; font-family: var(--font-heading); font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem); font-variant-numeric: lining-nums; white-space: nowrap; }
+    .price-time { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.5rem; color: var(--text); font-size: 0.875rem; font-weight: 500; letter-spacing: 0.04em; }
+    .price-time .icon { width: 0.95rem; height: 0.95rem; color: var(--accent); }
+    .price-desc { margin-top: 0.375rem; color: var(--muted); font-size: 0.9875rem; font-weight: 300; line-height: 1.55; }
+    .price .link-arrow { margin-top: 0.75rem; color: var(--text); font-size: 0.9375rem; font-weight: 500; }
+
+    /* ---------- Trabajos (fondo oscuro) ---------- */
+    .work { background: var(--ink); color: var(--ink-text); }
+    .work .kicker { color: var(--secondary-on-dark); }
+    .work .lead { color: var(--ink-muted); }
+    .shot-frame { aspect-ratio: 4 / 5; overflow: hidden; background: rgb(255 255 255 / 0.05); }
+    .shot-frame > img, .shot-frame > .ph { width: 100%; height: 100%; object-fit: cover; }
+    .shot-frame > .ph { background: rgb(255 255 255 / 0.06); color: rgb(255 255 255 / 0.35); }
+    .flow.c1 .shot-frame { aspect-ratio: 4 / 5; }
+    .shot figcaption { margin-top: 1rem; padding-left: 1rem; border-left: 1px solid var(--secondary-on-dark); font-family: var(--font-heading); font-size: 1.125rem; font-style: italic; line-height: 1.3; }
+
+    /* ---------- Equipo ---------- */
+    .member-frame { position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: var(--field); }
+    .member-frame > img { width: 100%; height: 100%; object-fit: cover; }
+    .member-initials { position: absolute; inset: 0; display: grid; place-items: center; color: var(--text); font-family: var(--font-heading); font-size: clamp(3rem, 2rem + 3vw, 4.5rem); font-style: italic; letter-spacing: 0.02em; }
+    .member h3 { margin-top: 1.25rem; font-size: 1.5rem; letter-spacing: -0.01em; }
+    .member p { margin-top: 0.25rem; color: var(--muted); font-size: 0.9375rem; font-weight: 300; }
+
+    /* ---------- Opiniones ---------- */
+    .reviews { background: var(--field); }
+    html.bi-dark .reviews { background: var(--surface); }
+    @media (max-width: 900px) { .reviews .flow { --cols: 1; max-width: 40rem; margin-inline: auto; } }
+    .review { display: flex; flex-direction: column; padding-top: 1.75rem; border-top: 1px solid color-mix(in srgb, var(--text) 30%, transparent); }
+    .review-mark { height: 2.75rem; font-family: var(--font-heading); font-size: 5.5rem; line-height: 1; color: var(--accent); }
+    html:not(.bi-dark) .reviews .review-mark { color: var(--text); }
+    .review blockquote { flex: 1; margin-top: 0.5rem; font-family: var(--font-heading); font-size: clamp(1.1875rem, 1.1rem + 0.35vw, 1.375rem); font-style: italic; line-height: 1.45; }
+    .review figcaption { display: flex; align-items: center; gap: 0.875rem; margin-top: 1.75rem; font-size: 0.9375rem; }
+    .review figcaption strong { display: block; font-weight: 500; letter-spacing: 0.02em; }
+    .review figcaption span { color: var(--muted); font-size: 0.875rem; }
+    .review .avatar { width: 2.75rem; height: 2.75rem; background: var(--bg); color: var(--text); font-family: var(--font-heading); font-weight: 400; }
+
+    /* ---------- Cita ---------- */
+    .cta { background: var(--primary); color: var(--on-primary); }
+    html.bi-dark .cta { box-shadow: inset 0 1px 0 var(--border), inset 0 -1px 0 var(--border); }
+    .cta-grid { display: grid; gap: 2rem clamp(3rem, 8vw, 7rem); align-items: end; }
+    .cta-title { font-size: clamp(2.75rem, 1.5rem + 5vw, 6rem); letter-spacing: -0.035em; line-height: 0.98; }
+    .cta-title.t-l { font-size: clamp(2.25rem, 1.4rem + 3vw, 4rem); line-height: 1.05; }
+    .cta p { max-width: 30rem; font-size: 1.125rem; font-weight: 300; opacity: 0.85; }
+    .cta .actions { margin-top: 2rem; }
+    .btn-invert { background: var(--on-primary); color: var(--primary); }
+    .btn-invert:hover { background: color-mix(in srgb, var(--on-primary) 86%, var(--primary)); }
+    @media (min-width: 900px) { .cta-grid.two { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); } }
+
+    /* ---------- Contacto ---------- */
+    .contact-grid { display: grid; gap: clamp(3rem, 6vw, 5rem); }
+    .contact-address { margin-top: 0.5rem; font-family: var(--font-heading); font-size: clamp(1.5rem, 1.2rem + 1.1vw, 2.125rem); font-style: normal; line-height: 1.25; letter-spacing: -0.01em; max-width: 22ch; }
+    .contact-main .title + .contact-address { margin-top: clamp(1.5rem, 3vw, 2.25rem); }
+    .contact-main .actions { margin-top: 2rem; }
+    .contact-side { display: grid; gap: 2.75rem; align-content: start; }
+    .contact-block h3 { padding-bottom: 0.875rem; border-bottom: 1px solid var(--text); font-family: var(--font-body); font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
+    .hours div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1.5rem; padding: 0.875rem 0; border-bottom: 1px solid var(--border); }
+    .hours dt { font-weight: 400; }
+    .hours dd { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .hours .full dd { color: var(--text); }
+    .contact-lines li { border-bottom: 1px solid var(--border); }
+    .contact-lines a { display: flex; align-items: center; gap: 0.875rem; min-height: 3.25rem; padding: 0.625rem 0; overflow-wrap: anywhere; transition: color 0.2s; }
+    .contact-lines a:hover { color: var(--accent); }
+    .contact-lines .icon { width: 1.125rem; height: 1.125rem; color: var(--accent); }
+    @media (min-width: 900px) { .contact-grid.two { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
+
+    /* ---------- Pie ---------- */
+    .site-footer { padding: clamp(4.5rem, 9vw, 7rem) 0 2rem; background: var(--ink); color: var(--ink-muted); }
+    .footer-brand { color: var(--ink-text); font-family: var(--font-heading); font-size: clamp(2.75rem, 1.4rem + 6vw, 7.5rem); letter-spacing: -0.04em; line-height: 0.95; overflow-wrap: anywhere; }
+    .footer-brand img { height: 3.5rem; width: auto; }
+    .footer-row { display: grid; gap: 2rem; margin-top: clamp(2rem, 4vw, 3rem); padding-bottom: 2.5rem; border-bottom: 1px solid var(--ink-line); }
+    .footer-text { max-width: 30rem; font-weight: 300; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 0.75rem 2rem; align-content: start; }
+    .footer-links a { color: var(--ink-text); }
+    .footer-links a:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem 2rem; padding-top: 1.75rem; font-size: 0.875rem; }
+    @media (min-width: 820px) { .footer-row { grid-template-columns: 1fr auto; align-items: start; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main"><%= t("skip") %></a>
+
+  <%
+    // Cabecera de sección: antetítulo en cursiva, título y entradilla a la derecha
+    function sectionHead(key) {
+      const h = heading(key);
+      if (!h.eyebrow && !h.title && !h.subtitle) return;
+      const split = (h.eyebrow || h.title) && h.subtitle;
+  %>
+    <div class="head<%= split ? ' split' : '' %>">
+      <% if (h.eyebrow || h.title) { %>
+      <div>
+        <% if (h.eyebrow) { %><p class="kicker"><%= h.eyebrow %></p><% } %>
+        <% if (h.title) { %><h2 class="title"><%= h.title %></h2><% } %>
+      </div>
+      <% } %>
+      <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+    </div>
+  <% } %>
+
+  <%
+    // Columnas según el número de elementos (como mucho max) para que no
+    // quede una fila con un solo elemento descolgado
+    function colsFor(n, max) {
+      if (n <= max) return n;
+      if (n % max === 0) return max;
+      if (n % (max - 1) === 0) return max - 1;
+      return n % max >= n % (max - 1) ? max : max - 1;
+    }
+    // Una línea «Día: horas» se pinta en dos columnas
+    function splitHour(line) {
+      const i = line.indexOf(": ");
+      return i > 0 ? [line.slice(0, i), line.slice(i + 2)] : ["", line];
+    }
+    const c = config.contact;
+    const hourLines = lines(c.hours);
+    const heroHasImage = Boolean(config.hero.backgroundImage);
+    const titleSize = (text, m, l) => (text.length > l ? "t-l" : text.length > m ? "t-m" : "");
+  %>
+
+  <header class="site-header" data-section="brand">
+    <div class="container nav">
+      <a class="brand" href="#main">
+        <% if (config.brand.logo) { %><%- img(config.brand.logo, config.brand.name, { eager: true, sizes: "160px", width: 480 }) %><% } %>
+        <% if (config.brand.name || !config.brand.logo) { %><span><%= config.brand.name %></span><% } %>
+      </a>
+      <%- navLinks({ limit: 5 }) %>
+      <% if (config.hero.ctaText && show("hero")) { %>
+        <a class="btn btn-primary btn-sm nav-cta" <%- linkAttrs(config.hero.ctaLink) %>><%= config.hero.ctaText %></a>
+      <% } %>
+      <%- mobileMenu({ cta: show("hero") ? { text: config.hero.ctaText, href: config.hero.ctaLink } : undefined }) %>
+    </div>
+  </header>
+
+  <main id="main">
+    <% if (show("hero")) { const hero = config.hero; %>
+    <section class="hero<%= heroHasImage ? '' : ' no-media' %>" id="hero" data-section="hero">
+      <% if (!heroHasImage) { const mono = (config.brand.name || hero.title).trim().charAt(0); %><span class="hero-mono" aria-hidden="true"><%= mono %></span><% } %>
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <% if (hero.eyebrow) { %><p class="kicker rise"><%= hero.eyebrow %></p><% } %>
+          <% if (hero.title) { %><h1 class="hero-title rise-2 <%= titleSize(hero.title, 34, 70) %>"><%= hero.title %></h1><% } %>
+          <% if (hero.subtitle) { %><p class="hero-sub rise-3"><%= hero.subtitle %></p><% } %>
+          <% if (hero.ctaText || hero.secondaryCtaText) { %>
+          <div class="actions rise-3">
+            <% if (hero.ctaText) { %><a class="btn btn-primary btn-lg" <%- linkAttrs(hero.ctaLink) %>><%= hero.ctaText %></a><% } %>
+            <% if (hero.secondaryCtaText) { %><a class="link-more" <%- linkAttrs(hero.secondaryCtaLink) %>><%= hero.secondaryCtaText %></a><% } %>
+          </div>
+          <% } %>
+        </div>
+        <% if (heroHasImage) { %>
+        <figure class="hero-figure rise-2">
+          <div class="hero-frame"><%- img(hero.backgroundImage, "", { eager: true, sizes: "(min-width: 960px) 34rem, 100vw", width: 1600 }) %></div>
+        </figure>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("features")) { %>
+    <section class="section" id="features" data-section="features">
+      <div class="container">
+        <% sectionHead("features") %>
+        <ul class="services">
+          <% config.features.forEach((f) => { %>
+            <li class="service">
+              <span class="service-icon"><% if (f.icon) { %><%- icon(f.icon) %><% } %></span>
+              <h3><%= f.title || "" %></h3>
+              <% if (f.description) { %><p><%= f.description %></p><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("products")) { const withThumbs = config.products.some((p) => p.image); %>
+    <section class="section prices" id="products" data-section="products">
+      <div class="container">
+        <% sectionHead("products") %>
+        <ul class="price-list<%= config.products.length < 4 ? ' single' : '' %>">
+          <% config.products.forEach((p) => {
+               const desc = lines(p.description);
+               // Primera línea corta con números («45 min», «1 h 30 min»): la duración
+               const time = desc.length > 1 && desc[0].length <= 16 && /\d/.test(desc[0]) ? desc.shift() : "";
+          %>
+            <li class="price">
+              <% if (withThumbs) { %><div class="price-thumb"><%- img(p.image, p.title, { sizes: "72px", width: 480, placeholder: "scissors" }) %></div><% } %>
+              <div class="price-body">
+                <div class="price-line">
+                  <div class="price-name">
+                    <% if (p.title) { %><h3><%= p.title %></h3><% } %>
+                    <% if (p.badge) { %><span class="tag"><%= p.badge %></span><% } %>
+                  </div>
+                  <% if (p.price) { %><span class="price-amount"><%= p.price %></span><% } %>
+                </div>
+                <% if (time) { %><p class="price-time"><%- icon("clock") %><span class="sr-only"><%= t("duration") %>:</span><%= time %></p><% } %>
+                <% if (desc.length) { %><p class="price-desc"><% desc.forEach((line, i) => { %><%= line %><% if (i < desc.length - 1) { %><br><% } %><% }) %></p><% } %>
+                <% if (p.link) { %><a class="link-arrow" <%- linkAttrs(p.link) %>><%= t("book") %><%- icon("arrow-up-right", "") %></a><% } %>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("gallery")) { const n = config.gallery.length; %>
+    <section class="section work" id="gallery" data-section="gallery">
+      <div class="container">
+        <% sectionHead("gallery") %>
+        <div class="flow c<%= colsFor(n, 4) %>">
+          <% config.gallery.forEach((g) => { %>
+            <figure class="shot">
+              <div class="shot-frame"><%- img(g.image, g.caption, { sizes: "(min-width: 1000px) 300px, (min-width: 640px) 50vw, 50vw", width: 1200 }) %></div>
+              <% if (g.caption) { %><figcaption><%= g.caption %></figcaption><% } %>
+            </figure>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("team")) { const n = config.team.length; %>
+    <section class="section" id="team" data-section="team">
+      <div class="container">
+        <% sectionHead("team") %>
+        <ul class="flow c<%= colsFor(n, 4) %>">
+          <% config.team.forEach((m) => { %>
+            <li class="member">
+              <div class="member-frame">
+                <% if (m.image) { %><%- img(m.image, m.name, { sizes: "(min-width: 1000px) 300px, 50vw", width: 800 }) %><% } else { %><span class="member-initials" aria-hidden="true"><%= initials(m.name) %></span><% } %>
+              </div>
+              <% if (m.name) { %><h3><%= m.name %></h3><% } %>
+              <% if (m.role) { %><p><%= m.role %></p><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("testimonials")) { const n = config.testimonials.length; const withAvatars = config.testimonials.some((r) => r.avatar); %>
+    <section class="section reviews" id="testimonials" data-section="testimonials">
+      <div class="container">
+        <% sectionHead("testimonials") %>
+        <div class="flow c<%= colsFor(n, 3) %>">
+          <% config.testimonials.forEach((r) => { %>
+            <figure class="review">
+              <span class="review-mark" aria-hidden="true">“</span>
+              <% if (r.quote) { %><blockquote><%= r.quote %></blockquote><% } %>
+              <% if (r.name || r.role) { %>
+              <figcaption>
+                <% if (withAvatars) { %><span class="avatar"><% if (r.avatar) { %><%- img(r.avatar, r.name, { sizes: "48px", width: 480 }) %><% } else { %><%= initials(r.name) %><% } %></span><% } %>
+                <div><% if (r.name) { %><strong><%= r.name %></strong><% } %><% if (r.role) { %><span><%= r.role %></span><% } %></div>
+              </figcaption>
+              <% } %>
+            </figure>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("cta")) { const cta = config.cta; const side = cta.text || cta.buttonText; %>
+    <section class="section cta" id="cta" data-section="cta">
+      <div class="container cta-grid<%= cta.title && side ? ' two' : '' %>">
+        <% if (cta.title) { %><h2 class="cta-title <%= cta.title.length > 40 ? 't-l' : '' %>"><%= cta.title %></h2><% } %>
+        <% if (side) { %>
+        <div>
+          <% if (cta.text) { %><p><%= cta.text %></p><% } %>
+          <% if (cta.buttonText) { %><div class="actions"><a class="btn btn-lg btn-invert" <%- linkAttrs(cta.buttonLink) %>><%= cta.buttonText %></a></div><% } %>
+        </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("contact")) {
+         const h = heading("contact");
+         const hasLines = c.phone || c.email || c.whatsapp;
+         const hasMain = h.eyebrow || h.title || h.subtitle || c.address;
+         const hasSide = hourLines.length || hasLines;
+    %>
+    <section class="section" id="contact" data-section="contact">
+      <div class="container contact-grid<%= hasMain && hasSide ? ' two' : '' %>">
+        <% if (hasMain) { %>
+        <div class="contact-main">
+          <% if (h.eyebrow) { %><p class="kicker"><%= h.eyebrow %></p><% } %>
+          <% if (h.title) { %><h2 class="title"><%= h.title %></h2><% } %>
+          <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+          <% if (c.address) { %>
+            <p class="contact-address"><%= c.address %></p>
+            <div class="actions"><a class="btn btn-outline" <%- linkAttrs(mapsHref(c.address)) %>><%= t("directions") %><%- icon("arrow-up-right", "") %></a></div>
+          <% } %>
+        </div>
+        <% } %>
+        <% if (hasSide) { %>
+        <div class="contact-side">
+          <% if (hourLines.length) { %>
+          <div class="contact-block">
+            <h3><%= t("hours") %></h3>
+            <dl class="hours">
+              <% hourLines.forEach((line) => { const [day, time] = splitHour(line); %>
+                <div class="<%= day ? '' : 'full' %>"><% if (day) { %><dt><%= day %></dt><% } %><dd><%= time %></dd></div>
+              <% }) %>
+            </dl>
+          </div>
+          <% } %>
+          <% if (hasLines) { %>
+          <div class="contact-block">
+            <h3><%= t("appointments") %></h3>
+            <ul class="contact-lines">
+              <% if (c.phone) { %><li><a href="<%= telHref(c.phone) %>"><%- icon("phone") %><%= c.phone %></a></li><% } %>
+              <% if (c.whatsapp) { %><li><a <%- linkAttrs(waHref(c.whatsapp)) %>><%- icon("message-circle") %><%= t("whatsapp") %></a></li><% } %>
+              <% if (c.email) { %><li><a href="<%= mailHref(c.email) %>"><%- icon("mail") %><%= c.email %></a></li><% } %>
+            </ul>
+          </div>
+          <% } %>
+        </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+  </main>
+
+  <% if (show("footer")) { %>
+  <footer class="site-footer" id="footer" data-section="footer">
+    <div class="container">
+      <p class="footer-brand"><% if (config.brand.logo && !config.brand.name) { %><%- img(config.brand.logo, "", { sizes: "160px", width: 480 }) %><% } else { %><%= config.brand.name %><% } %></p>
+      <% if (config.footer.text || config.footer.links.length) { %>
+      <div class="footer-row">
+        <% if (config.footer.text) { %><p class="footer-text"><%= config.footer.text %></p><% } else { %><span></span><% } %>
+        <% if (config.footer.links.length) { %>
+        <nav class="footer-links" aria-label="<%= config.brand.name %>">
+          <% config.footer.links.forEach((l) => { %><a <%- linkAttrs(l.url) %>><%= l.label || l.url %></a><% }) %>
+        </nav>
+        <% } %>
+      </div>
+      <% } %>
+      <div class="footer-bottom">
+        <p><%- copyright(config.brand.name) %></p>
+        <%- madeWith %>
+      </div>
+    </div>
+  </footer>
+  <% } %>
+
+  <%- foot %>
+</body>
+</html>

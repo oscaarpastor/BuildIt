@@ -1,146 +1,645 @@
 <!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title><%= config.brand.name %> - Portafolio</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style> html { scroll-behavior: smooth; } </style>
-  </head>
-  <body style="font-family: <%= config.theme.fontFamily %>; background-color: <%= background %>; color: <%= textColor %>" class="antialiased">
-    <% if (previewMode) { %>
-      <style>
-        #preview-wrapper {
-          transform: scale(0.6);
-          transform-origin: top center;
-          width: 166.66vw;
-          margin-left: -33.33vw;
-        }
-      </style>
-      <div id="preview-wrapper">
-    <% } %>
+<html <%- htmlAttrs %>>
+<head>
+  <%- head %>
+  <style>
+    /* Portfolio: suizo y seguro de sí mismo. Papel claro, tinta casi negra y un
+       acento vivo; grotesca grande con interletrado cerrado, etiquetas de
+       sección en una columna lateral y filas separadas por líneas finas. */
+    :root {
+      --bg: #f4f4ef;
+      --surface: #eaeae3;
+      --surface-2: #dfdfd6;
+      --text: #151515;
+      --muted: #5c5c55;
+      --border: #d6d6cc;
+      --radius-sm: 6px;
+      --radius: 10px;
+      --radius-lg: 14px;
+      --radius-btn: 999px;
+      --container: 1320px;
+      --ink: color-mix(in srgb, var(--secondary) 24%, #0e0e0d);
+      --ink-text: #f4f4ef;
+      --ink-muted: rgb(244 244 239 / 0.66);
+      --ink-line: rgb(244 244 239 / 0.16);
+    }
+    html.bi-dark {
+      --bg: #121211;
+      --surface: #1a1a18;
+      --surface-2: #24241f;
+      --text: #f1f1ea;
+      --muted: #a9a99f;
+      --border: #2e2e2a;
+      --ink: color-mix(in srgb, var(--secondary) 25%, #1b1b19);
+    }
 
-    <!-- Header -->
-    <header class="max-w-7xl mx-auto flex justify-between items-center px-6 py-6 border-b border-gray-200">
-      <div class="flex items-center gap-4">
-        <% if (config.brand.logo) { %>
-          <img src="<%= config.brand.logo %>" alt="Logo" class="h-10 rounded">
-        <% } %>
-        <span class="text-2xl font-extrabold tracking-tight"><%= config.brand.name %></span>
+    body { font-size: 1.0625rem; }
+    h1, h2, h3, .title { font-weight: 500; letter-spacing: -0.035em; }
+    .title { font-size: clamp(2rem, 1.2rem + 3vw, 3.75rem); line-height: 1.02; }
+    .lead { max-width: 40rem; }
+
+    /* Antetítulo: una etiqueta lateral con un punto del color de acento, en
+       minúscula de frase (nada de versalitas espaciadas). */
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.625rem;
+      margin: 0;
+      color: var(--text);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .eyebrow::before {
+      content: "";
+      flex-shrink: 0;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    /* Cabecera de sección: etiqueta a la izquierda, título a la derecha */
+    .split { display: grid; gap: 1.25rem 2rem; }
+    .shead { margin-bottom: clamp(2.5rem, 5vw, 4.5rem); }
+    .shead .lead { margin-top: 1.25rem; }
+    @media (min-width: 900px) {
+      .split { grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); }
+      .split > .side { padding-top: 0.6rem; }
+      .split > :only-child { grid-column: 2; }
+    }
+
+    /* Cabecera */
+    .site-header { background: color-mix(in srgb, var(--bg) 90%, transparent); border-bottom-color: var(--border); }
+    .brand { font-weight: 600; font-size: 1.1875rem; letter-spacing: -0.03em; }
+    .nav-links a { color: var(--text); opacity: 0.7; }
+    .nav-links a:hover { opacity: 1; }
+    .nav-cta { background: var(--text); color: var(--bg); }
+    .nav-cta:hover { background: var(--primary); color: var(--on-primary); }
+
+    /* Portada */
+    .hero { padding: clamp(2.5rem, 6vw, 5rem) 0 clamp(3rem, 6vw, 5rem); }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 clamp(1.5rem, 4vw, 4rem); align-items: end; }
+    .hero-grid > :not(.hero-portrait) { grid-column: 1; }
+    .hero-grid > .hero-status { justify-self: start; }
+    .hero-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.5rem 1rem 0.5rem 0.875rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+    .hero-status::before {
+      content: "";
+      flex-shrink: 0;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 22%, transparent);
+    }
+    .hero-portrait {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      width: clamp(5.5rem, 11vw, 10.5rem);
+      aspect-ratio: 4 / 5;
+      margin-bottom: 0.5rem;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface-2);
+    }
+    .hero-portrait img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-monogram {
+      display: grid;
+      place-items: center;
+      background: var(--primary);
+      color: var(--on-primary);
+      font-family: var(--font-heading);
+      font-size: clamp(1.75rem, 1rem + 2.5vw, 3.25rem);
+      font-weight: 500;
+      letter-spacing: -0.04em;
+    }
+    .hero-title {
+      max-width: 17ch;
+      margin-top: clamp(1.5rem, 3.5vw, 2.75rem);
+      font-size: clamp(3rem, 0.9rem + 6.6vw, 7.5rem);
+      font-weight: 500;
+      line-height: 0.95;
+      letter-spacing: -0.055em;
+      text-wrap: balance;
+    }
+    .hero-title.is-long { max-width: 24ch; font-size: clamp(2.25rem, 1rem + 3.9vw, 4.75rem); line-height: 1; letter-spacing: -0.04em; }
+    .hero-foot {
+      display: grid;
+      gap: 1.75rem;
+      margin-top: clamp(2rem, 5vw, 4rem);
+      padding-top: 1.75rem;
+      border-top: 1px solid var(--text);
+    }
+    .hero-sub { max-width: 38rem; color: var(--muted); font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem); line-height: 1.55; }
+    .hero .actions { align-content: start; }
+    .btn-ink { background: var(--text); color: var(--bg); }
+    .btn-ink:hover { background: var(--primary); color: var(--on-primary); }
+    @media (min-width: 900px) {
+      .hero-foot { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: start; }
+      .hero .actions { justify-content: flex-end; }
+    }
+    @media (max-width: 600px) {
+      .hero-grid { grid-template-columns: minmax(0, 1fr); }
+      .hero-portrait { grid-column: 1; grid-row: 1; margin: 0 0 1.5rem; }
+      .hero .actions .btn { flex: 1 1 auto; }
+    }
+
+    /* Sobre mí */
+    .about-statement {
+      font-size: clamp(1.625rem, 1.1rem + 2vw, 2.75rem);
+      font-weight: 400;
+      line-height: 1.15;
+      letter-spacing: -0.035em;
+    }
+    .about-body { display: grid; gap: 2rem; margin-top: clamp(2rem, 4vw, 3.5rem); }
+    .about-body .prose { color: var(--muted); max-width: 40rem; }
+    .about-photo { width: min(100%, 18rem); aspect-ratio: 4 / 5; border-radius: var(--radius); overflow: hidden; }
+    .about-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .about .side { display: grid; gap: 2rem; align-content: start; }
+    @media (min-width: 1100px) {
+      .about-body.cols .prose { columns: 2; column-gap: 2.5rem; max-width: none; }
+      .about-body.cols .prose p { break-inside: avoid-column; }
+    }
+    @media (max-width: 899px) {
+      .about .about-photo { order: 3; width: 100%; max-width: 26rem; aspect-ratio: 4 / 3; }
+    }
+
+    /* Habilidades: filas sobre tinta */
+    .skills { background: var(--ink); color: var(--ink-text); }
+    .skills .eyebrow, .skills .title { color: var(--ink-text); }
+    .skills .lead { color: var(--ink-muted); }
+    .skill-list { border-top: 1px solid var(--ink-line); }
+    .skill {
+      display: grid;
+      grid-template-columns: 2.75rem minmax(0, 1fr);
+      gap: 0.25rem 1rem;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--ink-line);
+    }
+    .skill-icon { grid-row: span 2; color: var(--primary-on-dark); padding-top: 0.15rem; }
+    .skill-icon .icon { width: 1.75rem; height: 1.75rem; }
+    .skill h3 { font-size: clamp(1.375rem, 1.1rem + 1vw, 2rem); line-height: 1.15; }
+    .skill p { color: var(--ink-muted); max-width: 34rem; }
+    @media (min-width: 900px) {
+      .skill { grid-template-columns: 3.5rem minmax(0, 1.1fr) minmax(0, 1fr); gap: 2rem; padding: 2rem 0; align-items: baseline; }
+      .skill-icon { grid-row: auto; align-self: start; }
+    }
+
+    /* Proyectos */
+    .projects { display: grid; gap: clamp(3rem, 5vw, 4.5rem) clamp(1.5rem, 3vw, 2.5rem); }
+    .project { display: flex; flex-direction: column; min-width: 0; }
+    .project-media {
+      position: relative;
+      display: block;
+      aspect-ratio: 4 / 3;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--surface-2);
+    }
+    .project-media > img, .project-media > .ph { width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--ease); }
+    a.project-media:hover > img { transform: scale(1.035); }
+    .project-body { display: grid; gap: 0.75rem; padding-top: 1.375rem; }
+    .project-line { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+    .project h3 { font-size: clamp(1.375rem, 1.1rem + 1vw, 2rem); line-height: 1.12; }
+    .project h3 a:hover { color: var(--primary-ink); }
+    .project-year { flex-shrink: 0; color: var(--muted); font-family: var(--font-heading); font-size: 1.0625rem; font-variant-numeric: tabular-nums; }
+    .project-desc { max-width: 38rem; color: var(--muted); }
+    .project-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.25rem; }
+    .tag {
+      padding: 0.25rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+    .project-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      margin-left: auto;
+      font-weight: 600;
+      font-size: 0.9375rem;
+      text-decoration: underline;
+      text-decoration-color: var(--primary);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 5px;
+    }
+    .project-link .icon { width: 1rem; height: 1rem; }
+    .project-link:hover { color: var(--primary-ink); }
+    @media (min-width: 760px) {
+      .projects { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .project.wide { grid-column: 1 / -1; }
+      .project.wide .project-media { aspect-ratio: 16 / 7.5; }
+    }
+    @media (min-width: 1000px) {
+      .project.wide { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: 2.5rem; align-items: end; }
+      .project.wide .project-media { aspect-ratio: 4 / 3; }
+      .project.wide .project-body { padding: 0; }
+      .project.wide h3 { font-size: clamp(1.75rem, 1rem + 1.6vw, 2.75rem); }
+      .project.wide .project-line { flex-direction: column-reverse; gap: 0.75rem; }
+    }
+    /* Sin ninguna imagen: índice tipográfico de proyectos */
+    .projects.text-only { gap: 0; border-top: 1px solid var(--text); grid-template-columns: 1fr; }
+    .projects.text-only .project { display: block; padding: 1.75rem 0; border-bottom: 1px solid var(--border); }
+    .projects.text-only .project-body { padding: 0; }
+    @media (min-width: 900px) {
+      .projects.text-only .project-body { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 0.75rem 2.5rem; }
+      .projects.text-only .project-line { grid-row: span 2; }
+      .projects.text-only .project-desc, .projects.text-only .project-meta { grid-column: 2; }
+    }
+
+    /* Más trabajos: filas justificadas de alto fijo, con pie */
+    .more { background: var(--surface); }
+    .work-grid { display: flex; flex-wrap: wrap; gap: 2rem 1rem; }
+    .work { flex: 1 1 15rem; min-width: 0; }
+    .work:nth-child(4n + 1) { flex-grow: 1.6; }
+    .work:nth-child(4n + 3) { flex-grow: 1.25; }
+    .work-media { height: clamp(12rem, 8rem + 9vw, 17rem); border-radius: var(--radius); overflow: hidden; background: var(--surface-2); }
+    .work:only-child .work-media { height: clamp(14rem, 8rem + 22vw, 30rem); }
+    .work-media > img, .work-media > .ph { width: 100%; height: 100%; object-fit: cover; }
+    .work figcaption { margin-top: 0.75rem; font-size: 0.9375rem; line-height: 1.45; }
+    /* Sin ninguna foto: lista de encargos */
+    .work-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); column-gap: 2rem; border-top: 1px solid var(--text); }
+    .work-list li { padding: 1rem 0; border-bottom: 1px solid var(--border); font-family: var(--font-heading); font-size: 1.25rem; letter-spacing: -0.02em; }
+    @media (max-width: 600px) {
+      .work-grid { gap: 1.5rem 0.75rem; }
+      .work { flex-basis: 9rem; }
+      .work-media { height: 10.5rem; }
+      .work figcaption { font-size: 0.875rem; }
+    }
+
+    /* Experiencia: línea de tiempo */
+    .timeline { border-top: 1px solid var(--text); }
+    .job { position: relative; display: grid; gap: 0.5rem; padding: 1.75rem 0 1.75rem 1.75rem; border-bottom: 1px solid var(--border); }
+    .job::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 2.35rem;
+      width: 0.625rem;
+      height: 0.625rem;
+      border: 2px solid var(--text);
+      border-radius: 50%;
+    }
+    .job:first-child::before { border-color: var(--primary); background: var(--primary); }
+    .job-when { color: var(--muted); font-family: var(--font-heading); font-size: 1.0625rem; font-variant-numeric: tabular-nums; }
+    .job h3 { font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.75rem); line-height: 1.2; }
+    .job p { color: var(--muted); max-width: 40rem; }
+    @media (min-width: 900px) {
+      .job { grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); gap: 0.5rem 2rem; padding-left: 0; }
+      .job::before { left: calc(25% - 1.6rem); top: 2.45rem; }
+      .job-when { grid-row: span 2; }
+      .job > :not(.job-when) { grid-column: 2; }
+    }
+
+    /* Recomendaciones */
+    .recs { background: var(--surface); }
+    .rec-grid { display: grid; gap: clamp(2.5rem, 4vw, 3.5rem) clamp(2rem, 4vw, 4rem); }
+    .rec { display: flex; flex-direction: column; gap: 1.5rem; padding-top: 1.75rem; border-top: 1px solid var(--text); }
+    .rec blockquote { flex: 1; font-family: var(--font-heading); font-size: clamp(1.1875rem, 1.05rem + 0.5vw, 1.5rem); line-height: 1.35; letter-spacing: -0.02em; }
+    .rec blockquote::before { content: "“"; display: block; height: 2.25rem; color: var(--primary-ink); font-size: 3.5rem; line-height: 1; }
+    .rec.lead-quote blockquote { font-size: clamp(1.5rem, 1.1rem + 1.7vw, 2.5rem); line-height: 1.2; letter-spacing: -0.03em; }
+    .rec-author { display: flex; align-items: center; gap: 0.875rem; }
+    .rec-author strong { display: block; font-weight: 600; line-height: 1.3; }
+    .rec-role { display: block; color: var(--muted); font-size: 0.9375rem; }
+    .avatar { background: var(--primary); color: var(--on-primary); font-family: var(--font-heading); font-weight: 500; }
+    @media (min-width: 900px) {
+      .rec-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .rec.lead-quote { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); column-gap: 2rem; }
+      .rec.lead-quote blockquote { grid-column: 2; grid-row: 1; }
+      .rec.lead-quote .rec-author { grid-column: 1; grid-row: 1; align-self: end; flex-direction: column; align-items: flex-start; }
+    }
+
+    /* Hablemos */
+    .cta-band { background: var(--primary); color: var(--on-primary); }
+    .cta-grid { display: grid; gap: 2rem; align-items: end; }
+    .cta-title { max-width: 14ch; font-size: clamp(2.5rem, 1rem + 6vw, 6.5rem); font-weight: 500; line-height: 0.95; letter-spacing: -0.05em; }
+    .cta-side { display: grid; gap: 1.75rem; justify-items: start; }
+    .cta-side p { max-width: 30rem; font-size: 1.125rem; line-height: 1.55; }
+    .btn-invert { background: var(--on-primary); color: var(--primary); }
+    .btn-invert:hover { background: color-mix(in srgb, var(--on-primary) 86%, var(--primary)); }
+    @media (min-width: 1000px) { .cta-grid { grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: 3rem; } }
+
+    /* Contacto: filas grandes */
+    .contact-rows { border-top: 1px solid var(--text); }
+    .crow { display: grid; gap: 0.25rem 2rem; padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
+    .crow-label { color: var(--muted); font-size: 0.9375rem; }
+    .crow-value { font-family: var(--font-heading); font-size: clamp(1.25rem, 1rem + 1.2vw, 2.125rem); font-weight: 400; line-height: 1.2; letter-spacing: -0.03em; overflow-wrap: anywhere; }
+    a.crow-value { display: inline; }
+    a.crow-value .icon { display: inline-block; width: 1.25rem; height: 1.25rem; margin-left: 0.625rem; vertical-align: 0.05em; color: var(--primary-ink); transition: transform 0.25s var(--ease); }
+    a.crow-value:hover { color: var(--primary-ink); }
+    a.crow-value:hover .icon { transform: translate(2px, -2px); }
+    .crow-hours { display: grid; gap: 0.25rem; font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem); font-family: var(--font-body); letter-spacing: 0; }
+    @media (min-width: 900px) {
+      .crow { grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); align-items: baseline; }
+    }
+
+    /* Pie */
+    .site-footer { position: relative; overflow: hidden; padding: clamp(3.5rem, 7vw, 5.5rem) 0 1.75rem; background: var(--ink); color: var(--ink-muted); }
+    .site-footer .container { container-type: inline-size; }
+    .footer-top { display: grid; gap: 2rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--ink-line); }
+    .footer-text { max-width: 26rem; color: var(--ink-text); font-size: 1.125rem; line-height: 1.5; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.75rem; align-content: start; }
+    .footer-links a { color: var(--ink-text); font-weight: 500; }
+    .footer-links a:hover { color: var(--primary-on-dark); }
+    .footer-mark {
+      margin: clamp(2rem, 5vw, 3.5rem) 0 1rem;
+      color: var(--ink-text);
+      font-family: var(--font-heading);
+      font-size: min(calc(100cqi / var(--chars) * 2.1), 15rem);
+      font-weight: 500;
+      line-height: 0.85;
+      letter-spacing: -0.06em;
+      white-space: nowrap;
+      overflow-wrap: normal;
+    }
+    .footer-mark.wrap { white-space: normal; font-size: clamp(2.5rem, 1rem + 6vw, 6rem); line-height: 0.95; }
+    .footer-mark img { width: auto; height: clamp(3rem, 8vw, 6rem); }
+    .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem 1.5rem; font-size: 0.875rem; }
+    @media (min-width: 900px) { .footer-top { grid-template-columns: minmax(0, 1fr) auto; align-items: start; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main"><%= t("skip") %></a>
+
+  <%
+    // Cabecera de sección con la etiqueta en la columna lateral
+    function sectionHead(key) {
+      const h = heading(key);
+      if (!h.eyebrow && !h.title && !h.subtitle) return;
+  %>
+    <div class="split shead">
+      <% if (h.eyebrow) { %><div class="side"><p class="eyebrow"><%= h.eyebrow %></p></div><% } %>
+      <% if (h.title || h.subtitle) { %>
+      <div>
+        <% if (h.title) { %><h2 class="title"><%= h.title %></h2><% } %>
+        <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
       </div>
-      <nav class="hidden md:flex gap-6 text-sm font-medium">
-        <% if (show("hero")) { %><a href="#hero">Inicio</a><% } %>
-        <% if (show("about")) { %><a href="#about">Sobre mí</a><% } %>
-        <% if (show("features")) { %><a href="#features">Habilidades</a><% } %>
-        <% if (show("gallery")) { %><a href="#gallery">Trabajos</a><% } %>
-        <% if (show("video")) { %><a href="#video">Vídeo</a><% } %>
-        <% if (show("testimonials")) { %><a href="#testimonials">Opiniones</a><% } %>
-        <% if (show("contact")) { %><a href="#contact">Contacto</a><% } %>
-      </nav>
-    </header>
-
-    <main class="space-y-24">
-      <!-- HERO -->
-      <% if (show("hero")) { %>
-      <section id="hero" class="text-center px-6 py-32 bg-cover bg-center rounded-b-[3rem] shadow-xl" style="<%= heroStyle %>">
-        <h1 class="text-5xl font-extrabold mb-4 text-white drop-shadow-xl"><%= config.hero.title %></h1>
-        <p class="text-xl mb-6 text-white drop-shadow-md"><%= config.hero.subtitle %></p>
-        <a href="<%= config.hero.ctaLink %>" class="inline-block bg-[<%= config.theme.colorPrimary %>] text-white px-8 py-3 rounded-full shadow-lg hover:scale-105 transition">
-          <%= config.hero.ctaText %>
-        </a>
-      </section>
       <% } %>
+    </div>
+  <% } %>
 
-      <!-- ABOUT -->
-      <% if (show("about")) { %>
-      <section id="about" class="px-6 py-20 max-w-7xl mx-auto flex flex-col md:flex-row gap-10 items-center">
-        <% if (config.about.image) { %><img src="<%= config.about.image %>" alt="Imagen" class="w-full md:w-1/2 rounded-2xl shadow" /><% } %>
-        <div class="w-full md:w-1/2">
-          <h2 class="text-3xl font-bold mb-4"><%= config.about.heading %></h2>
-          <p class="text-lg text-gray-700"><%= config.about.content %></p>
+  <%
+    const c = config.contact;
+    const hero = config.hero;
+    const cta = config.cta;
+    const hourLines = lines(c.hours);
+    // Botón de la cabecera: el de contacto si hay, si no el de la portada
+    const headerCta = show("cta") && cta.buttonText
+      ? { text: cta.buttonText, href: cta.buttonLink || "#contact" }
+      : show("hero") && hero.ctaText ? { text: hero.ctaText, href: hero.ctaLink } : null;
+  %>
+
+  <header class="site-header" data-section="brand">
+    <div class="container nav">
+      <a class="brand" href="#main">
+        <% if (config.brand.logo) { %><%- img(config.brand.logo, config.brand.name, { eager: true, sizes: "160px", width: 480 }) %><% } %>
+        <% if (config.brand.name || !config.brand.logo) { %><span><%= config.brand.name %></span><% } %>
+      </a>
+      <%- navLinks({ limit: 5, exclude: ["gallery", "testimonials"] }) %>
+      <% if (headerCta) { %><a class="btn btn-sm nav-cta" <%- linkAttrs(headerCta.href) %>><%= headerCta.text %></a><% } %>
+      <%- mobileMenu({ cta: headerCta ? { text: headerCta.text, href: headerCta.href, class: "btn-ink" } : undefined }) %>
+    </div>
+  </header>
+
+  <main id="main">
+    <% if (show("hero")) { const longTitle = hero.title.length > 64; %>
+    <section class="hero" id="hero" data-section="hero">
+      <div class="container">
+        <div class="hero-grid">
+          <% if (hero.eyebrow) { %><p class="hero-status rise"><%= hero.eyebrow %></p><% } %>
+          <% if (hero.backgroundImage) { %>
+            <div class="hero-portrait rise"><%- img(hero.backgroundImage, config.brand.name, { eager: true, sizes: "180px", width: 800 }) %></div>
+          <% } else if (initials(config.brand.name)) { %>
+            <div class="hero-portrait hero-monogram rise" aria-hidden="true"><%= initials(config.brand.name) %></div>
+          <% } %>
+          <% if (hero.title) { %><h1 class="hero-title rise-2<%= longTitle ? ' is-long' : '' %>"><%= hero.title %></h1><% } %>
         </div>
-      </section>
-      <% } %>
-
-      <!-- FEATURES -->
-      <% if (show("features")) { %>
-      <section id="features" class="px-6 py-20 bg-[<%= config.theme.colorSecondary %>] text-white">
-        <h2 class="text-3xl font-semibold text-center mb-10">Habilidades</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
-          <% config.features.forEach(f => { %>
-            <div class="bg-white text-black rounded-xl shadow p-6 text-center">
-              <div class="text-5xl mb-3"><%= f.icon %></div>
-              <h3 class="text-xl font-bold"><%= f.title %></h3>
-              <p class="mt-2 text-sm"><%= f.description %></p>
-            </div>
-          <% }) %>
-        </div>
-      </section>
-      <% } %>
-
-      <!-- GALLERY -->
-      <% if (show("gallery")) { %>
-      <section id="gallery" class="px-6 py-20 bg-gray-100">
-        <h2 class="text-3xl font-semibold text-center mb-10">Mis trabajos</h2>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          <% config.gallery.forEach(img => { %>
-            <% if (img.image) { %><img src="<%= img.image %>" class="rounded-xl shadow object-cover w-full h-60"><% } %>
-          <% }) %>
-        </div>
-      </section>
-      <% } %>
-
-      <!-- VIDEO -->
-      <% if (show("video")) { %>
-      <section id="video" class="px-6 py-20">
-        <h2 class="text-3xl font-semibold text-center mb-10">Mi presentación</h2>
-        <div class="flex justify-center">
-          <iframe width="800" height="450" src="<%= config.video.url %>" frameborder="0" allowfullscreen class="rounded-xl shadow"></iframe>
-        </div>
-      </section>
-      <% } %>
-
-      <!-- TESTIMONIALS -->
-      <% if (show("testimonials")) { %>
-      <section id="testimonials" class="px-6">
-        <div class="max-w-7xl mx-auto">
-          <h2 class="text-3xl font-semibold text-center mb-10">Opiniones</h2>
-          <div class="flex flex-wrap justify-center gap-6">
-            <% config.testimonials.forEach(t => { %>
-              <div class="bg-white p-6 rounded-xl shadow w-full md:w-1/3 text-center">
-                <% if (t.avatar) { %><img src="<%= t.avatar %>" alt="<%= t.name %><% } %>" class="w-16 h-16 rounded-full mx-auto mb-4">
-                <p class="italic text-gray-700">"<%= t.quote %>"</p>
-                <p class="mt-2 font-semibold"><%= t.name %></p>
-              </div>
-            <% }) %>
+        <% if (hero.subtitle || hero.ctaText || hero.secondaryCtaText) { %>
+        <div class="hero-foot rise-3">
+          <div><% if (hero.subtitle) { %><p class="hero-sub"><%= hero.subtitle %></p><% } %></div>
+          <% if (hero.ctaText || hero.secondaryCtaText) { %>
+          <div class="actions">
+            <% if (hero.ctaText) { %><a class="btn btn-lg btn-ink" <%- linkAttrs(hero.ctaLink) %>><%= hero.ctaText %></a><% } %>
+            <% if (hero.secondaryCtaText) { %><a class="btn btn-lg btn-outline" <%- linkAttrs(hero.secondaryCtaLink) %>><%= hero.secondaryCtaText %></a><% } %>
           </div>
+          <% } %>
         </div>
-      </section>
-      <% } %>
-
-      <!-- CONTACT -->
-      <% if (show("contact")) { %>
-      <section id="contact" class="px-6">
-        <div class="max-w-4xl mx-auto text-center bg-white rounded-xl shadow p-10">
-          <h2 class="text-3xl font-semibold mb-6">Contacto</h2>
-          <p>Email: <%= config.contact.email %></p>
-          <p>Teléfono: <%= config.contact.phone %></p>
-          <p>Dirección: <%= config.contact.address %></p>
-        </div>
-      </section>
-      <% } %>
-    </main>
-
-    <!-- FOOTER -->
-    <% if (show("footer")) { %>
-    <footer class="bg-[<%= config.theme.colorPrimary %>] text-white px-6 py-10 mt-24">
-      <div class="max-w-6xl mx-auto text-center">
-        <h3 class="font-bold text-lg mb-2"><%= config.brand.name %></h3>
-        <p class="text-sm"><%= config.footer.text %></p>
+        <% } %>
       </div>
-    </footer>
+    </section>
     <% } %>
 
-    <a href="#hero" class="fixed bottom-6 right-6 bg-[<%= config.theme.colorPrimary %>] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
-    <% if (previewMode) { %></div><% } %>
-  </body>
+    <% if (show("about")) { const a = config.about; const h = heading("about"); const longText = a.content.length > 420; %>
+    <section class="section about" id="about" data-section="about">
+      <div class="container split">
+        <div class="side">
+          <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+          <% if (a.image) { %><div class="about-photo"><%- img(a.image, "", { sizes: "(min-width: 900px) 288px, 100vw", width: 800 }) %></div><% } %>
+        </div>
+        <div>
+          <% if (a.heading) { %><h2 class="about-statement"><%= a.heading %></h2><% } %>
+          <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+          <% if (a.content) { %><div class="about-body<%= longText ? ' cols' : '' %>"><div class="prose"><%- paras(a.content) %></div></div><% } %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("features")) { %>
+    <section class="section skills" id="features" data-section="features">
+      <div class="container">
+        <% sectionHead("features") %>
+        <ul class="skill-list">
+          <% config.features.forEach((f) => { %>
+            <li class="skill">
+              <span class="skill-icon"><% if (f.icon) { %><%- icon(f.icon) %><% } %></span>
+              <% if (f.title) { %><h3><%= f.title %></h3><% } %>
+              <% if (f.description) { %><p><%= f.description %></p><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("products")) {
+      const list = config.products;
+      const withMedia = list.some((p) => p.image);
+      const oddFirst = list.length % 2 === 1;
+    %>
+    <section class="section" id="products" data-section="products">
+      <div class="container">
+        <% sectionHead("products") %>
+        <ul class="projects<%= withMedia ? '' : ' text-only' %>">
+          <% list.forEach((p, i) => {
+            const tags = (p.badge || "").split(",").map((s) => s.trim()).filter(Boolean);
+            const wide = withMedia && oddFirst && i === 0;
+          %>
+            <li class="project<%= wide ? ' wide' : '' %>">
+              <% if (withMedia) { %>
+                <% if (p.link) { %>
+                  <a class="project-media" <%- linkAttrs(p.link) %> tabindex="-1" aria-hidden="true"><%- img(p.image, "", { sizes: wide ? "(min-width: 1000px) 860px, 100vw" : "(min-width: 760px) 50vw, 100vw", width: 1600, placeholder: "layout-grid" }) %></a>
+                <% } else { %>
+                  <div class="project-media"><%- img(p.image, p.title, { sizes: wide ? "(min-width: 1000px) 860px, 100vw" : "(min-width: 760px) 50vw, 100vw", width: 1600, placeholder: "layout-grid" }) %></div>
+                <% } %>
+              <% } %>
+              <div class="project-body">
+                <div class="project-line">
+                  <h3><% if (p.link) { %><a <%- linkAttrs(p.link) %>><%= p.title %></a><% } else { %><%= p.title %><% } %></h3>
+                  <% if (p.price) { %><span class="project-year"><%= p.price %></span><% } %>
+                </div>
+                <% if (p.description) { %><p class="project-desc"><%= p.description %></p><% } %>
+                <% if (tags.length || p.link) { %>
+                <div class="project-meta">
+                  <% tags.forEach((tag) => { %><span class="tag"><%= tag %></span><% }) %>
+                  <% if (p.link) { %><a class="project-link" <%- linkAttrs(p.link) %>><%= t("caseStudy") %><%- icon("arrow-up-right") %></a><% } %>
+                </div>
+                <% } %>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("gallery")) { const withPics = config.gallery.some((g) => g.image); %>
+    <section class="section more" id="gallery" data-section="gallery">
+      <div class="container">
+        <% sectionHead("gallery") %>
+        <% if (!withPics) { %>
+        <ul class="work-list"><% config.gallery.forEach((g) => { %><li><%= g.caption %></li><% }) %></ul>
+        <% } else { %>
+        <div class="work-grid">
+          <% config.gallery.forEach((g) => { %>
+            <figure class="work">
+              <div class="work-media"><%- img(g.image, g.caption, { sizes: "(min-width: 900px) 33vw, 50vw", width: 1200 }) %></div>
+              <% if (g.caption) { %><figcaption><%= g.caption %></figcaption><% } %>
+            </figure>
+          <% }) %>
+        </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("steps")) { %>
+    <section class="section" id="steps" data-section="steps">
+      <div class="container">
+        <% sectionHead("steps") %>
+        <ol class="timeline">
+          <% config.steps.forEach((s, i) => { %>
+            <li class="job">
+              <span class="job-when"><%= s.label || String(i + 1).padStart(2, "0") %></span>
+              <% if (s.title) { %><h3><%= s.title %></h3><% } %>
+              <% if (s.description) { %><p><%= s.description %></p><% } %>
+            </li>
+          <% }) %>
+        </ol>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("testimonials")) { const recs = config.testimonials; const leadFirst = recs.length % 2 === 1; %>
+    <section class="section recs" id="testimonials" data-section="testimonials">
+      <div class="container">
+        <% sectionHead("testimonials") %>
+        <div class="rec-grid">
+          <% recs.forEach((r, i) => { %>
+            <figure class="rec<%= leadFirst && i === 0 ? ' lead-quote' : '' %>">
+              <% if (r.quote) { %><blockquote><%= r.quote %></blockquote><% } %>
+              <% if (r.name || r.role) { %>
+              <figcaption class="rec-author">
+                <span class="avatar"><% if (r.avatar) { %><%- img(r.avatar, "", { sizes: "48px", width: 480 }) %><% } else { %><%= initials(r.name) %><% } %></span>
+                <span><% if (r.name) { %><strong><%= r.name %></strong><% } %><% if (r.role) { %><span class="rec-role"><%= r.role %></span><% } %></span>
+              </figcaption>
+              <% } %>
+            </figure>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("cta")) { %>
+    <section class="section cta-band" id="cta" data-section="cta">
+      <div class="container cta-grid">
+        <% if (cta.title) { %><h2 class="cta-title"><%= cta.title %></h2><% } %>
+        <% if (cta.text || cta.buttonText) { %>
+        <div class="cta-side">
+          <% if (cta.text) { %><p><%= cta.text %></p><% } %>
+          <% if (cta.buttonText) { %><a class="btn btn-lg btn-invert" <%- linkAttrs(cta.buttonLink) %>><%= cta.buttonText %></a><% } %>
+        </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("contact")) { %>
+    <section class="section" id="contact" data-section="contact">
+      <div class="container">
+        <% sectionHead("contact") %>
+        <dl class="contact-rows">
+          <% if (c.email) { %>
+          <div class="crow"><dt class="crow-label"><%= t("email") %></dt><dd><a class="crow-value" href="<%= mailHref(c.email) || '#contact' %>"><%= c.email %><%- icon("arrow-up-right") %></a></dd></div>
+          <% } %>
+          <% if (c.phone) { %>
+          <div class="crow"><dt class="crow-label"><%= t("phone") %></dt><dd><a class="crow-value" href="<%= telHref(c.phone) %>"><%= c.phone %><%- icon("arrow-up-right") %></a></dd></div>
+          <% } %>
+          <% if (c.whatsapp) { %>
+          <div class="crow"><dt class="crow-label"><%= t("whatsapp") %></dt><dd><a class="crow-value" <%- linkAttrs(waHref(c.whatsapp)) %>><%= c.whatsapp %><%- icon("arrow-up-right") %></a></dd></div>
+          <% } %>
+          <% if (c.address) { %>
+          <div class="crow"><dt class="crow-label"><%= t("location") %></dt><dd><a class="crow-value" <%- linkAttrs(mapsHref(c.address)) %>><%= c.address %><%- icon("arrow-up-right") %></a></dd></div>
+          <% } %>
+          <% if (hourLines.length) { %>
+          <div class="crow"><dt class="crow-label"><%= t("availability") %></dt><dd><ul class="crow-value crow-hours"><% hourLines.forEach((line) => { %><li><%= line %></li><% }) %></ul></dd></div>
+          <% } %>
+        </dl>
+      </div>
+    </section>
+    <% } %>
+  </main>
+
+  <% if (show("footer")) { const name = config.brand.name.trim(); %>
+  <footer class="site-footer" id="footer" data-section="footer">
+    <div class="container">
+      <% if (config.footer.text || config.footer.links.length) { %>
+      <div class="footer-top">
+        <div><% if (config.footer.text) { %><p class="footer-text"><%= config.footer.text %></p><% } %></div>
+        <% if (config.footer.links.length) { %>
+        <nav class="footer-links" aria-label="<%= name || t('menu') %>">
+          <% config.footer.links.forEach((l) => { %><a <%- linkAttrs(l.url) %>><%= l.label || l.url %></a><% }) %>
+        </nav>
+        <% } %>
+      </div>
+      <% } %>
+      <% if (name) { %>
+        <p class="footer-mark<%= name.length > 22 ? ' wrap' : '' %>" style="--chars: <%= Math.max(name.length, 6) %>" aria-hidden="true"><%= name %></p>
+      <% } else if (config.brand.logo) { %>
+        <p class="footer-mark"><%- img(config.brand.logo, "", { sizes: "200px", width: 480 }) %></p>
+      <% } %>
+      <div class="footer-bottom">
+        <p><%- copyright(name) %></p>
+        <%- madeWith %>
+      </div>
+    </div>
+  </footer>
+  <% } %>
+
+  <%- foot %>
+</body>
 </html>

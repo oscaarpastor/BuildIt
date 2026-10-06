@@ -1,227 +1,583 @@
 <!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title><%= config.brand.name %> - Restaurante</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-      html { scroll-behavior: smooth; }
-      body { font-family: 'Playfair Display', serif; }
-      .menu-item { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-      .menu-item:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
-    </style>
-  </head>
-  <body style="font-family: <%= config.theme.fontFamily %>; background-color: <%= background %>; color: <%= textColor %>" class="antialiased">
-    <% if (previewMode) { %>
-      <style>
-        #preview-wrapper {
-          transform: scale(0.6);
-          transform-origin: top center;
-          width: 166.66vw;
-          margin-left: -33.33vw;
-        }
-      </style>
-      <div id="preview-wrapper">
+<html <%- htmlAttrs %>>
+<head>
+  <%- head %>
+  <style>
+    /* Restaurante: mediterráneo y cálido. Fondo crema, terracota (principal) y
+       oliva (secundario); titulares serif con carácter y carta tipográfica. */
+    :root {
+      --bg: #f6f0e6;
+      --surface: #efe6d8;
+      --surface-2: #e7dbc8;
+      --text: #2a2420;
+      --muted: #6b5f55;
+      --border: #e0d3c0;
+      --radius: 6px;
+      --radius-lg: 10px;
+      --radius-btn: 4px;
+      --dark: color-mix(in srgb, var(--secondary) 55%, #0c0b0a);
+    }
+    html.bi-dark {
+      --bg: #171412;
+      --surface: #201b18;
+      --surface-2: #2a2420;
+      --text: #f3ece2;
+      --muted: #b6a99a;
+      --border: #3a322c;
+    }
+
+    .title, .hero-title, .about-title, .cta-title, .footer-brand, .dish h3 {
+      font-variation-settings: "SOFT" 50, "WONK" 0;
+    }
+    .title { font-weight: 600; letter-spacing: -0.015em; }
+
+    /* Cabecera sobre la foto de portada */
+    .site-header {
+      position: absolute;
+      inset: 0 0 auto;
+      background: transparent;
+      border: 0;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      color: #fff;
+    }
+    .site-header.solid {
+      position: relative;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+    .site-header .brand { font-weight: 600; font-size: 1.375rem; }
+    .site-header .nav-links a { color: inherit; opacity: 0.82; }
+    .site-header .nav-links a:hover { opacity: 1; }
+    .site-header:not(.solid) .nav-cta { background: #fff; color: #1d1915; }
+    .site-header:not(.solid) .nav-cta:hover { background: rgb(255 255 255 / 0.88); }
+    .menu-panel { color: var(--text); }
+
+    /* Portada */
+    .hero {
+      position: relative;
+      isolation: isolate;
+      display: flex;
+      align-items: flex-end;
+      min-height: min(100svh, 880px);
+      padding: calc(var(--header-h) + 3rem) 0 clamp(2.5rem, 6vw, 4.5rem);
+      background:
+        radial-gradient(70% 90% at 85% 10%, color-mix(in srgb, var(--primary) 32%, transparent), transparent 70%),
+        var(--dark);
+      color: #fff;
+      overflow: hidden;
+    }
+    .hero-media { position: absolute; inset: 0; z-index: -2; }
+    .hero-media img { width: 100%; height: 100%; object-fit: cover; }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background:
+        linear-gradient(to top, rgb(14 11 9 / 0.88) 0%, rgb(14 11 9 / 0.45) 45%, rgb(14 11 9 / 0.2) 100%),
+        linear-gradient(to right, rgb(14 11 9 / 0.55), transparent 70%);
+    }
+    .hero-inner {
+      display: grid;
+      gap: 2.5rem;
+      align-items: end;
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgb(255 255 255 / 0.85);
+    }
+    .hero-eyebrow::before { content: ""; flex-shrink: 0; width: 2.5rem; height: 1px; margin-top: 0.65em; background: currentColor; }
+    .hero-title {
+      max-width: 15ch;
+      font-size: clamp(2.75rem, 1.4rem + 5.6vw, 6.25rem);
+      font-weight: 500;
+      line-height: 0.98;
+      letter-spacing: -0.03em;
+    }
+    .hero-sub {
+      max-width: 36rem;
+      margin-top: 1.5rem;
+      color: rgb(255 255 255 / 0.85);
+      font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+    }
+    .hero .actions { margin-top: 2.25rem; }
+    .hero-info {
+      display: grid;
+      gap: 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgb(255 255 255 / 0.25);
+      font-size: 0.9375rem;
+      color: rgb(255 255 255 / 0.88);
+    }
+    .hero-info div { display: flex; gap: 0.75rem; align-items: flex-start; }
+    .hero-info svg { width: 1.125rem; height: 1.125rem; margin-top: 0.2rem; opacity: 0.8; }
+    .hero-info dt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    @media (min-width: 960px) {
+      .hero-inner { grid-template-columns: minmax(0, 1fr) 17rem; gap: 4rem; }
+      .hero-info { padding: 0 0 0 1.75rem; border-top: 0; border-left: 1px solid rgb(255 255 255 / 0.25); }
+    }
+
+    /* Nosotros */
+    .about-grid { display: grid; gap: clamp(2.5rem, 6vw, 6rem); align-items: center; }
+    .about-media { position: relative; }
+    .about-media .frame { aspect-ratio: 4 / 5; border-radius: var(--radius-lg); overflow: hidden; }
+    .about-media .frame > * { width: 100%; height: 100%; object-fit: cover; }
+    .about-media::before {
+      content: "";
+      position: absolute;
+      inset: 1.5rem -1.5rem -1.5rem 1.5rem;
+      z-index: -1;
+      border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
+      border-radius: var(--radius-lg);
+    }
+    .about-media { isolation: isolate; margin-right: 1.5rem; }
+    .about-title { font-size: clamp(2rem, 1.3rem + 2.6vw, 3.25rem); font-weight: 500; letter-spacing: -0.02em; }
+    .about-copy .prose { margin-top: 1.5rem; color: var(--muted); font-size: 1.0625rem; }
+    @media (min-width: 900px) { .about-grid { grid-template-columns: 5fr 6fr; } }
+
+    /* Puntos fuertes */
+    .features { background: var(--surface); }
+    .feature-list { display: grid; gap: 0; }
+    .feature { padding: 2rem 0; border-top: 1px solid var(--border); }
+    .feature:first-child { border-top: 0; padding-top: 0; }
+    .feature-icon {
+      display: grid;
+      place-items: center;
+      width: 3.25rem;
+      height: 3.25rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid color-mix(in srgb, var(--primary) 40%, transparent);
+      border-radius: 50%;
+      color: var(--primary-ink);
+    }
+    .feature h3 { font-size: 1.5rem; font-weight: 600; }
+    .feature p { margin-top: 0.625rem; color: var(--muted); }
+    @media (min-width: 820px) {
+      .feature-list { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+      .feature { padding: 0 2.5rem; border-top: 0; border-left: 1px solid var(--border); }
+      .feature:first-child { padding-left: 0; border-left: 0; }
+      .feature:last-child { padding-right: 0; }
+    }
+
+    /* Carta */
+    .menu-section { background: var(--dark); color: #f6f0e6; }
+    .menu-section .eyebrow { color: color-mix(in srgb, var(--primary-on-dark) 85%, #fff); }
+    .menu-section .lead { color: rgb(246 240 230 / 0.72); }
+    .carta { display: grid; gap: 0 clamp(2rem, 6vw, 5rem); }
+    .dish {
+      display: flex;
+      gap: 1.25rem;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid rgb(246 240 230 / 0.14);
+    }
+    .dish-thumb {
+      flex-shrink: 0;
+      width: 4.75rem;
+      height: 4.75rem;
+      border-radius: 50%;
+      overflow: hidden;
+      background: rgb(255 255 255 / 0.08);
+    }
+    .dish-thumb > * { width: 100%; height: 100%; object-fit: cover; }
+    .dish-thumb .ph { background: rgb(255 255 255 / 0.06); color: rgb(255 255 255 / 0.4); }
+    .dish-body { flex: 1; min-width: 0; }
+    .dish-line { display: flex; align-items: baseline; gap: 0.75rem; }
+    .dish h3 { font-size: 1.3125rem; font-weight: 500; line-height: 1.25; }
+    .dish-dots { flex: 1; min-width: 1.5rem; border-bottom: 1px dotted rgb(246 240 230 / 0.35); transform: translateY(-0.3em); }
+    .dish-price { flex-shrink: 0; font-family: var(--font-heading); font-size: 1.25rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+    .dish-desc { margin-top: 0.375rem; color: rgb(246 240 230 / 0.7); font-size: 0.9375rem; line-height: 1.55; }
+    .dish-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin-top: 0.625rem; }
+    .dish-badge {
+      padding: 0.2rem 0.6rem;
+      border: 1px solid rgb(246 240 230 / 0.3);
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .dish-link { font-size: 0.875rem; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+    @media (min-width: 900px) { .carta { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 520px) {
+      .dish-thumb { width: 3.75rem; height: 3.75rem; }
+      .dish-line { flex-wrap: wrap; gap: 0.25rem 0.75rem; }
+      .dish-dots { display: none; }
+      .dish h3 { flex: 1 1 100%; }
+    }
+
+    /* El local */
+    .gallery-grid { columns: 3 16rem; column-gap: 1rem; }
+    .gallery-grid.few { columns: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: 1rem; }
+    .shot {
+      position: relative;
+      margin-bottom: 1rem;
+      break-inside: avoid;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      aspect-ratio: 4 / 5;
+    }
+    .gallery-grid.few .shot { margin: 0; aspect-ratio: 4 / 3; }
+    .gallery-grid.few .shot:only-child { aspect-ratio: 16 / 7; }
+    .shot:nth-child(3n + 2) { aspect-ratio: 1; }
+    .shot:nth-child(3n) { aspect-ratio: 4 / 3; }
+    .shot > img, .shot > .ph { width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s var(--ease); }
+    .shot:hover > img { transform: scale(1.04); }
+    @media (max-width: 700px) {
+      .gallery-grid:not(.few) { columns: 2; column-gap: 0.75rem; }
+      .gallery-grid:not(.few) .shot { margin-bottom: 0.75rem; }
+      .shot figcaption { padding: 2rem 0.875rem 0.75rem; font-size: 0.8125rem; }
+    }
+    .shot figcaption {
+      position: absolute;
+      inset: auto 0 0;
+      padding: 2.5rem 1.25rem 1rem;
+      background: linear-gradient(to top, rgb(0 0 0 / 0.6), transparent);
+      color: #fff;
+      font-size: 0.9375rem;
+      font-weight: 500;
+    }
+
+    /* Reseñas */
+    .reviews { background: var(--surface); }
+    .review-featured { max-width: 56rem; margin: 0 auto; text-align: center; }
+    .stars { display: inline-flex; gap: 0.25rem; color: var(--primary-ink); }
+    .stars svg { width: 1.125rem; height: 1.125rem; fill: currentColor; }
+    .review-featured blockquote {
+      margin-top: 1.5rem;
+      font-family: var(--font-heading);
+      font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.375rem);
+      font-weight: 400;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+      text-wrap: balance;
+    }
+    .review-author { display: inline-flex; align-items: center; gap: 0.875rem; margin-top: 2rem; text-align: left; }
+    .review-author strong { display: block; font-weight: 600; }
+    .review-author span { color: var(--muted); font-size: 0.875rem; }
+    .review-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: 1.25rem; margin-top: clamp(3rem, 6vw, 4.5rem); }
+    .review-card { display: flex; flex-direction: column; padding: 2rem; border-radius: var(--radius-lg); background: var(--bg); }
+    .review-card blockquote { flex: 1; margin-top: 1rem; font-size: 1.0625rem; }
+    .review-card .review-author { margin-top: 1.5rem; }
+
+    /* Preguntas */
+    .faq-grid { display: grid; gap: 2.5rem; }
+    .faq-list { border-top: 1px solid var(--border); }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-item > summary { padding: 1.5rem 0; font-family: var(--font-heading); font-size: 1.25rem; font-weight: 500; line-height: 1.35; }
+    .faq-item > summary .faq-icon { width: 1.25rem; height: 1.25rem; color: var(--primary-ink); }
+    .faq-answer { padding: 0 2.75rem 1.75rem 0; color: var(--muted); }
+    @media (min-width: 900px) {
+      .faq-grid { grid-template-columns: 2fr 3fr; gap: 5rem; }
+      .faq-grid .section-head { position: sticky; top: 2rem; align-self: start; }
+    }
+
+    /* Reservas */
+    .cta-band { background: var(--primary); color: var(--on-primary); text-align: center; }
+    .cta-band .container { max-width: 52rem; }
+    .cta-title { font-size: clamp(2.25rem, 1.4rem + 3.6vw, 4.5rem); font-weight: 500; letter-spacing: -0.025em; }
+    .cta-band p { max-width: 38rem; margin: 1.25rem auto 0; font-size: 1.125rem; opacity: 0.88; }
+    .cta-band .actions { justify-content: center; margin-top: 2.25rem; }
+    .cta-band .btn-invert { background: var(--on-primary); color: var(--primary); }
+    .cta-band .btn-invert:hover { background: color-mix(in srgb, var(--on-primary) 88%, var(--primary)); }
+
+    /* Contacto */
+    .contact-grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
+    .contact-card { padding: 2rem; border: 1px solid var(--border); border-radius: var(--radius-lg); }
+    .contact-card .feature-icon { margin-bottom: 1.5rem; }
+    .contact-card h3 { font-size: 1.375rem; font-weight: 600; }
+    .contact-card p, .contact-card li { color: var(--muted); }
+    .contact-card > p { margin-top: 0.75rem; }
+    .contact-card .link-arrow { margin-top: 1rem; }
+    .hours { margin-top: 0.75rem; }
+    .hours li { padding: 0.375rem 0; border-bottom: 1px dashed var(--border); font-size: 0.9375rem; }
+    .hours li:last-child { border-bottom: 0; }
+    .contact-lines { margin-top: 0.75rem; display: grid; gap: 0.5rem; }
+    .contact-lines a { display: inline-flex; align-items: center; gap: 0.625rem; color: var(--text); font-weight: 500; overflow-wrap: anywhere; }
+    .contact-lines a:hover { color: var(--primary-ink); }
+    .contact-lines svg { width: 1.125rem; height: 1.125rem; color: var(--primary-ink); }
+
+    /* Pie */
+    .site-footer { padding: clamp(4rem, 8vw, 6rem) 0 2rem; background: var(--dark); color: rgb(246 240 230 / 0.75); }
+    .footer-top { display: grid; gap: 2.5rem; padding-bottom: 3rem; border-bottom: 1px solid rgb(246 240 230 / 0.14); }
+    .footer-brand { color: #f6f0e6; font-family: var(--font-heading); font-size: clamp(2.25rem, 1.6rem + 2.6vw, 3.75rem); font-weight: 500; letter-spacing: -0.02em; line-height: 1; }
+    .footer-brand img { height: 3rem; width: auto; }
+    .footer-text { max-width: 26rem; margin-top: 1rem; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 0.75rem 1.75rem; align-content: start; }
+    .footer-links a { color: #f6f0e6; font-weight: 500; }
+    .footer-links a:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem; padding-top: 1.75rem; font-size: 0.875rem; }
+    @media (min-width: 820px) { .footer-top { grid-template-columns: 1fr auto; align-items: end; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main"><%= t("skip") %></a>
+
+  <%
+    // Cabecera de sección: antetítulo, título y entradilla (solo lo que tenga texto)
+    function sectionHead(key, extraClass) {
+      const h = heading(key);
+      if (!h.eyebrow && !h.title && !h.subtitle) return;
+  %>
+    <div class="section-head <%= extraClass || '' %>">
+      <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+      <% if (h.title) { %><h2 class="title"><%= h.title %></h2><% } %>
+      <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+    </div>
+  <% } %>
+
+  <%
+    const c = config.contact;
+    const showContact = show("contact");
+    const hourLines = lines(c.hours);
+    const reserveHref = config.hero.ctaLink || (show("contact") ? "#contact" : "");
+  %>
+
+  <header class="site-header<%= show('hero') ? '' : ' solid' %>" data-section="brand">
+    <div class="container nav">
+      <a class="brand" href="#main">
+        <% if (config.brand.logo) { %><%- img(config.brand.logo, config.brand.name, { eager: true, sizes: "160px", width: 480 }) %><% } %>
+        <% if (config.brand.name || !config.brand.logo) { %><span><%= config.brand.name %></span><% } %>
+      </a>
+      <%- navLinks({ limit: 5, exclude: ["contact"] }) %>
+      <% if (config.hero.ctaText && show("hero")) { %>
+        <a class="btn btn-primary btn-sm nav-cta" <%- linkAttrs(config.hero.ctaLink) %>><%= config.hero.ctaText %></a>
+      <% } %>
+      <%- mobileMenu({ cta: show("hero") ? { text: config.hero.ctaText, href: config.hero.ctaLink } : undefined }) %>
+    </div>
+  </header>
+
+  <main id="main">
+    <% if (show("hero")) { const hero = config.hero; %>
+    <section class="hero" id="hero" data-section="hero">
+      <% if (hero.backgroundImage) { %>
+        <div class="hero-media"><%- img(hero.backgroundImage, "", { eager: true, width: 2000 }) %></div>
+      <% } %>
+      <div class="container hero-inner">
+        <div>
+          <% if (hero.eyebrow) { %><p class="hero-eyebrow rise"><%= hero.eyebrow %></p><% } %>
+          <% if (hero.title) { %><h1 class="hero-title rise-2"><%= hero.title %></h1><% } %>
+          <% if (hero.subtitle) { %><p class="hero-sub rise-3"><%= hero.subtitle %></p><% } %>
+          <% if (hero.ctaText || hero.secondaryCtaText) { %>
+          <div class="actions rise-3">
+            <% if (hero.ctaText) { %><a class="btn btn-primary btn-lg" <%- linkAttrs(hero.ctaLink) %>><%= hero.ctaText %></a><% } %>
+            <% if (hero.secondaryCtaText) { %><a class="btn btn-ghost-light btn-lg" <%- linkAttrs(hero.secondaryCtaLink) %>><%= hero.secondaryCtaText %></a><% } %>
+          </div>
+          <% } %>
+        </div>
+        <% if (showContact && (c.address || hourLines.length || c.phone)) { %>
+        <dl class="hero-info rise-3">
+          <% if (c.address) { %><div><%- icon("map-pin") %><dt><%= t("address") %></dt><dd><%= c.address %></dd></div><% } %>
+          <% if (hourLines.length) { %><div><%- icon("clock") %><dt><%= t("hours") %></dt><dd><%= hourLines[0] %></dd></div><% } %>
+          <% if (c.phone) { %><div><%- icon("phone") %><dt><%= t("phone") %></dt><dd><a href="<%= telHref(c.phone) %>"><%= c.phone %></a></dd></div><% } %>
+        </dl>
+        <% } %>
+      </div>
+    </section>
     <% } %>
 
-    <header class="max-w-7xl mx-auto flex justify-between items-center px-6 py-6 border-b border-amber-200/30">
-      <div class="flex items-center gap-4">
-        <% if (config.brand.logo) { %>
-          <img src="<%= config.brand.logo %>" alt="Logo" class="h-10 rounded">
-        <% } %>
-        <span class="text-2xl font-bold tracking-tight"><%= config.brand.name %></span>
+    <% if (show("about")) { const a = config.about; const h = heading("about"); %>
+    <section class="section" id="about" data-section="about">
+      <div class="container about-grid">
+        <div class="about-media">
+          <div class="frame"><%- img(a.image, a.heading, { sizes: "(min-width: 900px) 40vw, 100vw", placeholder: "utensils" }) %></div>
+        </div>
+        <div class="about-copy">
+          <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+          <% if (a.heading) { %><h2 class="about-title"><%= a.heading %></h2><% } %>
+          <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+          <% if (a.content) { %><div class="prose"><%- paras(a.content) %></div><% } %>
+        </div>
       </div>
-      <nav class="hidden md:flex gap-6 text-sm font-medium">
-        <% if (show("hero")) { %><a href="#hero">Inicio</a><% } %>
-        <% if (show("about")) { %><a href="#about">Nosotros</a><% } %>
-        <% if (show("features")) { %><a href="#features">Experiencia</a><% } %>
-        <% if (show("products")) { %><a href="#products">Carta</a><% } %>
-        <% if (show("gallery")) { %><a href="#gallery">Galeria</a><% } %>
-        <% if (show("testimonials")) { %><a href="#testimonials">Resenas</a><% } %>
-        <% if (show("faqs")) { %><a href="#faq">FAQ</a><% } %>
-        <% if (show("contact")) { %><a href="#contact">Reservas</a><% } %>
-      </nav>
-    </header>
+    </section>
+    <% } %>
 
-    <main class="space-y-24">
-      <% if (show("hero")) { %>
-      <section id="hero" class="text-center px-6 py-36 relative overflow-hidden rounded-b-[3rem]" style="background: linear-gradient(135deg, rgba(180,83,9,0.85), rgba(146,64,14,0.9)), linear-gradient(to bottom, #1c1917, #292524)">
-        <div class="relative z-10">
-          <p class="text-amber-300 uppercase tracking-[0.3em] text-sm mb-4 font-medium">Bienvenidos a</p>
-          <h1 class="text-5xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg"><%= config.hero.title %></h1>
-          <p class="text-xl mb-8 text-amber-100 max-w-2xl mx-auto"><%= config.hero.subtitle %></p>
-          <a href="<%= config.hero.ctaLink %>" class="inline-block bg-[<%= config.theme.colorPrimary %>] text-white px-10 py-4 rounded-full shadow-xl hover:scale-105 transition-transform duration-300 font-semibold text-lg">
-            <%= config.hero.ctaText %>
-          </a>
-        </div>
-      </section>
-      <% } %>
+    <% if (show("features")) { %>
+    <section class="section features" id="features" data-section="features">
+      <div class="container">
+        <% sectionHead("features") %>
+        <ul class="feature-list">
+          <% config.features.forEach((f) => { %>
+            <li class="feature">
+              <% if (f.icon) { %><span class="feature-icon"><%- icon(f.icon) %></span><% } %>
+              <% if (f.title) { %><h3><%= f.title %></h3><% } %>
+              <% if (f.description) { %><p><%= f.description %></p><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
 
-      <% if (show("about")) { %>
-      <section id="about" class="px-6 py-20 max-w-7xl mx-auto flex flex-col md:flex-row gap-12 items-center">
-        <div class="w-full md:w-1/2">
-          <div class="aspect-[4/3] rounded-2xl bg-gradient-to-br from-amber-100 to-amber-200 shadow-xl flex items-center justify-center">
-            <span class="text-8xl">🍽️</span>
-          </div>
-        </div>
-        <div class="w-full md:w-1/2">
-          <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold">Nuestra Historia</p>
-          <h2 class="text-4xl font-bold mb-6"><%= config.about.heading %></h2>
-          <p class="text-lg text-gray-600 leading-relaxed"><%= config.about.content %></p>
-        </div>
-      </section>
-      <% } %>
-
-      <% if (show("features")) { %>
-      <section id="features" class="px-6 py-20" style="background: linear-gradient(to right, #fffbeb, #fef3c7)">
-        <div class="max-w-7xl mx-auto">
-          <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold text-center">La Experiencia</p>
-          <h2 class="text-4xl font-bold text-center mb-12">Lo Que Nos Hace Unicos</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <% config.features.forEach(f => { %>
-              <div class="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow border border-amber-100">
-                <div class="text-5xl mb-4"><%= f.icon %></div>
-                <h3 class="text-xl font-bold mb-3"><%= f.title %></h3>
-                <p class="text-gray-600"><%= f.description %></p>
-              </div>
-            <% }) %>
-          </div>
-        </div>
-      </section>
-      <% } %>
-
-      <% if (show("products")) { %>
-      <section id="products" class="px-6 py-20">
-        <div class="max-w-5xl mx-auto">
-          <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold text-center">Nuestra Carta</p>
-          <h2 class="text-4xl font-bold text-center mb-12">Platos Destacados</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <% config.products.forEach(p => { %>
-              <div class="menu-item bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-                <div class="h-48 bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
-                  <span class="text-6xl">🥘</span>
+    <% if (show("products")) { const withThumbs = config.products.some((p) => p.image); %>
+    <section class="section menu-section" id="products" data-section="products">
+      <div class="container">
+        <% sectionHead("products", "center") %>
+        <ul class="carta">
+          <% config.products.forEach((p) => { %>
+            <li class="dish">
+              <% if (withThumbs) { %><div class="dish-thumb"><%- img(p.image, p.title, { sizes: "80px", width: 480, placeholder: "utensils" }) %></div><% } %>
+              <div class="dish-body">
+                <div class="dish-line">
+                  <h3><%= p.title %></h3>
+                  <% if (p.price) { %><span class="dish-dots" aria-hidden="true"></span><span class="dish-price"><%= p.price %></span><% } %>
                 </div>
-                <div class="p-6">
-                  <div class="flex justify-between items-start mb-2">
-                    <h3 class="text-xl font-bold"><%= p.title %></h3>
-                    <span class="text-lg font-bold text-[<%= config.theme.colorPrimary %>]"><%= p.price %></span>
-                  </div>
-                  <p class="text-gray-600 text-sm"><%= p.description %></p>
+                <% if (p.description) { %><p class="dish-desc"><%= p.description %></p><% } %>
+                <% if (p.badge || p.link) { %>
+                <div class="dish-meta">
+                  <% if (p.badge) { %><span class="dish-badge"><%= p.badge %></span><% } %>
+                  <% if (p.link) { %><a class="dish-link" <%- linkAttrs(p.link) %>><%= t("seeMore") %></a><% } %>
                 </div>
-              </div>
-            <% }) %>
-          </div>
-        </div>
-      </section>
-      <% } %>
-
-      <% if (show("gallery")) { %>
-      <section id="gallery" class="px-6 py-20 bg-gray-50">
-        <div class="max-w-6xl mx-auto">
-          <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold text-center">Galeria</p>
-          <h2 class="text-4xl font-bold text-center mb-12">Nuestro Espacio</h2>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <% config.gallery.forEach(function(img, i) { %>
-              <div class="aspect-square rounded-2xl overflow-hidden shadow-lg bg-gradient-to-br from-amber-100 to-orange-200 flex items-center justify-center">
-                <% if (img.image) { %>
-                  <img src="<%= img.image %>" class="w-full h-full object-cover">
-                <% } else { %>
-                  <span class="text-6xl"><%= ['🍷','🥂','🍝','🥗','🍰','☕'][i % 6] %></span>
                 <% } %>
               </div>
-            <% }) %>
-          </div>
-        </div>
-      </section>
-      <% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
 
-      <% if (show("testimonials")) { %>
-      <section id="testimonials" class="px-6 py-20">
-        <div class="max-w-7xl mx-auto">
-          <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold text-center">Opiniones</p>
-          <h2 class="text-4xl font-bold text-center mb-12">Lo Que Dicen Nuestros Clientes</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <% config.testimonials.forEach(t => { %>
-              <div class="bg-white p-8 rounded-2xl shadow-lg border border-amber-50 text-center">
-                <div class="w-16 h-16 rounded-full mx-auto mb-4 bg-gradient-to-br from-amber-200 to-orange-300 flex items-center justify-center text-2xl font-bold text-white">
-                  <%= t.name.charAt(0) %>
-                </div>
-                <p class="italic text-gray-600 mb-4">"<%= t.quote %>"</p>
-                <p class="font-bold text-[<%= config.theme.colorPrimary %>]"><%= t.name %></p>
-                <div class="flex justify-center gap-1 mt-2 text-amber-400">
-                  <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
-                </div>
-              </div>
-            <% }) %>
-          </div>
-        </div>
-      </section>
-      <% } %>
-
-      <% if (show("faqs")) { %>
-      <section id="faq" class="px-6 py-20 bg-amber-50">
-        <div class="max-w-4xl mx-auto">
-          <h2 class="text-4xl font-bold text-center mb-12">Preguntas Frecuentes</h2>
-          <div class="space-y-6">
-            <% config.faqs.forEach(f => { %>
-              <div class="bg-white border-l-4 border-[<%= config.theme.colorPrimary %>] p-6 rounded-r-xl shadow-md">
-                <h4 class="font-bold mb-2 text-lg"><%= f.question %></h4>
-                <p class="text-gray-600"><%= f.answer %></p>
-              </div>
-            <% }) %>
-          </div>
-        </div>
-      </section>
-      <% } %>
-
-      <% if (show("contact")) { %>
-      <section id="contact" class="px-6 py-20">
-        <div class="max-w-4xl mx-auto text-center">
-          <p class="text-[<%= config.theme.colorPrimary %>] uppercase tracking-widest text-sm mb-2 font-semibold">Reservas</p>
-          <h2 class="text-4xl font-bold mb-8">Visitanos</h2>
-          <div class="bg-white rounded-2xl shadow-xl p-10 border border-amber-100">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-              <div>
-                <div class="text-3xl mb-2">📧</div>
-                <p class="font-semibold">Email</p>
-                <p class="text-gray-600"><%= config.contact.email %></p>
-              </div>
-              <div>
-                <div class="text-3xl mb-2">📞</div>
-                <p class="font-semibold">Telefono</p>
-                <p class="text-gray-600"><%= config.contact.phone %></p>
-              </div>
-              <div>
-                <div class="text-3xl mb-2">📍</div>
-                <p class="font-semibold">Direccion</p>
-                <p class="text-gray-600"><%= config.contact.address %></p>
-              </div>
-            </div>
-            <a href="mailto:<%= config.contact.email %>" class="inline-block bg-[<%= config.theme.colorPrimary %>] text-white px-10 py-4 rounded-full shadow-lg hover:scale-105 transition-transform font-semibold text-lg">
-              Reservar Mesa
-            </a>
-          </div>
-        </div>
-      </section>
-      <% } %>
-    </main>
-
-    <% if (show("footer")) { %>
-    <footer class="bg-stone-900 text-white px-6 py-12 mt-24">
-      <div class="max-w-6xl mx-auto text-center">
-        <h3 class="font-bold text-2xl mb-3"><%= config.brand.name %></h3>
-        <p class="text-sm text-stone-400"><%= config.footer.text %></p>
-        <div class="flex justify-center gap-6 mt-6">
-          <% config.footer.links.forEach(l => { %>
-            <a href="<%= l.url %>" class="text-stone-400 hover:text-white transition text-sm underline"><%= l.label %></a>
+    <% if (show("gallery")) { const few = config.gallery.length <= 2; %>
+    <section class="section" id="gallery" data-section="gallery">
+      <div class="container">
+        <% sectionHead("gallery") %>
+        <div class="gallery-grid<%= few ? ' few' : '' %>">
+          <% config.gallery.forEach((g) => { %>
+            <figure class="shot">
+              <%- img(g.image, g.caption, { sizes: "(min-width: 1100px) 400px, (min-width: 700px) 50vw, 100vw", width: 1200 }) %>
+              <% if (g.caption) { %><figcaption><%= g.caption %></figcaption><% } %>
+            </figure>
           <% }) %>
         </div>
       </div>
-    </footer>
+    </section>
     <% } %>
 
-    <a href="#hero" class="fixed bottom-6 right-6 bg-[<%= config.theme.colorPrimary %>] text-white p-3 rounded-full shadow-lg hover:scale-105 transition">↑</a>
-    <% if (previewMode) { %></div><% } %>
-  </body>
+    <% if (show("testimonials")) { const [first, ...rest] = config.testimonials; %>
+    <section class="section reviews" id="testimonials" data-section="testimonials">
+      <div class="container">
+        <% sectionHead("testimonials", "center") %>
+        <% function author(r) { %>
+          <div class="review-author">
+            <span class="avatar"><% if (r.avatar) { %><%- img(r.avatar, r.name, { sizes: "48px", width: 480 }) %><% } else { %><%= initials(r.name) %><% } %></span>
+            <div><% if (r.name) { %><strong><%= r.name %></strong><% } %><% if (r.role) { %><span><%= r.role %></span><% } %></div>
+          </div>
+        <% } %>
+        <% function stars() { %><span class="stars" aria-hidden="true"><% for (let i = 0; i < 5; i++) { %><%- icon("star", "") %><% } %></span><% } %>
+        <figure class="review-featured">
+          <% stars() %>
+          <% if (first.quote) { %><blockquote>“<%= first.quote %>”</blockquote><% } %>
+          <figcaption><% author(first) %></figcaption>
+        </figure>
+        <% if (rest.length) { %>
+        <div class="review-grid">
+          <% rest.forEach((r) => { %>
+            <figure class="review-card">
+              <% stars() %>
+              <% if (r.quote) { %><blockquote>“<%= r.quote %>”</blockquote><% } %>
+              <figcaption><% author(r) %></figcaption>
+            </figure>
+          <% }) %>
+        </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("faqs")) { %>
+    <section class="section" id="faqs" data-section="faqs">
+      <div class="container faq-grid">
+        <div><% sectionHead("faqs") %></div>
+        <div class="faq-list">
+          <% config.faqs.forEach((f, i) => { %>
+            <details class="faq-item"<%= i === 0 ? " open" : "" %>>
+              <summary><span><%= f.question || t("question") %></span><%- icon("plus", "faq-icon") %></summary>
+              <% if (f.answer) { %><div class="faq-answer"><%- paras(f.answer) %></div><% } %>
+            </details>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("cta")) { const cta = config.cta; %>
+    <section class="section cta-band" id="cta" data-section="cta">
+      <div class="container">
+        <% if (cta.title) { %><h2 class="cta-title"><%= cta.title %></h2><% } %>
+        <% if (cta.text) { %><p><%= cta.text %></p><% } %>
+        <% if (cta.buttonText) { %>
+          <div class="actions"><a class="btn btn-lg btn-invert" <%- linkAttrs(cta.buttonLink) %>><%= cta.buttonText %></a></div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (showContact) { %>
+    <section class="section" id="contact" data-section="contact">
+      <div class="container">
+        <% sectionHead("contact") %>
+        <div class="contact-grid">
+          <% if (c.address) { %>
+          <div class="contact-card">
+            <span class="feature-icon"><%- icon("map-pin") %></span>
+            <h3><%= t("visitUs") %></h3>
+            <p><%= c.address %></p>
+            <a class="link-arrow" <%- linkAttrs(mapsHref(c.address)) %>><%= t("directions") %><%- icon("arrow-up-right", "") %></a>
+          </div>
+          <% } %>
+          <% if (hourLines.length) { %>
+          <div class="contact-card">
+            <span class="feature-icon"><%- icon("clock") %></span>
+            <h3><%= t("hours") %></h3>
+            <ul class="hours"><% hourLines.forEach((line) => { %><li><%= line %></li><% }) %></ul>
+          </div>
+          <% } %>
+          <% if (c.phone || c.email || c.whatsapp) { %>
+          <div class="contact-card">
+            <span class="feature-icon"><%- icon("calendar") %></span>
+            <h3><%= t("bookings") %></h3>
+            <div class="contact-lines">
+              <% if (c.phone) { %><a href="<%= telHref(c.phone) %>"><%- icon("phone", "") %><%= c.phone %></a><% } %>
+              <% if (c.whatsapp) { %><a <%- linkAttrs(waHref(c.whatsapp)) %>><%- icon("message-circle", "") %><%= t("whatsapp") %></a><% } %>
+              <% if (c.email) { %><a href="<%= mailHref(c.email) %>"><%- icon("mail", "") %><%= c.email %></a><% } %>
+            </div>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+  </main>
+
+  <% if (show("footer")) { %>
+  <footer class="site-footer" id="footer" data-section="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div>
+          <p class="footer-brand"><% if (config.brand.logo && !config.brand.name) { %><%- img(config.brand.logo, "", { sizes: "160px", width: 480 }) %><% } else { %><%= config.brand.name %><% } %></p>
+          <% if (config.footer.text) { %><p class="footer-text"><%= config.footer.text %></p><% } %>
+        </div>
+        <% if (config.footer.links.length) { %>
+        <nav class="footer-links" aria-label="<%= config.brand.name %>">
+          <% config.footer.links.forEach((l) => { %><a <%- linkAttrs(l.url) %>><%= l.label || l.url %></a><% }) %>
+        </nav>
+        <% } %>
+      </div>
+      <div class="footer-bottom">
+        <p><%- copyright(config.brand.name) %></p>
+        <%- madeWith %>
+      </div>
+    </div>
+  </footer>
+  <% } %>
+
+  <%- foot %>
+</body>
 </html>

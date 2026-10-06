@@ -1,13 +1,40 @@
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { SiteConfig } from "../../types";
+import Segmented from "../ui/Segmented";
+import { FONT_KINDS, SITE_FONTS } from "../../lib/fonts";
+import type { SiteConfig, SiteLanguage } from "../../types";
 
 type Theme = SiteConfig["theme"];
 type OnChange = (path: string, value: unknown) => void;
 
-// Las mismas que acepta el backend (backend/src/lib/safe.ts)
-const FONTS = ["Inter", "Playfair Display", "Montserrat", "Raleway", "Poppins"] as const;
 const HEX = /^#[0-9a-f]{6}$/i;
+const FONT_NAMES = Object.keys(SITE_FONTS);
+
+function FontSelect({ label, hint, value, onChange }: { label: string; hint: string; value: string; onChange: (v: string) => void }) {
+  const { t } = useTranslation();
+  const id = useId();
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium">
+        {label}
+      </label>
+      <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className="campo" aria-describedby={`${id}-pista`}>
+        {FONT_KINDS.map((kind) => (
+          <optgroup key={kind} label={t(`themeselector.font_kinds.${kind}`)}>
+            {FONT_NAMES.filter((font) => SITE_FONTS[font] === kind).map((font) => (
+              <option key={font} value={font}>
+                {font}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+      <p id={`${id}-pista`} className="mt-1.5 text-xs text-andamio">
+        {hint}
+      </p>
+    </div>
+  );
+}
 
 function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   const { t } = useTranslation();
@@ -52,7 +79,7 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
   );
 }
 
-/** Ajustes que afectan a toda la web: colores, letra y modo oscuro. */
+/** Ajustes que afectan a toda la web: colores, letras, idioma y modo oscuro. */
 export default function StyleEditor({ theme, onChange }: { theme: Theme; onChange: OnChange }) {
   const { t } = useTranslation();
   const darkId = useId();
@@ -72,28 +99,36 @@ export default function StyleEditor({ theme, onChange }: { theme: Theme; onChang
         />
       </div>
 
-      <fieldset>
-        <legend className="mb-2 text-sm font-medium">{t("themeselector.font")}</legend>
-        <div className="divide-y divide-junta rounded-bloque border border-junta">
-          {FONTS.map((font) => (
-            <label
-              key={font}
-              className="flex cursor-pointer items-center gap-3 px-4 py-2.5 has-checked:bg-azul-claro/60"
-            >
-              <input
-                type="radio"
-                name="font"
-                value={font}
-                checked={theme.fontFamily === font}
-                onChange={() => onChange("config.theme.fontFamily", font)}
-                className="size-4 accent-azul"
-              />
-              <span className="font-medium">{font}</span>
-              <span className="text-sm text-andamio">{t(`themeselector.fonts.${font}`)}</span>
-            </label>
-          ))}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <FontSelect
+          label={t("themeselector.font_heading")}
+          hint={t("themeselector.font_heading_hint")}
+          value={theme.fontFamily}
+          onChange={(v) => onChange("config.theme.fontFamily", v)}
+        />
+        <FontSelect
+          label={t("themeselector.font_body")}
+          hint={t("themeselector.font_body_hint")}
+          value={theme.fontBody ?? theme.fontFamily}
+          onChange={(v) => onChange("config.theme.fontBody", v)}
+        />
+      </div>
+
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+        <div>
+          <p className="text-sm font-medium">{t("themeselector.language")}</p>
+          <p className="mt-0.5 max-w-xs text-xs text-andamio">{t("themeselector.language_hint")}</p>
         </div>
-      </fieldset>
+        <Segmented<SiteLanguage>
+          label={t("themeselector.language")}
+          value={theme.language ?? "es"}
+          onChange={(v) => onChange("config.theme.language", v)}
+          options={[
+            { value: "es", label: "Español", lang: "es" },
+            { value: "en", label: "English", lang: "en" },
+          ]}
+        />
+      </div>
 
       <div className="flex items-start justify-between gap-6">
         <div>

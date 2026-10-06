@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html <%- htmlAttrs %>>
+<head>
+  <%- head %>
+  <style>
+    /* Reformas: sólido y de fiar. Amarillo de obra (principal) y grafito
+       (secundario), titulares Archivo muy pesados, esquinas casi rectas y una
+       cinta métrica como motivo que se repite (portada y presupuesto). */
+    :root {
+      --bg: #fafaf9;
+      --surface: #eeeeeb;
+      --surface-2: #e2e2de;
+      --text: #1a1d21;
+      --muted: #585e66;
+      --border: #dcdcd7;
+      --radius-sm: 3px;
+      --radius: 4px;
+      --radius-lg: 6px;
+      --radius-btn: 4px;
+      --header-h: 4.5rem;
+      /* Banda oscura fija: grafito aunque la persona elija un secundario claro */
+      --dark: color-mix(in srgb, var(--secondary) 40%, #0f1114);
+      --on-dark: #f3f4f5;
+      --on-dark-muted: rgb(243 244 245 / 0.7);
+      --line-dark: rgb(255 255 255 / 0.16);
+      --tick: color-mix(in srgb, var(--on-primary) 72%, transparent);
+      --on-primary-muted: color-mix(in srgb, var(--on-primary) 80%, var(--primary));
+    }
+    html.bi-dark {
+      --bg: #131518;
+      --surface: #1a1d21;
+      --surface-2: #23272c;
+      --text: #eceef0;
+      --muted: #a3a9b1;
+      --border: #2e333a;
+      --dark: color-mix(in srgb, var(--secondary) 35%, #1c2025);
+    }
+
+    h1, h2, h3 { font-weight: 800; letter-spacing: -0.02em; }
+    .title { font-size: clamp(2rem, 1.25rem + 2.9vw, 3.375rem); font-weight: 800; letter-spacing: -0.035em; line-height: 1.02; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.625rem;
+      color: var(--text);
+      font-family: var(--font-heading);
+      font-size: 0.875rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: none;
+    }
+    .eyebrow::before { content: ""; flex-shrink: 0; width: 0.75rem; height: 0.75rem; background: var(--primary); }
+    .head-split { display: grid; gap: 1.25rem 4rem; max-width: none; align-items: end; }
+    .head-split .lead { max-width: 34rem; }
+    @media (min-width: 960px) {
+      .head-split { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+      .head-split .lead { margin-top: 0; }
+    }
+
+    /* Cabecera: franja de teléfono + barra fija */
+    .topbar { background: var(--dark); color: var(--on-dark-muted); font-size: 0.8125rem; }
+    .topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 2.5rem; }
+    .topbar span, .topbar a { display: inline-flex; align-items: center; gap: 0.5rem; }
+    .topbar svg { width: 0.9375rem; height: 0.9375rem; color: var(--primary-on-dark); }
+    .topbar a { color: var(--on-dark); font-weight: 600; margin-left: auto; }
+    .topbar a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    @media (max-width: 640px) { .topbar-hours { display: none !important; } .topbar a { margin-inline: auto; } }
+    .site-header { background: color-mix(in srgb, var(--bg) 92%, transparent); border-bottom: 1px solid var(--border); }
+    .brand { font-weight: 800; font-size: 1.3125rem; letter-spacing: -0.03em; }
+    .brand-mark { flex-shrink: 0; width: 1.125rem; height: 1.125rem; background: var(--primary); box-shadow: 0.3125rem 0.3125rem 0 var(--text); margin-right: 0.25rem; }
+    .nav-links a { color: var(--text); opacity: 0.78; font-weight: 600; }
+    .nav-links a:hover { opacity: 1; }
+
+    /* Portada partida: texto + foto que "apoya" en la franja de cifras */
+    .hero { border-bottom: 1px solid var(--border); overflow: hidden; }
+    .hero-grid { display: grid; gap: 2.5rem; padding-top: clamp(2.25rem, 5vw, 4rem); }
+    .hero-copy { align-self: center; min-width: 0; }
+    .hero-eyebrow { margin-bottom: 1.5rem; }
+    .hero-title {
+      max-width: 14ch;
+      font-size: clamp(2.625rem, 1.3rem + 3.7vw, 4.75rem);
+      font-weight: 800;
+      line-height: 0.97;
+      letter-spacing: -0.045em;
+    }
+    .hero-title.is-long { max-width: 26ch; font-size: clamp(1.875rem, 1.3rem + 2vw, 3rem); line-height: 1.06; letter-spacing: -0.03em; }
+    .hero-sub { max-width: 34rem; margin-top: 1.5rem; color: var(--muted); font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem); }
+    .hero .actions { margin-top: 2rem; }
+    .hero-call { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.625rem; margin-top: 1.75rem; color: var(--muted); font-size: 0.9375rem; }
+    .hero-call svg { width: 1.125rem; height: 1.125rem; color: var(--text); }
+    .hero-call a { color: var(--text); font-family: var(--font-heading); font-size: 1.125rem; font-weight: 800; letter-spacing: -0.01em; }
+    .hero-call a:hover { text-decoration: underline; text-decoration-color: var(--primary); text-decoration-thickness: 3px; text-underline-offset: 4px; }
+    .hero-media { display: grid; grid-template-columns: 1.125rem minmax(0, 1fr); gap: 0.625rem; align-self: end; min-width: 0; }
+    .hero-photo { aspect-ratio: 4 / 3; overflow: hidden; border-radius: var(--radius) var(--radius) 0 0; background: var(--surface-2); }
+    .hero-photo > img, .hero-photo > .ph { width: 100%; height: 100%; object-fit: cover; }
+    /* Cinta métrica: marcas cortas cada 10 px y largas cada 50 px */
+    .ruler {
+      border-radius: 2px 2px 0 0;
+      background:
+        repeating-linear-gradient(to bottom, var(--tick) 0 1px, transparent 1px 50px) right top / 75% 100% no-repeat,
+        repeating-linear-gradient(to bottom, var(--tick) 0 1px, transparent 1px 10px) right top / 40% 100% no-repeat,
+        var(--primary);
+    }
+    .hero.no-media .hero-grid { padding-bottom: clamp(3.5rem, 8vw, 6.5rem); }
+    .hero.no-media .hero-title:not(.is-long) { max-width: 16ch; font-size: clamp(2.75rem, 1.2rem + 6vw, 6.5rem); }
+    .hero.no-media .hero-copy { padding-left: clamp(1.25rem, 3vw, 2.5rem); border-left: 0.75rem solid var(--primary); }
+    @media (min-width: 960px) {
+      .hero-grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(3rem, 5vw, 5rem); }
+      .hero.no-media .hero-grid { grid-template-columns: minmax(0, 1fr); }
+      .hero-copy { padding-bottom: clamp(3rem, 6vw, 5rem); }
+      .hero.no-media .hero-copy { padding-bottom: 0; }
+      .hero-media { align-self: stretch; grid-template-columns: 1.375rem minmax(0, 1fr); gap: 0.75rem; }
+      .hero-photo { aspect-ratio: auto; height: 100%; min-height: 32rem; }
+    }
+
+    /* Cifras: banda grafito */
+    .stats { padding-block: clamp(2.75rem, 5.5vw, 4.25rem); background: var(--dark); color: var(--on-dark); }
+    .stats-inner { display: grid; gap: 2rem 4rem; align-items: center; }
+    .stats .eyebrow { color: var(--on-dark); margin-bottom: 0.75rem; }
+    .stats-title { font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.125rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; max-width: 22ch; }
+    .stats-head .lead { margin-top: 0.75rem; color: var(--on-dark-muted); font-size: 1rem; }
+    .stat-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: 1.75rem 0; }
+    .stats-inner.many .stat-list { grid-template-columns: repeat(auto-fill, minmax(max(9rem, 25%), 1fr)); }
+    .stat { container-type: inline-size; min-width: 0; padding: 0.125rem 1.25rem; border-left: 1px solid var(--line-dark); }
+    .stat-value {
+      display: block;
+      color: var(--primary-on-dark);
+      font-family: var(--font-heading);
+      font-size: min(clamp(2.25rem, 1.6rem + 2.2vw, 3.5rem), 21cqi);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .stat-label { display: block; margin-top: 0.625rem; color: var(--on-dark-muted); font-size: 0.9375rem; line-height: 1.4; }
+    @media (min-width: 1000px) {
+      .stats-inner.has-head:not(.many) { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+    }
+
+    /* Servicios: ficha técnica con filete grueso */
+    .svc-grid { display: grid; gap: 0 clamp(1.5rem, 3vw, 2.5rem); }
+    .svc {
+      display: grid;
+      grid-template-areas: "icon" "title" "desc";
+      align-content: start;
+      padding: 1.75rem 0 2.25rem;
+      border-top: 2px solid var(--text);
+    }
+    .svc-icon {
+      grid-area: icon;
+      display: grid;
+      place-items: center;
+      width: 3rem;
+      height: 3rem;
+      margin-bottom: 1.375rem;
+      border-radius: var(--radius-sm);
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+    .svc h3 { grid-area: title; font-size: 1.375rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.025em; }
+    .svc p { grid-area: desc; margin-top: 0.625rem; color: var(--muted); }
+    /* El que se queda solo en su fila ocupa todo el ancho, en horizontal */
+    @media (min-width: 640px) and (max-width: 1023.98px) {
+      .svc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .svc:last-child:nth-child(odd) { grid-column: 1 / -1; grid-template-columns: 3rem minmax(0, 1fr) minmax(0, 1.5fr); grid-template-areas: "icon title desc"; column-gap: 2rem; }
+      .svc:last-child:nth-child(odd) p { margin-top: 0; }
+    }
+    @media (min-width: 1024px) {
+      .svc-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      .svc { grid-column: span 2; }
+      .svc:nth-child(3n + 1):nth-last-child(2),
+      .svc:nth-child(3n + 1):nth-last-child(2) + .svc { grid-column: span 3; }
+      .svc:nth-child(3n + 1):last-child { grid-column: 1 / -1; grid-template-columns: 3rem minmax(0, 1fr) minmax(0, 1.5fr); grid-template-areas: "icon title desc"; column-gap: 2rem; }
+      .svc:nth-child(3n + 1):last-child p { margin-top: 0; }
+    }
+
+    /* Proceso: banda amarilla con línea de obra */
+    .process { background: var(--primary); color: var(--on-primary); }
+    .process .eyebrow { color: var(--on-primary); }
+    .process .eyebrow::before { background: currentColor; }
+    .process .lead { color: var(--on-primary-muted); }
+    .steps { display: grid; gap: 0; counter-reset: step; }
+    .step { position: relative; min-width: 0; padding: 0 0 2.75rem 2.75rem; }
+    .step::before { content: ""; position: absolute; left: 0.4375rem; top: 0.5rem; bottom: 0; width: 3px; background: var(--on-primary); }
+    .step:last-child::before { bottom: auto; height: 1rem; }
+    .step::after { content: ""; position: absolute; left: 0; top: 0.0625rem; width: 1.125rem; height: 1.125rem; background: var(--on-primary); }
+    .step-num {
+      display: block;
+      font-family: var(--font-heading);
+      font-size: clamp(3rem, 2rem + 3vw, 4.75rem);
+      font-weight: 800;
+      line-height: 0.85;
+      letter-spacing: -0.06em;
+      font-variant-numeric: tabular-nums;
+    }
+    .step-num.is-label { font-size: clamp(1.375rem, 1.15rem + 0.8vw, 1.75rem); line-height: 1.1; letter-spacing: -0.02em; }
+    .step h3 { margin-top: 1.125rem; font-size: 1.375rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.025em; }
+    .step p { margin-top: 0.625rem; color: var(--on-primary-muted); }
+    @media (min-width: 760px) {
+      .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 3.5rem; }
+      .step { padding: 2.25rem 2rem 0 0; }
+      .step::before, .step:last-child::before { left: 0; right: 0; top: 0; bottom: auto; width: auto; height: 3px; }
+      .step::after { left: 0; top: -0.5rem; }
+      .steps-1 { grid-template-columns: minmax(0, 40rem); }
+    }
+    @media (min-width: 1100px) {
+      .steps-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .steps-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    /* Obras: mosaico con la primera grande y etiquetas de obra */
+    .works-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: clamp(9rem, 32vw, 15rem); gap: 0.75rem; }
+    .work { position: relative; min-width: 0; overflow: hidden; border-radius: var(--radius); background: var(--surface-2); }
+    .work > img, .work > .ph { width: 100%; height: 100%; object-fit: cover; }
+    .work figcaption {
+      position: absolute;
+      left: 0.75rem;
+      bottom: 0.75rem;
+      max-width: calc(100% - 1.5rem);
+      padding: 0.375rem 0.625rem;
+      border-radius: 2px;
+      background: var(--dark);
+      color: var(--on-dark);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .work figcaption.is-after { background: var(--primary); color: var(--on-primary); }
+    @media (max-width: 899.98px) {
+      .g1 .work { grid-column: 1 / -1; grid-row: span 2; }
+      .g2 .work { grid-row: span 2; }
+      .gm .work:first-child { grid-column: 1 / -1; grid-row: span 2; }
+      .gm .work:last-child:nth-child(even) { grid-column: 1 / -1; }
+    }
+    @media (max-width: 520px) {
+      .g2 { grid-template-columns: minmax(0, 1fr); }
+      .g2 .work { grid-row: span 2; }
+      .work figcaption { left: 0.5rem; bottom: 0.5rem; max-width: calc(100% - 1rem); font-size: 0.75rem; }
+    }
+    @media (min-width: 900px) {
+      .works-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: clamp(12rem, 17vw, 16rem); gap: 1rem; }
+      .work { grid-column: span 2; }
+      .g1 .work { grid-column: 1 / -1; grid-row: span 2; }
+      .g2 .work { grid-column: span 3; grid-row: span 2; }
+      .gm .work:first-child { grid-column: span 4; grid-row: span 2; }
+      .gm .work:nth-child(3n + 1):not(:first-child):nth-last-child(2),
+      .gm .work:nth-child(3n + 1):not(:first-child):nth-last-child(2) + .work { grid-column: span 3; }
+      .gm .work:nth-child(3n + 1):not(:first-child):last-child { grid-column: 1 / -1; }
+      .work figcaption { left: 1rem; bottom: 1rem; max-width: calc(100% - 2rem); }
+    }
+
+    /* Opiniones */
+    .reviews { background: var(--surface); }
+    .review-grid { display: grid; gap: 1rem; }
+    .review {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: clamp(1.5rem, 3vw, 2.25rem);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--radius);
+      background: var(--bg);
+    }
+    .stars { display: flex; gap: 0.1875rem; color: var(--primary); }
+    .stars svg { width: 1.125rem; height: 1.125rem; fill: currentColor; }
+    .review blockquote { flex: 1; margin-top: 1.125rem; font-size: 1.0625rem; line-height: 1.6; }
+    .review figcaption { display: flex; align-items: center; gap: 0.875rem; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+    .review .avatar { border-radius: var(--radius-sm); background: var(--dark); color: var(--primary-on-dark); font-family: var(--font-heading); font-weight: 800; }
+    .review strong { display: block; font-weight: 700; line-height: 1.3; }
+    .review figcaption span:not(.avatar) { display: block; color: var(--muted); font-size: 0.875rem; line-height: 1.4; }
+    .review-grid.single { max-width: 52rem; }
+    .review-grid.single blockquote { font-family: var(--font-heading); font-size: clamp(1.375rem, 1.1rem + 1vw, 1.875rem); font-weight: 600; line-height: 1.3; letter-spacing: -0.02em; }
+    @media (min-width: 680px) and (max-width: 1023.98px) {
+      .review-grid:not(.single) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .review:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    }
+    @media (min-width: 1024px) {
+      .review-grid:not(.single) { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1.25rem; }
+      .review-grid:not(.single) .review { grid-column: span 2; }
+      .review-grid:not(.single) .review:nth-child(3n + 1):nth-last-child(2),
+      .review-grid:not(.single) .review:nth-child(3n + 1):nth-last-child(2) + .review { grid-column: span 3; }
+      .review-grid:not(.single) .review:nth-child(3n + 1):last-child { grid-column: 1 / -1; }
+    }
+
+    /* Preguntas: dos columnas independientes (abrir una no mueve la otra) */
+    .faq-cols { display: grid; gap: 0 clamp(2rem, 4vw, 3.5rem); align-items: start; }
+    .faq-cols.one { max-width: 52rem; }
+    .faq-item { border-top: 2px solid var(--text); }
+    .faq-col:last-child .faq-item:last-child { border-bottom: 2px solid var(--text); }
+    .faq-item > summary { padding: 1.25rem 0; font-family: var(--font-heading); font-size: 1.1875rem; font-weight: 700; line-height: 1.3; letter-spacing: -0.015em; }
+    .faq-plus { display: grid; place-items: center; flex-shrink: 0; width: 2rem; height: 2rem; border-radius: var(--radius-sm); background: var(--primary); color: var(--on-primary); }
+    .faq-plus svg { width: 1.125rem; height: 1.125rem; }
+    .faq-answer { padding: 0 3rem 1.5rem 0; color: var(--muted); }
+    @media (min-width: 900px) {
+      .faq-cols.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .faq-cols.two .faq-col .faq-item:last-child { border-bottom: 2px solid var(--text); }
+    }
+
+    /* Presupuesto: banda grafito con cinta métrica arriba */
+    .cta { position: relative; background: var(--dark); color: var(--on-dark); padding-block: calc(var(--section-y) + 1rem) var(--section-y); }
+    .cta-ruler {
+      position: absolute;
+      inset: 0 0 auto;
+      height: 1.125rem;
+      background:
+        repeating-linear-gradient(to right, var(--tick) 0 1px, transparent 1px 50px) left top / 100% 75% no-repeat,
+        repeating-linear-gradient(to right, var(--tick) 0 1px, transparent 1px 10px) left top / 100% 40% no-repeat,
+        var(--primary);
+    }
+    .cta-inner { display: grid; gap: 2rem 4rem; align-items: end; }
+    .cta-title { max-width: 18ch; font-size: clamp(2.25rem, 1.3rem + 3.6vw, 4.25rem); font-weight: 800; line-height: 1; letter-spacing: -0.045em; }
+    .cta-inner p { max-width: 36rem; margin-top: 1.25rem; color: var(--on-dark-muted); font-size: 1.125rem; }
+    .cta-actions { display: grid; gap: 1.25rem; justify-items: start; }
+    .cta-phone { display: inline-flex; align-items: center; gap: 0.625rem; color: var(--on-dark); font-family: var(--font-heading); font-size: 1.375rem; font-weight: 800; letter-spacing: -0.02em; }
+    .cta-phone svg { width: 1.375rem; height: 1.375rem; color: var(--primary-on-dark); }
+    .cta-phone:hover { text-decoration: underline; text-decoration-color: var(--primary); text-decoration-thickness: 3px; text-underline-offset: 5px; }
+    @media (min-width: 900px) {
+      .cta-inner { grid-template-columns: minmax(0, 1fr) auto; }
+      .cta-actions { justify-items: end; }
+    }
+
+    /* Contacto */
+    .contact-grid { display: grid; gap: clamp(2.5rem, 5vw, 4rem); align-items: start; }
+    .contact .section-head { margin-bottom: 2.25rem; }
+    .big-phone { display: inline-grid; gap: 0.25rem; }
+    .big-phone small { color: var(--muted); font-size: 0.9375rem; font-weight: 500; }
+    .big-phone strong { font-family: var(--font-heading); font-size: clamp(2.25rem, 1.6rem + 2.6vw, 3.75rem); font-weight: 800; line-height: 1; letter-spacing: -0.04em; overflow-wrap: anywhere; }
+    .big-phone:hover strong { text-decoration: underline; text-decoration-color: var(--primary); text-decoration-thickness: 4px; text-underline-offset: 6px; }
+    .contact .actions { margin-top: 2rem; }
+    .btn-dark { background: var(--dark); color: var(--on-dark); }
+    .btn-dark:hover { background: color-mix(in srgb, var(--dark) 85%, var(--on-dark)); }
+    html.bi-dark .btn-dark { border-color: color-mix(in srgb, var(--text) 35%, transparent); background: transparent; color: var(--text); }
+    html.bi-dark .btn-dark:hover { border-color: var(--text); }
+    .mail-link { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 3rem; font-weight: 600; overflow-wrap: anywhere; text-decoration: underline; text-decoration-color: var(--primary); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+    .mail-link svg { width: 1.125rem; height: 1.125rem; flex-shrink: 0; }
+    .contact-card { display: grid; gap: 2rem; padding: clamp(1.75rem, 3.5vw, 2.5rem); border-top: 4px solid var(--primary); border-radius: var(--radius); background: var(--surface); }
+    .contact-card h3 { display: flex; align-items: center; gap: 0.625rem; font-size: 1.125rem; font-weight: 800; letter-spacing: -0.01em; }
+    .contact-card h3 svg { width: 1.25rem; height: 1.25rem; }
+    .contact-card p { margin-top: 0.625rem; color: var(--muted); }
+    .contact-card .link-arrow { margin-top: 0.75rem; color: var(--text); text-decoration: underline; text-decoration-color: var(--primary); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+    .contact-card .link-arrow svg { color: var(--text); }
+    .hours { margin-top: 0.625rem; }
+    .hours li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 0.9375rem; }
+    .hours li:last-child { border-bottom: 0; padding-bottom: 0; }
+    @media (min-width: 960px) { .contact-grid.has-card { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+
+    /* Pie */
+    .site-footer { padding: clamp(3.5rem, 7vw, 5rem) 0 2rem; background: var(--dark); color: var(--on-dark-muted); }
+    .footer-top { display: grid; gap: 2rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--line-dark); }
+    .footer-brand { display: flex; align-items: center; gap: 0.75rem; color: var(--on-dark); font-family: var(--font-heading); font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; }
+    .footer-brand .brand-mark { box-shadow: 0.3125rem 0.3125rem 0 var(--on-dark); }
+    .footer-brand img { height: 3rem; width: auto; }
+    .footer-text { max-width: 30rem; margin-top: 1rem; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 0.75rem 1.75rem; align-content: start; }
+    .footer-links a { color: var(--on-dark); font-weight: 600; }
+    .footer-links a:hover { text-decoration: underline; text-decoration-color: var(--primary-on-dark); text-underline-offset: 4px; }
+    .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem; padding-top: 1.75rem; font-size: 0.875rem; }
+    @media (min-width: 820px) { .footer-top { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main"><%= t("skip") %></a>
+
+  <%
+    // Cabecera de sección: antetítulo, título y entradilla (solo lo que tenga texto)
+    function sectionHead(key, extraClass) {
+      const h = heading(key);
+      if (!h.eyebrow && !h.title && !h.subtitle) return;
+      const split = (extraClass || "").includes("head-split");
+  %>
+    <div class="section-head <%= extraClass || '' %>">
+      <% if (split) { %><div><% } %>
+      <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+      <% if (h.title) { %><h2 class="title"><%= h.title %></h2><% } %>
+      <% if (split) { %></div><% } %>
+      <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+    </div>
+  <% } %>
+
+  <%
+    const c = config.contact;
+    const showContact = show("contact");
+    const hourLines = lines(c.hours);
+    const hero = config.hero;
+    const showHero = show("hero");
+    const pad = (n) => String(n).padStart(2, "0");
+    const brandMark = !config.brand.logo;
+  %>
+
+  <% if (showContact && (c.phone || hourLines.length)) { %>
+  <div class="topbar">
+    <div class="container topbar-inner">
+      <% if (hourLines.length) { %><span class="topbar-hours"><%- icon("clock") %><%= hourLines[0] %></span><% } %>
+      <% if (c.phone) { %><a href="<%= telHref(c.phone) %>"><%- icon("phone") %><%= c.phone %></a><% } %>
+    </div>
+  </div>
+  <% } %>
+
+  <header class="site-header" data-section="brand">
+    <div class="container nav">
+      <a class="brand" href="#main">
+        <% if (config.brand.logo) { %><%- img(config.brand.logo, config.brand.name, { eager: true, sizes: "160px", width: 480 }) %><% } else { %><span class="brand-mark" aria-hidden="true"></span><% } %>
+        <% if (config.brand.name) { %><span><%= config.brand.name %></span><% } %>
+      </a>
+      <%- navLinks({ limit: 4, exclude: ["contact", "stats"] }) %>
+      <% if (hero.ctaText && showHero) { %>
+        <a class="btn btn-primary btn-sm nav-cta" <%- linkAttrs(hero.ctaLink) %>><%= hero.ctaText %></a>
+      <% } %>
+      <%- mobileMenu({ cta: showHero ? { text: hero.ctaText, href: hero.ctaLink } : undefined }) %>
+    </div>
+  </header>
+
+  <main id="main">
+    <% if (showHero) { const hasMedia = Boolean(hero.backgroundImage); %>
+    <section class="hero<%= hasMedia ? '' : ' no-media' %>" id="hero" data-section="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <% if (hero.eyebrow) { %><p class="eyebrow hero-eyebrow rise"><%= hero.eyebrow %></p><% } %>
+          <% if (hero.title) { %><h1 class="hero-title rise-2<%= hero.title.length > 70 ? ' is-long' : '' %>"><%= hero.title %></h1><% } %>
+          <% if (hero.subtitle) { %><p class="hero-sub rise-3"><%= hero.subtitle %></p><% } %>
+          <% if (hero.ctaText || hero.secondaryCtaText) { %>
+          <div class="actions rise-3">
+            <% if (hero.ctaText) { %><a class="btn btn-primary btn-lg" <%- linkAttrs(hero.ctaLink) %>><%= hero.ctaText %></a><% } %>
+            <% if (hero.secondaryCtaText) { %><a class="btn btn-outline btn-lg" <%- linkAttrs(hero.secondaryCtaLink) %>><%= hero.secondaryCtaText %></a><% } %>
+          </div>
+          <% } %>
+          <% if (showContact && c.phone) { %>
+          <p class="hero-call rise-3"><%- icon("phone") %><span><%= t("orCall") %></span><a href="<%= telHref(c.phone) %>"><%= c.phone %></a></p>
+          <% } %>
+        </div>
+        <% if (hasMedia) { %>
+        <div class="hero-media">
+          <span class="ruler" aria-hidden="true"></span>
+          <div class="hero-photo"><%- img(hero.backgroundImage, "", { eager: true, sizes: "(min-width: 960px) 46vw, 100vw", width: 1600 }) %></div>
+        </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("stats")) { const h = heading("stats"); const hasHead = Boolean(h.eyebrow || h.title || h.subtitle); const many = config.stats.length > 4; %>
+    <section class="stats" id="stats" data-section="stats">
+      <div class="container stats-inner<%= hasHead ? ' has-head' : '' %><%= many ? ' many' : '' %>">
+        <% if (hasHead) { %>
+        <div class="stats-head">
+          <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+          <% if (h.title) { %><h2 class="stats-title"><%= h.title %></h2><% } %>
+          <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+        </div>
+        <% } %>
+        <ul class="stat-list">
+          <% config.stats.forEach((s) => { %>
+            <li class="stat">
+              <% if (s.value) { %><strong class="stat-value"><%= s.value %></strong><% } %>
+              <% if (s.label) { %><span class="stat-label"><%= s.label %></span><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("features")) { %>
+    <section class="section services" id="features" data-section="features">
+      <div class="container">
+        <% sectionHead("features", "head-split") %>
+        <ul class="svc-grid">
+          <% config.features.forEach((f) => { %>
+            <li class="svc">
+              <% if (f.icon) { %><span class="svc-icon"><%- icon(f.icon) %></span><% } %>
+              <% if (f.title) { %><h3><%= f.title %></h3><% } %>
+              <% if (f.description) { %><p><%= f.description %></p><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("steps")) { const n = config.steps.length; const cols = n <= 4 ? n : (n % 3 === 0 || n === 5) ? 3 : 4; %>
+    <section class="section process" id="steps" data-section="steps">
+      <div class="container">
+        <% sectionHead("steps") %>
+        <ol class="steps steps-<%= cols %>">
+          <% config.steps.forEach((s, i) => { %>
+            <li class="step">
+              <span class="step-num<%= s.label && s.label.length > 3 ? ' is-label' : '' %>"><%= s.label || pad(i + 1) %></span>
+              <% if (s.title) { %><h3><%= s.title %></h3><% } %>
+              <% if (s.description) { %><p><%= s.description %></p><% } %>
+            </li>
+          <% }) %>
+        </ol>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("gallery")) { const n = config.gallery.length; %>
+    <section class="section works" id="gallery" data-section="gallery">
+      <div class="container">
+        <% sectionHead("gallery", "head-split") %>
+        <div class="works-grid <%= n === 1 ? 'g1' : n === 2 ? 'g2' : 'gm' %>">
+          <% config.gallery.forEach((g, i) => {
+               const after = /^(despu[eé]s|after)\b/i.test(g.caption);
+               const big = (n <= 2) || i === 0; %>
+            <figure class="work">
+              <%- img(g.image, g.caption, { sizes: big ? "(min-width: 900px) 66vw, 100vw" : "(min-width: 900px) 33vw, 50vw", width: big ? 1600 : 1200, placeholder: "hammer" }) %>
+              <% if (g.caption) { %><figcaption<%- after ? ' class="is-after"' : '' %>><%= g.caption %></figcaption><% } %>
+            </figure>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("testimonials")) { const single = config.testimonials.length === 1; %>
+    <section class="section reviews" id="testimonials" data-section="testimonials">
+      <div class="container">
+        <% sectionHead("testimonials") %>
+        <div class="review-grid<%= single ? ' single' : '' %>">
+          <% config.testimonials.forEach((r) => { %>
+            <figure class="review">
+              <span class="stars" role="img" aria-label="<%= t('reviewsLabel') %>"><% for (let i = 0; i < 5; i++) { %><%- icon("star", "") %><% } %></span>
+              <% if (r.quote) { %><blockquote>«<%= r.quote %>»</blockquote><% } %>
+              <% if (r.name || r.role) { %>
+              <figcaption>
+                <span class="avatar" aria-hidden="true"><% if (r.avatar) { %><%- img(r.avatar, "", { sizes: "48px", width: 480 }) %><% } else { %><%= initials(r.name) %><% } %></span>
+                <div><% if (r.name) { %><strong><%= r.name %></strong><% } %><% if (r.role) { %><span><%= r.role %></span><% } %></div>
+              </figcaption>
+              <% } %>
+            </figure>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("faqs")) {
+         const faqs = config.faqs;
+         const two = faqs.length >= 4;
+         const half = Math.ceil(faqs.length / 2);
+         const cols = two ? [faqs.slice(0, half), faqs.slice(half)] : [faqs]; %>
+    <section class="section faqs" id="faqs" data-section="faqs">
+      <div class="container">
+        <% sectionHead("faqs", "head-split") %>
+        <div class="faq-cols <%= two ? 'two' : 'one' %>">
+          <% cols.forEach((col, ci) => { %>
+          <div class="faq-col">
+            <% col.forEach((f, i) => { %>
+              <details class="faq-item"<%= ci === 0 && i === 0 ? " open" : "" %>>
+                <summary><span><%= f.question || t("question") %></span><span class="faq-plus"><%- icon("plus", "faq-icon") %></span></summary>
+                <% if (f.answer) { %><div class="faq-answer"><%- paras(f.answer) %></div><% } %>
+              </details>
+            <% }) %>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("cta")) { const cta = config.cta; %>
+    <section class="cta" id="cta" data-section="cta">
+      <div class="cta-ruler" aria-hidden="true"></div>
+      <div class="container cta-inner">
+        <div>
+          <% if (cta.title) { %><h2 class="cta-title"><%= cta.title %></h2><% } %>
+          <% if (cta.text) { %><p><%= cta.text %></p><% } %>
+        </div>
+        <% if (cta.buttonText || (showContact && c.phone)) { %>
+        <div class="cta-actions">
+          <% if (cta.buttonText) { %><a class="btn btn-primary btn-lg" <%- linkAttrs(cta.buttonLink) %>><%= cta.buttonText %></a><% } %>
+          <% if (showContact && c.phone) { %><a class="cta-phone" href="<%= telHref(c.phone) %>"><%- icon("phone", "") %><%= c.phone %></a><% } %>
+        </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (showContact) { const hasCard = Boolean(c.address || hourLines.length); %>
+    <section class="section contact" id="contact" data-section="contact">
+      <div class="container contact-grid<%= hasCard ? ' has-card' : '' %>">
+        <div class="contact-main">
+          <% sectionHead("contact") %>
+          <% if (c.phone) { %>
+            <a class="big-phone" href="<%= telHref(c.phone) %>"><small><%= t("callFree") %></small><strong><%= c.phone %></strong></a>
+          <% } %>
+          <% if (c.whatsapp || c.email) { %>
+          <div class="actions">
+            <% if (c.whatsapp) { %><a class="btn btn-dark btn-lg" <%- linkAttrs(waHref(c.whatsapp)) %>><%- icon("message-circle", "") %><%= t("writeWhatsapp") %></a><% } %>
+            <% if (c.email) { %><a class="mail-link" href="<%= mailHref(c.email) %>"><%- icon("mail", "") %><%= c.email %></a><% } %>
+          </div>
+          <% } %>
+        </div>
+        <% if (hasCard) { %>
+        <aside class="contact-card">
+          <% if (c.address) { %>
+          <div>
+            <h3><%- icon("map-pin", "") %><%= t("office") %></h3>
+            <p><%= c.address %></p>
+            <a class="link-arrow" <%- linkAttrs(mapsHref(c.address)) %>><%= t("directions") %><%- icon("arrow-up-right", "") %></a>
+          </div>
+          <% } %>
+          <% if (hourLines.length) { %>
+          <div>
+            <h3><%- icon("clock", "") %><%= t("hours") %></h3>
+            <ul class="hours"><% hourLines.forEach((line) => { %><li><%= line %></li><% }) %></ul>
+          </div>
+          <% } %>
+        </aside>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+  </main>
+
+  <% if (show("footer")) { %>
+  <footer class="site-footer" id="footer" data-section="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div>
+          <p class="footer-brand"><% if (config.brand.logo && !config.brand.name) { %><%- img(config.brand.logo, "", { sizes: "160px", width: 480 }) %><% } else { %><% if (brandMark) { %><span class="brand-mark" aria-hidden="true"></span><% } %><span><%= config.brand.name %></span><% } %></p>
+          <% if (config.footer.text) { %><p class="footer-text"><%= config.footer.text %></p><% } %>
+        </div>
+        <% if (config.footer.links.length) { %>
+        <nav class="footer-links" aria-label="<%= config.brand.name %>">
+          <% config.footer.links.forEach((l) => { %><a <%- linkAttrs(l.url) %>><%= l.label || l.url %></a><% }) %>
+        </nav>
+        <% } %>
+      </div>
+      <div class="footer-bottom">
+        <p><%- copyright(config.brand.name) %></p>
+        <%- madeWith %>
+      </div>
+    </div>
+  </footer>
+  <% } %>
+
+  <%- foot %>
+</body>
+</html>

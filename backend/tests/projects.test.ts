@@ -1,6 +1,6 @@
 import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
-import { app, auth, createProject, createTemplate, registerUser, useTestDatabase } from "./helpers";
+import { app, auth, createProject, createTemplate, registerUser, TEST_VIEW, useTestDatabase } from "./helpers";
 import { Project } from "../src/models/Project";
 import { Stat } from "../src/models/Stat";
 
@@ -18,7 +18,7 @@ describe("CRUD de proyectos", () => {
     const res = await request(app).post("/api/projects").set(auth(token)).send({ templateId, name: "Mi web" });
 
     expect(res.status).toBe(201);
-    expect(res.body).toMatchObject({ name: "Mi web", view: "templateStartup", user: user._id, hiddenSections: [] });
+    expect(res.body).toMatchObject({ name: "Mi web", view: TEST_VIEW, user: user._id, hiddenSections: [] });
     expect(res.body.publicId).toMatch(/^[\w-]{16}$/);
     expect(res.body.config.brand.name).toBe("Marca de prueba");
   });

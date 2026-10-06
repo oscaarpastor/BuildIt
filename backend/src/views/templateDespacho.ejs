@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html <%- htmlAttrs %>>
+<head>
+  <%- head %>
+  <%
+    // Banda oscura institucional: el color principal tal cual si ya es oscuro
+    // (el azul marino del ejemplo) o, si no, oscurecido hasta que el texto
+    // blanco se lea sin problema. Así cualquier color que elija la persona vale.
+    const hexRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const lum = (rgb) => {
+      const c = rgb.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; });
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    };
+    function darkBand(hex, target) {
+      const base = /^#[0-9a-f]{6}$/i.test(hex) ? hexRgb(hex) : [20, 33, 61];
+      const ink = [7, 10, 18];
+      for (let t = 0; t <= 1.0001; t += 0.04) {
+        const m = base.map((v, i) => Math.round(v + (ink[i] - v) * t));
+        if (1.05 / (lum(m) + 0.05) >= target) return "#" + m.map((v) => v.toString(16).padStart(2, "0")).join("");
+      }
+      return "#070a12";
+    }
+    const band = darkBand(theme.colorPrimary, 11);
+  %>
+  <style>
+    /* Despacho: sobrio, institucional y editorial. Blanco y piedra, azul marino
+       (principal) en bandas y dorado apagado (secundario) solo en detalles:
+       numerales, filetes y antetítulos en cursiva. Titulares en Libre Caslon,
+       esquinas rectas y fotos en blanco y negro. */
+    :root {
+      --bg: #ffffff;
+      --surface: #f4f2ee;
+      --surface-2: #e9e6df;
+      --text: #161b26;
+      --muted: #596070;
+      --border: #e2ded6;
+      --radius-sm: 2px;
+      --radius: 2px;
+      --radius-lg: 3px;
+      --radius-btn: 2px;
+      --band: <%= band %>;
+      --band-deep: color-mix(in srgb, var(--band) 78%, #04060b);
+      --on-band: #ffffff;
+      --on-band-muted: rgb(255 255 255 / 0.72);
+      --band-line: rgb(255 255 255 / 0.16);
+      --gold-on-band: var(--secondary-on-dark);
+      --gold: var(--secondary-ink);
+    }
+    html.bi-dark {
+      --bg: #0d1017;
+      --surface: #141823;
+      --surface-2: #1b2130;
+      --text: #ece9e2;
+      --muted: #a5abb8;
+      --border: #272d3b;
+      --band: color-mix(in srgb, <%= band %> 70%, #1a2133);
+    }
+
+    body { display: flex; flex-direction: column; }
+    main { flex: 1 0 auto; display: flex; flex-direction: column; }
+    main > :last-child { flex-grow: 1; }
+
+    h1, h2, h3, .title { font-weight: 400; letter-spacing: -0.01em; }
+    .title { font-size: clamp(2rem, 1.4rem + 2.4vw, 3.25rem); line-height: 1.1; }
+    .eyebrow {
+      margin-bottom: 1.125rem;
+      color: var(--gold);
+      font-family: var(--font-heading);
+      font-size: 1.0625rem;
+      font-style: italic;
+      font-weight: 400;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .lead { line-height: 1.65; }
+    .btn { font-weight: 600; letter-spacing: 0.01em; }
+    .btn-gold { background: var(--secondary); color: var(--on-secondary); }
+    .btn-gold:hover { background: color-mix(in srgb, var(--secondary) 85%, #fff); }
+    .btn-line-light { border-color: var(--band-line); color: var(--on-band); }
+    .btn-line-light:hover { border-color: var(--on-band); }
+
+    /* ---------- Cabecera (siempre sobre la banda: no depende de la portada) ---------- */
+    .site-header {
+      background: var(--band);
+      color: var(--on-band);
+      border-bottom: 1px solid var(--band-line);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+    .site-header .brand { font-weight: 400; font-size: 1.375rem; letter-spacing: -0.01em; }
+    .site-header .nav-links a { color: var(--on-band-muted); }
+    .site-header .nav-links a:hover { color: var(--on-band); }
+    .site-header .nav-cta { border-color: color-mix(in srgb, var(--gold-on-band) 70%, transparent); background: transparent; color: var(--on-band); }
+    .site-header .nav-cta:hover { background: rgb(255 255 255 / 0.08); }
+    .menu-panel { color: var(--text); }
+    /* La base ya limita el ancho; el texto va en un span para que la elipsis funcione dentro del botón flex */
+    .nav-cta span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @media (max-width: 560px) {
+      .site-header .brand { font-size: 1.1875rem; }
+      .site-header .brand span { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal; line-height: 1.15; }
+    }
+
+    /* ---------- Portada ---------- */
+    .hero { display: flex; flex-direction: column; justify-content: flex-end; padding: clamp(3.5rem, 8vw, 7rem) 0 0; background: var(--band); color: var(--on-band); }
+    .hero-grid { display: grid; gap: clamp(2.5rem, 6vw, 5rem); align-items: end; }
+    .hero .eyebrow { color: var(--gold-on-band); font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem); }
+    .hero-title {
+      max-width: 18ch;
+      font-size: clamp(2.75rem, 1.6rem + 3.9vw, 4.875rem);
+      line-height: 1.04;
+      letter-spacing: -0.025em;
+    }
+    .hero-grid:not(.with-photo) .hero-title { max-width: 20ch; }
+    .hero-title.long { max-width: 24ch; font-size: clamp(2.25rem, 1.5rem + 2.8vw, 3.75rem); line-height: 1.1; }
+    .hero-sub { max-width: 38rem; margin-top: 1.75rem; color: var(--on-band-muted); font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem); }
+    .hero .actions { margin-top: 2.5rem; }
+    .hero-copy { padding-bottom: clamp(3rem, 6vw, 5rem); }
+    .hero-photo { position: relative; margin: 0; }
+    .hero-photo .frame { aspect-ratio: 4 / 5; overflow: hidden; }
+    .hero-photo .frame > * { width: 100%; height: 100%; object-fit: cover; }
+    .hero-photo img { filter: grayscale(1) contrast(1.1); }
+    /* Filete dorado desplazado, como un paspartú */
+    .hero-photo::after {
+      content: "";
+      position: absolute;
+      inset: -1rem 1rem 1rem -1rem;
+      border: 1px solid color-mix(in srgb, var(--gold-on-band) 60%, transparent);
+      pointer-events: none;
+    }
+    @media (min-width: 960px) {
+      .hero-grid.with-photo { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+      .hero-photo { margin-bottom: -1px; align-self: end; }
+      .hero-photo .frame { aspect-ratio: 4 / 5.2; }
+    }
+    @media (max-width: 959px) {
+      .hero-photo { margin: 0 0 0 1rem; }
+      .hero-photo .frame { aspect-ratio: 16 / 10; }
+      .hero-copy { padding-bottom: 0; }
+      .hero-grid { padding-bottom: clamp(2.5rem, 6vw, 3.5rem); }
+    }
+    @media (max-width: 520px) { .hero .actions .btn { flex: 1 1 100%; } }
+
+    /* Membrete: dirección, teléfono y email bajo la portada */
+    .letterhead {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+      gap: 1.25rem 2.5rem;
+      padding: 1.75rem 0 2rem;
+      border-top: 1px solid var(--band-line);
+      font-size: 0.9375rem;
+    }
+    .letterhead dt { color: var(--gold-on-band); font-family: var(--font-heading); font-style: italic; font-size: 0.9375rem; }
+    .letterhead dd { margin-top: 0.25rem; color: var(--on-band); overflow-wrap: anywhere; }
+    .letterhead a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    /* ---------- Áreas de práctica ---------- */
+    .areas-grid { display: grid; gap: 2.5rem; }
+    .areas-grid .section-head { margin-bottom: 0; }
+    .area-list { counter-reset: area; border-bottom: 1px solid var(--border); }
+    .area {
+      counter-increment: area;
+      display: grid;
+      grid-template-columns: 3.5rem minmax(0, 1fr);
+      gap: 0.25rem 1.5rem;
+      padding: clamp(1.5rem, 2.5vw, 2rem) 0;
+      border-top: 1px solid var(--border);
+    }
+    .area::before {
+      content: counter(area, upper-roman) ".";
+      grid-row: span 2;
+      padding-top: 0.2rem;
+      color: var(--gold);
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-style: italic;
+      font-variant-numeric: oldstyle-nums;
+    }
+    .area h3 { font-size: clamp(1.375rem, 1.2rem + 0.6vw, 1.75rem); line-height: 1.2; }
+    .area p { max-width: 40rem; color: var(--muted); }
+    .area h3 + p { margin-top: 0.5rem; }
+    @media (min-width: 1000px) {
+      .areas-grid { grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 5rem; }
+      .areas-grid > div:first-child { position: sticky; top: calc(var(--header-h) + 2rem); align-self: start; }
+    }
+    @media (max-width: 520px) { .area { grid-template-columns: 2.5rem minmax(0, 1fr); gap: 0.25rem 0.75rem; } }
+
+    /* ---------- El despacho ---------- */
+    .about { background: var(--surface); }
+    .about-title { max-width: 22ch; font-size: clamp(2.125rem, 1.4rem + 2.8vw, 3.75rem); line-height: 1.08; letter-spacing: -0.02em; }
+    .about .lead { max-width: 44rem; }
+    .about-body { display: grid; gap: clamp(2rem, 5vw, 4.5rem); margin-top: clamp(2.5rem, 5vw, 4rem); align-items: start; }
+    .about-photo { aspect-ratio: 3 / 2; overflow: hidden; }
+    .about-photo > * { width: 100%; height: 100%; object-fit: cover; }
+    .about-photo img { filter: grayscale(1) contrast(1.06); }
+    .prose { font-size: 1.0625rem; line-height: 1.75; color: color-mix(in srgb, var(--text) 82%, var(--bg)); max-width: 38rem; }
+    .dropcap > p:first-child::first-letter {
+      float: left;
+      margin: 0.32rem 0.6rem 0 0;
+      color: var(--gold);
+      font-family: var(--font-heading);
+      font-size: 4.6em;
+      line-height: 0.72;
+    }
+    @media (min-width: 900px) {
+      .about-body.with-photo { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+      .about-body:not(.with-photo) .prose { columns: 2 18rem; column-gap: 3rem; max-width: none; }
+      .about-body:not(.with-photo) .prose p { break-inside: avoid-column; }
+    }
+
+    /* ---------- Cifras ---------- */
+    .stats-sec:has(+ .team) { padding-bottom: 0; }
+    .stats-sec .section-head { margin-bottom: clamp(2rem, 4vw, 3rem); }
+    .stat-list { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 2.5rem clamp(1.5rem, 3vw, 3rem); }
+    .stat-list.few { grid-template-columns: repeat(var(--cols), minmax(0, 22rem)); }
+    .stat { padding-top: 1.25rem; border-top: 2px solid var(--text); }
+    .stat-value {
+      font-family: var(--font-heading);
+      font-size: clamp(2.75rem, 2rem + 2.6vw, 4.25rem);
+      line-height: 1;
+      letter-spacing: -0.02em;
+      font-variant-numeric: lining-nums;
+    }
+    .stat-label { margin-top: 0.75rem; color: var(--muted); font-size: 0.9688rem; line-height: 1.5; max-width: 16rem; }
+    @media (max-width: 899px) { .stat-list { grid-template-columns: repeat(var(--cols-md), minmax(0, 1fr)); } }
+    @media (max-width: 479px) {
+      .stat-list { grid-template-columns: repeat(min(var(--cols-md), 2), minmax(0, 1fr)); gap: 1.75rem 1.25rem; }
+      .stat-value { font-size: 2.25rem; }
+      .stat-label { font-size: 0.875rem; }
+    }
+
+    /* ---------- Equipo ---------- */
+    .team-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(2rem, 4vw, 3rem) clamp(1rem, 2.5vw, 2rem); }
+    .member { flex: 0 1 calc(100% / var(--cols) - 2rem); max-width: 19rem; }
+    .member-photo { aspect-ratio: 3 / 4; overflow: hidden; background: var(--surface); }
+    .member-photo > * { width: 100%; height: 100%; object-fit: cover; }
+    .member-photo img { filter: grayscale(1) contrast(1.06); }
+    .member h3 { margin-top: 1.125rem; font-size: 1.3125rem; line-height: 1.2; }
+    .member p { margin-top: 0.375rem; color: var(--muted); font-size: 0.9375rem; line-height: 1.5; }
+    @media (max-width: 899px) { .team-grid[data-cols="4"] .member { flex-basis: calc(50% - 1.5rem); } }
+    @media (max-width: 560px) {
+      .team-grid:not(.no-photos) .member { flex-basis: calc(50% - 0.5rem); }
+      .member h3 { font-size: 1.125rem; }
+      .member p { font-size: 0.875rem; }
+    }
+    /* Sin fotos: monogramas */
+    .team-grid.no-photos { justify-content: flex-start; gap: 0; border-top: 1px solid var(--border); }
+    .team-grid.no-photos .member {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      flex: 1 1 calc(100% / var(--cols-text) - 0.01px);
+      max-width: none;
+      min-width: min(100%, 16rem);
+      padding: 1.5rem 1.5rem 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .monogram {
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      width: 4rem;
+      height: 4rem;
+      background: var(--band);
+      color: var(--on-band);
+      font-family: var(--font-heading);
+      font-size: 1.375rem;
+      letter-spacing: 0.04em;
+    }
+    .team-grid.no-photos .member h3 { margin-top: 0; font-size: 1.1875rem; }
+
+    /* ---------- Honorarios ---------- */
+    .fees-sec { background: var(--surface); }
+    .fees { background: var(--bg); border: 1px solid var(--border); }
+    .fee {
+      display: grid;
+      gap: 1rem 2.5rem;
+      padding: clamp(1.75rem, 3vw, 2.5rem) clamp(1.25rem, 3.5vw, 2.75rem);
+      border-top: 1px solid var(--border);
+    }
+    .fee:first-child { border-top: 0; }
+    .fee.has-badge { box-shadow: inset 3px 0 0 var(--secondary); }
+    .fee-badge { display: block; margin-bottom: 0.5rem; color: var(--gold); font-family: var(--font-heading); font-style: italic; font-size: 0.9688rem; }
+    .fee h3 { font-size: clamp(1.375rem, 1.2rem + 0.6vw, 1.625rem); line-height: 1.2; }
+    .fee-desc { color: var(--muted); font-size: 0.9688rem; }
+    .fee-desc.checklist li svg { color: var(--gold); }
+    .fee-price { display: flex; flex-direction: column; gap: 0.625rem; align-items: flex-start; }
+    .fee-amount { font-family: var(--font-heading); font-size: clamp(1.625rem, 1.4rem + 0.8vw, 2.125rem); line-height: 1.1; white-space: nowrap; }
+    .fee .link-arrow { color: var(--text); font-size: 0.9375rem; border-bottom: 1px solid var(--secondary); padding-bottom: 0.125rem; }
+    .fee .link-arrow:hover { color: var(--gold); }
+    @media (min-width: 900px) {
+      .fee { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr) minmax(10rem, 3fr); align-items: start; }
+      .fee-price { align-items: flex-end; text-align: right; }
+    }
+
+    /* ---------- Clientes ---------- */
+    .quotes { display: grid; gap: clamp(2.5rem, 5vw, 4rem) clamp(2rem, 5vw, 5rem); }
+    .quote { position: relative; padding-top: 2.75rem; }
+    .quote::before {
+      content: "\201C";
+      position: absolute;
+      top: -0.25rem;
+      left: -0.1rem;
+      color: var(--gold);
+      font-family: var(--font-heading);
+      font-size: 5rem;
+      line-height: 1;
+    }
+    .quote blockquote { font-family: var(--font-heading); font-style: italic; font-size: clamp(1.1875rem, 1.05rem + 0.5vw, 1.4375rem); line-height: 1.5; }
+    .quote figcaption { margin-top: 1.25rem; font-size: 0.9375rem; }
+    .quote strong { display: block; font-weight: 600; }
+    .quote figcaption span { color: var(--muted); }
+    @media (min-width: 900px) {
+      .quotes { grid-template-columns: 1fr 1fr; }
+      .quote:first-child, .quote:last-child:nth-child(even) { grid-column: 1 / -1; }
+      .quote:first-child { max-width: 58rem; padding-bottom: clamp(1rem, 3vw, 2.5rem); border-bottom: 1px solid var(--border); }
+      .quote:last-child:nth-child(even):not(:first-child) { max-width: 46rem; }
+      .quote:first-child blockquote { font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem); line-height: 1.35; }
+    }
+
+    /* ---------- Preguntas ---------- */
+    .faqs-sec { background: var(--surface); }
+    .faqs-sec .container { max-width: 56rem; }
+    .faq-list { border-top: 1px solid var(--text); }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-item > summary { padding: 1.5rem 0; font-family: var(--font-heading); font-size: clamp(1.1875rem, 1.1rem + 0.4vw, 1.375rem); line-height: 1.35; }
+    .faq-item > summary .faq-icon { width: 1.25rem; height: 1.25rem; color: var(--gold); }
+    .faq-answer { padding: 0 3rem 1.75rem 0; color: var(--muted); }
+
+    /* ---------- Primera consulta ---------- */
+    .cta-band { background: var(--band); color: var(--on-band); }
+    .cta-box { display: grid; gap: 2rem; padding: clamp(2rem, 5vw, 4rem); border: 1px solid color-mix(in srgb, var(--gold-on-band) 45%, transparent); }
+    .cta-title { font-size: clamp(2.25rem, 1.5rem + 3vw, 4rem); line-height: 1.06; letter-spacing: -0.02em; max-width: 16ch; }
+    .cta-box p { max-width: 36rem; margin-top: 1.25rem; color: var(--on-band-muted); font-size: 1.125rem; }
+    .cta-box .actions { flex-direction: column; align-items: stretch; }
+    .cta-call { color: var(--on-band-muted); font-size: 0.9375rem; text-align: center; }
+    .cta-call a { color: var(--on-band); font-weight: 600; white-space: nowrap; border-bottom: 1px solid var(--gold-on-band); }
+    @media (min-width: 900px) {
+      .cta-box { grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 4rem; }
+      .cta-box .actions { min-width: 16rem; }
+    }
+
+    /* ---------- Contacto ---------- */
+    .contact-cols { display: flex; flex-wrap: wrap; column-gap: 2rem; border-top: 1px solid var(--text); }
+    .contact-col { flex: 1 1 13rem; padding: 1.75rem 0 0.5rem; }
+    .contact-col h3 { color: var(--gold); font-size: 1.125rem; font-style: italic; }
+    .contact-col p, .contact-col li { margin-top: 0.625rem; color: var(--muted); }
+    .contact-col a:not(.link-arrow) { display: block; margin-top: 0.625rem; color: var(--text); font-weight: 500; overflow-wrap: anywhere; }
+    .contact-col a:not(.link-arrow):hover { color: var(--gold); }
+    .contact-col .link-arrow { margin-top: 1rem; color: var(--text); border-bottom: 1px solid var(--secondary); }
+    .contact-col .hours li { margin-top: 0; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.9688rem; }
+    .contact-col .hours li:last-child { border-bottom: 0; }
+    .contact-col .hours { margin-top: 0.5rem; }
+    @media (min-width: 900px) {
+      .contact-col + .contact-col { padding-left: 2rem; border-left: 1px solid var(--border); }
+      .contact-cols { column-gap: 0; }
+      .contact-col { padding-right: 2rem; }
+    }
+
+    /* ---------- Pie ---------- */
+    .site-footer { padding: clamp(3.5rem, 7vw, 5.5rem) 0 2rem; background: var(--band-deep); color: var(--on-band-muted); }
+    .footer-top { display: grid; gap: 2rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--band-line); }
+    .footer-brand { color: var(--on-band); font-family: var(--font-heading); font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.75rem); line-height: 1.1; letter-spacing: -0.015em; }
+    .footer-brand img { height: 3rem; width: auto; }
+    .footer-text { max-width: 34rem; margin-top: 1rem; font-size: 0.9375rem; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 0.625rem 1.75rem; align-content: start; }
+    .footer-links a { color: var(--on-band); font-weight: 500; }
+    .footer-links a:hover { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--gold-on-band); }
+    .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem; padding-top: 1.5rem; font-size: 0.875rem; }
+    @media (min-width: 820px) { .footer-top { grid-template-columns: 1fr auto; align-items: end; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main"><%= t("skip") %></a>
+
+  <%
+    function sectionHead(key, extraClass) {
+      const h = heading(key);
+      if (!h.eyebrow && !h.title && !h.subtitle) return;
+  %>
+    <div class="section-head <%= extraClass || '' %>">
+      <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+      <% if (h.title) { %><h2 class="title"><%= h.title %></h2><% } %>
+      <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+    </div>
+  <% } %>
+
+  <%
+    const c = config.contact;
+    const hero = config.hero;
+    const showContact = show("contact");
+    const hourLines = lines(c.hours);
+    const navCta = show("hero") && hero.ctaText
+      ? { text: hero.ctaText, href: hero.ctaLink }
+      : show("cta") && config.cta.buttonText ? { text: config.cta.buttonText, href: config.cta.buttonLink } : null;
+    // Columnas para que la última fila no quede con un único elemento
+    const colsFor = (n) => n <= 3 ? n : n % 3 === 0 ? 3 : n % 4 === 0 ? 4 : n % 3 === 2 ? 3 : 4;
+  %>
+
+  <header class="site-header" data-section="brand">
+    <div class="container nav">
+      <a class="brand" href="#main">
+        <% if (config.brand.logo) { %><%- img(config.brand.logo, config.brand.name, { eager: true, sizes: "160px", width: 480 }) %><% } %>
+        <% if (config.brand.name || !config.brand.logo) { %><span><%= config.brand.name %></span><% } %>
+      </a>
+      <%- navLinks({ limit: 5, exclude: ["contact", "stats"] }) %>
+      <% if (navCta) { %>
+        <a class="btn btn-sm nav-cta" <%- linkAttrs(navCta.href) %>><span><%= navCta.text %></span></a>
+      <% } %>
+      <%- mobileMenu({ cta: navCta ? { ...navCta, class: "btn-primary" } : undefined }) %>
+    </div>
+  </header>
+
+  <main id="main">
+    <% if (show("hero")) { const withPhoto = !!hero.backgroundImage; const letterhead = showContact && (c.address || c.phone || c.email); %>
+    <section class="hero" id="hero" data-section="hero">
+      <div class="container hero-grid<%= withPhoto ? ' with-photo' : '' %>">
+        <div class="hero-copy">
+          <% if (hero.eyebrow) { %><p class="eyebrow rise"><%= hero.eyebrow %></p><% } %>
+          <% if (hero.title) { %><h1 class="hero-title rise-2<%= hero.title.length > 70 ? ' long' : '' %>"><%= hero.title %></h1><% } %>
+          <% if (hero.subtitle) { %><p class="hero-sub rise-3"><%= hero.subtitle %></p><% } %>
+          <% if (hero.ctaText || hero.secondaryCtaText) { %>
+          <div class="actions rise-3">
+            <% if (hero.ctaText) { %><a class="btn btn-gold btn-lg" <%- linkAttrs(hero.ctaLink) %>><%= hero.ctaText %></a><% } %>
+            <% if (hero.secondaryCtaText) { %><a class="btn btn-line-light btn-lg" <%- linkAttrs(hero.secondaryCtaLink) %>><%= hero.secondaryCtaText %></a><% } %>
+          </div>
+          <% } %>
+        </div>
+        <% if (withPhoto) { %>
+        <figure class="hero-photo rise-2"><div class="frame"><%- img(hero.backgroundImage, "", { eager: true, sizes: "(min-width: 960px) 34vw, 100vw", width: 1600 }) %></div></figure>
+        <% } %>
+      </div>
+      <% if (letterhead) { %>
+      <div class="container">
+        <dl class="letterhead">
+          <% if (c.address) { %><div><dt><%= t("office") %></dt><dd><%= c.address %></dd></div><% } %>
+          <% if (c.phone) { %><div><dt><%= t("phone") %></dt><dd><a href="<%= telHref(c.phone) %>"><%= c.phone %></a></dd></div><% } %>
+          <% if (c.email) { %><div><dt><%= t("email") %></dt><dd><a href="<%= mailHref(c.email) %>"><%= c.email %></a></dd></div><% } %>
+        </dl>
+      </div>
+      <% } else { %>
+      <div style="height: clamp(1rem, 3vw, 2rem)"></div>
+      <% } %>
+    </section>
+    <% } %>
+
+    <% if (show("features")) { %>
+    <section class="section" id="features" data-section="features">
+      <div class="container areas-grid">
+        <div><% sectionHead("features") %></div>
+        <ol class="area-list">
+          <% config.features.forEach((f) => { %>
+            <li class="area">
+              <% if (f.title) { %><h3><%= f.title %></h3><% } %>
+              <% if (f.description) { %><p><%= f.description %></p><% } %>
+            </li>
+          <% }) %>
+        </ol>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("about")) { const a = config.about; const h = heading("about"); %>
+    <section class="section about" id="about" data-section="about">
+      <div class="container">
+        <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+        <% if (a.heading) { %><h2 class="about-title"><%= a.heading %></h2><% } %>
+        <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+        <% if (a.image || a.content) { %>
+        <div class="about-body<%= a.image ? ' with-photo' : '' %>">
+          <% if (a.image) { %><div class="about-photo"><%- img(a.image, a.heading, { sizes: "(min-width: 900px) 55vw, 100vw" }) %></div><% } %>
+          <% if (a.content) { %><div class="prose dropcap"><%- paras(a.content) %></div><% } %>
+        </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("stats")) { const n = config.stats.length; %>
+    <section class="section stats-sec" id="stats" data-section="stats">
+      <div class="container">
+        <% sectionHead("stats") %>
+        <ul class="stat-list<%= n <= 2 ? ' few' : '' %>" style="--cols: <%= Math.min(colsFor(n), 4) %>; --cols-md: <%= n === 1 ? 1 : n % 3 === 0 ? 3 : 2 %>">
+          <% config.stats.forEach((s) => { %>
+            <li class="stat">
+              <% if (s.value) { %><p class="stat-value"><%= s.value %></p><% } %>
+              <% if (s.label) { %><p class="stat-label"><%= s.label %></p><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("team")) { const withPhotos = config.team.some((m) => m.image); const n = config.team.length; const cols = colsFor(n); %>
+    <section class="section team" id="team" data-section="team">
+      <div class="container">
+        <% sectionHead("team") %>
+        <ul class="team-grid<%= withPhotos ? '' : ' no-photos' %>" data-cols="<%= cols %>" style="--cols: <%= cols %>; --cols-text: <%= Math.min(n, n % 2 === 0 && n % 3 !== 0 ? 2 : 3) %>">
+          <% config.team.forEach((m) => { %>
+            <li class="member">
+              <% if (withPhotos) { %>
+                <div class="member-photo"><%- img(m.image, m.name, { sizes: "(min-width: 1100px) 300px, 50vw", width: 800, placeholder: "user" }) %></div>
+              <% } else { %>
+                <span class="monogram" aria-hidden="true"><%= initials(m.name) %></span>
+              <% } %>
+              <div>
+                <% if (m.name) { %><h3><%= m.name %></h3><% } %>
+                <% if (m.role) { %><p><%= m.role %></p><% } %>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("products")) { %>
+    <section class="section fees-sec" id="products" data-section="products">
+      <div class="container">
+        <% sectionHead("products") %>
+        <ul class="fees">
+          <% config.products.forEach((p) => { const items = lines(p.description); %>
+            <li class="fee<%= p.badge ? ' has-badge' : '' %>">
+              <div>
+                <% if (p.badge) { %><span class="fee-badge"><%= p.badge %></span><% } %>
+                <% if (p.title) { %><h3><%= p.title %></h3><% } %>
+              </div>
+              <div>
+                <% if (items.length > 1) { %>
+                  <ul class="fee-desc checklist"><% items.forEach((line) => { %><li><%- icon("check", "") %><%= line %></li><% }) %></ul>
+                <% } else if (p.description) { %>
+                  <p class="fee-desc"><%= p.description %></p>
+                <% } %>
+              </div>
+              <% if (p.price || p.link) { %>
+              <div class="fee-price">
+                <% if (p.price) { %><p class="fee-amount"><%= p.price %></p><% } %>
+                <% if (p.link) { %><a class="link-arrow" <%- linkAttrs(p.link) %>><%= t("request") %><%- icon("arrow-right", "") %></a><% } %>
+              </div>
+              <% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("testimonials")) { %>
+    <section class="section" id="testimonials" data-section="testimonials">
+      <div class="container">
+        <% sectionHead("testimonials") %>
+        <div class="quotes">
+          <% config.testimonials.forEach((r) => { %>
+            <figure class="quote">
+              <% if (r.quote) { %><blockquote><%= r.quote %></blockquote><% } %>
+              <% if (r.name || r.role) { %>
+              <figcaption>
+                <% if (r.name) { %><strong><%= r.name %></strong><% } %>
+                <% if (r.role) { %><span><%= r.role %></span><% } %>
+              </figcaption>
+              <% } %>
+            </figure>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("faqs")) { %>
+    <section class="section faqs-sec" id="faqs" data-section="faqs">
+      <div class="container">
+        <% sectionHead("faqs") %>
+        <div class="faq-list">
+          <% config.faqs.forEach((f, i) => { %>
+            <details class="faq-item"<%= i === 0 ? " open" : "" %>>
+              <summary><span><%= f.question || t("question") %></span><%- icon("plus", "faq-icon") %></summary>
+              <% if (f.answer) { %><div class="faq-answer"><%- paras(f.answer) %></div><% } %>
+            </details>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("cta")) { const cta = config.cta; const callLine = showContact && c.phone; %>
+    <section class="section cta-band" id="cta" data-section="cta">
+      <div class="container">
+        <div class="cta-box">
+          <div>
+            <% if (cta.title) { %><h2 class="cta-title"><%= cta.title %></h2><% } %>
+            <% if (cta.text) { %><p><%= cta.text %></p><% } %>
+          </div>
+          <% if (cta.buttonText || callLine) { %>
+          <div class="actions">
+            <% if (cta.buttonText) { %><a class="btn btn-gold btn-lg" <%- linkAttrs(cta.buttonLink) %>><%= cta.buttonText %></a><% } %>
+            <% if (callLine) { %><p class="cta-call"><%= cta.buttonText ? t("orCall") : t("callUs") %> <a href="<%= telHref(c.phone) %>"><%= c.phone %></a></p><% } %>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (showContact) { %>
+    <section class="section" id="contact" data-section="contact">
+      <div class="container">
+        <% sectionHead("contact") %>
+        <div class="contact-cols">
+          <% if (c.address) { %>
+          <div class="contact-col">
+            <h3><%= t("office") %></h3>
+            <p><%= c.address %></p>
+            <a class="link-arrow" <%- linkAttrs(mapsHref(c.address)) %>><%= t("directions") %><%- icon("arrow-up-right", "") %></a>
+          </div>
+          <% } %>
+          <% if (c.phone || c.email || c.whatsapp) { %>
+          <div class="contact-col">
+            <h3><%= t("reach") %></h3>
+            <% if (c.phone) { %><a href="<%= telHref(c.phone) %>"><%= c.phone %></a><% } %>
+            <% if (c.email) { %><a href="<%= mailHref(c.email) %>"><%= c.email %></a><% } %>
+            <% if (c.whatsapp) { %><a <%- linkAttrs(waHref(c.whatsapp)) %>><%= t("whatsapp") %>: <%= c.whatsapp %></a><% } %>
+          </div>
+          <% } %>
+          <% if (hourLines.length) { %>
+          <div class="contact-col">
+            <h3><%= t("hours") %></h3>
+            <ul class="hours"><% hourLines.forEach((line) => { %><li><%= line %></li><% }) %></ul>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+  </main>
+
+  <% if (show("footer")) { %>
+  <footer class="site-footer" id="footer" data-section="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div>
+          <p class="footer-brand"><% if (config.brand.logo && !config.brand.name) { %><%- img(config.brand.logo, "", { sizes: "160px", width: 480 }) %><% } else { %><%= config.brand.name %><% } %></p>
+          <% if (config.footer.text) { %><p class="footer-text"><%= config.footer.text %></p><% } %>
+        </div>
+        <% if (config.footer.links.length) { %>
+        <nav class="footer-links" aria-label="<%= config.brand.name || t('menu') %>">
+          <% config.footer.links.forEach((l) => { %><a <%- linkAttrs(l.url) %>><%= l.label || l.url %></a><% }) %>
+        </nav>
+        <% } %>
+      </div>
+      <div class="footer-bottom">
+        <p><%- copyright(config.brand.name) %></p>
+        <%- madeWith %>
+      </div>
+    </div>
+  </footer>
+  <% } %>
+
+  <%- foot %>
+</body>
+</html>

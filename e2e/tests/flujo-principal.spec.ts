@@ -40,8 +40,8 @@ test("flujo principal: crear, editar, ocultar, publicar, medir, exportar y salir
   await expect(page.getByRole("status").getByText("Cambios guardados")).toBeVisible();
   await expect(vistaPrevia.getByText("Casa de Ana").first()).toBeVisible();
 
-  // Ocultar la sección de testimonios desde la pila de secciones
-  const interruptor = page.getByRole("switch", { name: "Mostrar Testimonios en la web" });
+  // Ocultar la sección de reseñas (testimonios) desde la pila de secciones
+  const interruptor = page.getByRole("switch", { name: "Mostrar Reseñas en la web" });
   await interruptor.click();
   await expect(interruptor).toHaveAttribute("aria-checked", "false");
   await expect(page.getByRole("status").getByText("Cambios guardados")).toBeVisible();
@@ -67,7 +67,8 @@ test("flujo principal: crear, editar, ocultar, publicar, medir, exportar y salir
   const web = page.frameLocator("iframe");
   await expect(web.getByText("Casa de Ana").first()).toBeVisible();
   await expect(web.locator("#testimonials")).toHaveCount(0);
-  await web.getByRole("link", { name: "Reserve a Table" }).click();
+  // El botón de reserva aparece en la cabecera y en la portada
+  await web.getByRole("link", { name: "Reservar mesa" }).first().click();
 
   // Las estadísticas reflejan la visita y el clic
   await expect(async () => {

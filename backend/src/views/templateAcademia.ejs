@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html <%- htmlAttrs %>>
+<head>
+  <%- head %>
+  <style>
+    /* Academia: luminosa, cercana y segura de sí misma (sin ser infantil).
+       Azul intenso (principal) para la estructura, amarillo cálido
+       (secundario) para lo que hay que ver primero: plazas, resultados y la
+       matrícula. Lexend muy compacta en titulares y fondos teñidos del azul. */
+    :root {
+      --bg: #ffffff;
+      --surface: color-mix(in srgb, var(--primary) 7%, #ffffff);
+      --surface-2: color-mix(in srgb, var(--primary) 13%, #ffffff);
+      --text: #111a33;
+      --muted: #4d5872;
+      --border: color-mix(in srgb, var(--primary) 14%, #e6e8ee);
+      --radius-sm: 10px;
+      --radius: 18px;
+      --radius-lg: 28px;
+      --radius-btn: 14px;
+      --deep: color-mix(in srgb, var(--primary) 34%, #060a17);
+      --card: #ffffff;
+      --sticker: var(--secondary);
+      --on-sticker: var(--on-secondary);
+    }
+    html.bi-dark {
+      --bg: #0b0f1c;
+      --surface: color-mix(in srgb, var(--primary) 12%, #0e1322);
+      --surface-2: color-mix(in srgb, var(--primary) 18%, #121829);
+      --text: #eef1f8;
+      --muted: #a6aec2;
+      --border: color-mix(in srgb, var(--primary) 18%, #232a3d);
+      --card: color-mix(in srgb, var(--primary) 8%, #121829);
+      --deep: color-mix(in srgb, var(--primary) 30%, #04060e);
+    }
+
+    body { display: flex; flex-direction: column; }
+    main { flex: 1 0 auto; display: flex; flex-direction: column; }
+    main > :last-child { flex-grow: 1; }
+
+    h1, h2, h3, .title { font-weight: 700; letter-spacing: -0.035em; }
+    .title { font-size: clamp(2rem, 1.3rem + 2.7vw, 3.375rem); line-height: 1.05; }
+    .eyebrow {
+      padding: 0.3rem 0.75rem;
+      border-radius: 8px;
+      background: var(--primary-soft);
+      color: var(--primary-ink);
+      font-family: var(--font-heading);
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .btn { font-family: var(--font-heading); font-weight: 600; letter-spacing: -0.01em; }
+    .btn-sticker { background: var(--sticker); color: var(--on-sticker); }
+    .btn-sticker:hover { background: color-mix(in srgb, var(--sticker) 88%, var(--text)); }
+
+    /* ---------- Cabecera ---------- */
+    .site-header .brand { font-weight: 700; letter-spacing: -0.04em; font-size: 1.375rem; }
+    /* La base ya limita el ancho; el texto va en un span para que la elipsis funcione dentro del botón flex */
+    .nav-cta span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ---------- Portada ---------- */
+    .hero { display: flex; align-items: center; padding: clamp(2.5rem, 6vw, 5rem) 0 clamp(4rem, 8vw, 6.5rem); background: var(--surface); overflow: hidden; }
+    .hero-grid { display: grid; gap: clamp(3rem, 6vw, 5rem); align-items: center; }
+    .hero-tag {
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      padding: 0.4rem 0.875rem;
+      border-radius: 10px;
+      background: var(--sticker);
+      color: var(--on-sticker);
+      font-family: var(--font-heading);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      line-height: 1.35;
+      transform: rotate(-1.5deg);
+    }
+    .hero-title {
+      max-width: 16ch;
+      font-size: clamp(2.625rem, 1.55rem + 3.9vw, 4.75rem);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+    .hero-title.long { max-width: 24ch; font-size: clamp(2.25rem, 1.5rem + 2.4vw, 3.5rem); line-height: 1.06; }
+    .hero-sub { max-width: 35rem; margin-top: 1.5rem; color: var(--muted); font-size: clamp(1.0625rem, 1rem + 0.4vw, 1.25rem); }
+    .hero .actions { margin-top: 2.25rem; }
+    .hero .btn-outline { border-color: color-mix(in srgb, var(--primary-ink) 40%, transparent); color: var(--primary-ink); background: var(--card); }
+    .hero .btn-outline:hover { border-color: var(--primary-ink); }
+
+    .hero-media { position: relative; isolation: isolate; margin: 0 1.5rem 1.5rem 0; }
+    .hero-media::before {
+      content: "";
+      position: absolute;
+      inset: 1.5rem -1.5rem -1.5rem 1.5rem;
+      z-index: -1;
+      border-radius: var(--radius-lg);
+      background: var(--primary);
+    }
+    .hero-photo { aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--radius-lg); background: var(--surface-2); }
+    .hero-photo > * { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Resultados destacados sobre la foto */
+    .result {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      max-width: 17rem;
+      padding: 0.875rem 1.125rem;
+      border-radius: var(--radius);
+      background: var(--card);
+      color: var(--text);
+      box-shadow: 0 18px 40px -18px rgb(17 26 51 / 0.45);
+    }
+    .result strong {
+      flex-shrink: 0;
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      color: var(--primary-ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .result span { font-size: 0.875rem; line-height: 1.35; color: var(--muted); }
+    .result.alt { background: var(--sticker); color: var(--on-sticker); }
+    .result.alt strong, .result.alt span { color: var(--on-sticker); }
+    .hero-media .result { position: absolute; }
+    .hero-media .result:nth-of-type(1) { top: 12%; left: -2rem; }
+    .hero-media .result:nth-of-type(2) { bottom: 9%; right: -2.5rem; }
+    .results-stack { display: grid; gap: 1rem; justify-items: start; }
+    .results-stack .result { max-width: 22rem; padding: 1.25rem 1.5rem; }
+    .results-stack .result strong { font-size: 2.75rem; }
+    .results-stack .result:nth-child(2) { margin-left: 2rem; }
+    @media (min-width: 960px) {
+      .hero-grid.with-aside { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); }
+    }
+    @media (max-width: 959px) {
+      .hero-photo { aspect-ratio: 4 / 3; }
+      .hero-media .result:nth-of-type(1) { top: 1rem; left: 1rem; }
+      .hero-media .result:nth-of-type(2) { bottom: 1rem; right: 1rem; }
+    }
+    @media (max-width: 520px) {
+      .hero-media { margin: 0 0.75rem 0.75rem 0; }
+      .hero-media::before { inset: 0.75rem -0.75rem -0.75rem 0.75rem; }
+      .hero-photo { aspect-ratio: 4 / 5; }
+      .hero-media .result { max-width: calc(100% - 2rem); padding: 0.625rem 0.875rem; }
+      .hero-media .result strong { font-size: 1.5rem; }
+      .hero-media .result span { font-size: 0.8125rem; }
+      .hero .actions .btn { flex: 1 1 100%; }
+      .results-stack .result:nth-child(2) { margin-left: 0; }
+    }
+
+    /* ---------- Método ---------- */
+    .method-grid { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 3vw, 2.5rem); }
+    .method-grid.solo { max-width: 34rem; margin-inline: auto; text-align: center; }
+    .method-grid.solo .method-icon { margin-inline: auto; }
+    .method-icon {
+      display: grid;
+      place-items: center;
+      width: 3.75rem;
+      height: 3.75rem;
+      margin-bottom: 1.5rem;
+      border-radius: 16px;
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+    .method:nth-child(4n + 2) .method-icon { background: var(--sticker); color: var(--on-sticker); }
+    .method-icon svg { width: 1.625rem; height: 1.625rem; }
+    .method-icon .icon-emoji { font-size: 1.625rem; }
+    .method h3 { font-size: 1.3125rem; font-weight: 600; letter-spacing: -0.025em; line-height: 1.2; }
+    .method p { margin-top: 0.625rem; color: var(--muted); font-size: 1rem; }
+    @media (max-width: 959px) { .method-grid { grid-template-columns: repeat(min(var(--cols), 2), minmax(0, 1fr)); } }
+    @media (max-width: 560px) {
+      .method-grid { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
+      .method { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 1.125rem; }
+      .method-icon { grid-row: span 2; width: 3rem; height: 3rem; margin: 0; border-radius: 12px; }
+      .method-icon svg { width: 1.375rem; height: 1.375rem; }
+      .method h3 { align-self: center; font-size: 1.1875rem; }
+      .method p { margin-top: 0.375rem; }
+    }
+
+    /* ---------- Cursos ---------- */
+    .courses-sec { background: var(--surface); }
+    .courses { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.25rem; }
+    .course {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 calc(100% / var(--cols) - 1.25rem);
+      min-width: min(100%, 16.5rem);
+      max-width: 26rem;
+      padding: clamp(1.5rem, 2.5vw, 2rem);
+      border-radius: var(--radius-lg);
+      background: var(--card);
+      box-shadow: 0 1px 0 var(--border);
+    }
+    .courses.solo .course { max-width: 34rem; }
+    .course-media { margin: calc(clamp(1.5rem, 2.5vw, 2rem) * -1) calc(clamp(1.5rem, 2.5vw, 2rem) * -1) 1.5rem; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+    .course-media > * { width: 100%; height: 100%; object-fit: cover; }
+    .course-badge {
+      position: absolute;
+      top: -0.75rem;
+      right: 1.25rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 8px;
+      background: var(--sticker);
+      color: var(--on-sticker);
+      font-family: var(--font-heading);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      transform: rotate(2deg);
+      box-shadow: 0 8px 18px -10px rgb(17 26 51 / 0.5);
+    }
+    .course h3 { font-size: 1.5rem; font-weight: 700; line-height: 1.15; padding-right: 0.5rem; }
+    .course-price {
+      margin-top: 0.75rem;
+      font-family: var(--font-heading);
+      font-size: clamp(1.75rem, 1.5rem + 1vw, 2.25rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      color: var(--primary-ink);
+    }
+    .course-info { flex: 1; display: grid; align-content: start; gap: 0.5rem; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px dashed var(--border); font-size: 0.9688rem; }
+    .course-info li { display: flex; gap: 0.625rem; align-items: flex-start; }
+    .course-info svg { flex-shrink: 0; width: 1.125rem; height: 1.125rem; margin-top: 0.2rem; color: var(--primary-ink); }
+    .course-info.text { color: var(--muted); }
+    .course .btn { margin-top: 1.5rem; width: 100%; }
+
+    /* ---------- Resultados ---------- */
+    .results-band { background: var(--primary); color: var(--on-primary); }
+    .results-band .section-head { margin-bottom: clamp(2.5rem, 5vw, 3.5rem); }
+    .results-band .eyebrow { background: color-mix(in srgb, var(--on-primary) 14%, transparent); color: var(--on-primary); }
+    .results-band .title { max-width: 22ch; }
+    .results-band .lead { color: inherit; opacity: 0.82; }
+    .result-list { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 2.5rem clamp(1.5rem, 3vw, 2.5rem); }
+    .big-stat strong {
+      display: block;
+      font-family: var(--font-heading);
+      font-size: clamp(3rem, 2rem + 3.6vw, 5.5rem);
+      font-weight: 700;
+      letter-spacing: -0.06em;
+      line-height: 0.95;
+      font-variant-numeric: tabular-nums;
+    }
+    .big-stat strong::after { content: ""; display: block; width: 3rem; height: 0.375rem; margin-top: 1rem; border-radius: 999px; background: var(--sticker); }
+    .big-stat span { display: block; margin-top: 1rem; max-width: 15rem; font-size: 1rem; line-height: 1.5; opacity: 0.86; }
+    .result-list.compact .big-stat strong { font-size: clamp(2.25rem, 1.6rem + 2.2vw, 3.75rem); }
+    @media (max-width: 899px) { .result-list { grid-template-columns: repeat(min(var(--cols), 2), minmax(0, 1fr)); } }
+    @media (max-width: 420px) { .big-stat strong { font-size: 2.5rem; } .big-stat span { font-size: 0.9375rem; } }
+
+    /* ---------- Profesores ---------- */
+    .teachers { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(2rem, 4vw, 3rem) clamp(1.25rem, 2.5vw, 2rem); }
+    .teacher { flex: 0 1 calc(100% / var(--cols) - 2rem); max-width: 18rem; }
+    .teacher-photo { position: relative; isolation: isolate; margin: 0 0.625rem 0.625rem 0; }
+    .teacher-photo::before { content: ""; position: absolute; inset: 0.625rem -0.625rem -0.625rem 0.625rem; z-index: -1; border-radius: var(--radius-lg); background: var(--sticker); }
+    .teacher:nth-child(even) .teacher-photo::before { background: var(--surface-2); }
+    .teacher-photo > * { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-lg); }
+    .teacher h3 { margin-top: 1.25rem; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.025em; }
+    .teacher p { margin-top: 0.25rem; color: var(--muted); font-size: 0.9375rem; line-height: 1.5; }
+    @media (max-width: 899px) { .teachers[data-cols="4"] .teacher { flex-basis: calc(50% - 2rem); } }
+    @media (max-width: 560px) {
+      .teachers:not(.no-photos) .teacher { flex-basis: calc(50% - 0.75rem); }
+      .teacher h3 { font-size: 1.0625rem; }
+      .teacher p { font-size: 0.875rem; }
+    }
+    .teachers.no-photos .teacher {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 1 1 calc(33.333% - 1.5rem);
+      min-width: min(100%, 16rem);
+      max-width: 25rem;
+      padding: 1.25rem;
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+    .teachers.no-photos .teacher:nth-child(even) .avatar { background: var(--sticker); color: var(--on-sticker); }
+    .teachers.no-photos .avatar { width: 3.75rem; height: 3.75rem; border-radius: 16px; background: var(--primary); color: var(--on-primary); font-family: var(--font-heading); font-size: 1.125rem; }
+    .teachers.no-photos .teacher h3 { margin-top: 0; font-size: 1.0625rem; }
+
+    /* ---------- Alumnos ---------- */
+    .students-sec { background: var(--surface); }
+    .reviews { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.25rem; }
+    .review {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 calc(100% / var(--cols) - 1.25rem);
+      min-width: min(100%, 17rem);
+      max-width: 34rem;
+      padding: clamp(1.5rem, 3vw, 2rem);
+      border-radius: var(--radius-lg);
+      background: var(--card);
+    }
+    .review-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      align-self: flex-start;
+      padding: 0.25rem 0.625rem 0.25rem 0.5rem;
+      border-radius: 8px;
+      background: var(--primary-soft);
+      color: var(--primary-ink);
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+    .review-tag svg { width: 0.9375rem; height: 0.9375rem; }
+    .review blockquote { flex: 1; margin-top: 1rem; font-size: 1.0625rem; line-height: 1.6; }
+    .review figcaption { display: flex; align-items: center; gap: 0.75rem; margin-top: 1.5rem; font-weight: 600; }
+    .review .avatar { width: 2.5rem; height: 2.5rem; border-radius: 12px; background: var(--sticker); color: var(--on-sticker); font-family: var(--font-heading); font-size: 0.875rem; }
+
+    /* ---------- Preguntas ---------- */
+    .faq-cols { columns: 2 22rem; column-gap: 1.25rem; }
+    .faq-cols.single { columns: auto; max-width: 48rem; margin-inline: auto; }
+    .faq-item { break-inside: avoid; margin-bottom: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); }
+    .faq-item[open] { border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); }
+    .faq-item > summary { padding: 1.25rem 1.25rem 1.25rem 1.5rem; font-family: var(--font-heading); font-size: 1.0938rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.35; }
+    .faq-item > summary .faq-icon { width: 2rem; height: 2rem; padding: 0.375rem; border-radius: 10px; background: var(--sticker); color: var(--on-sticker); }
+    .faq-answer { padding: 0 1.5rem 1.5rem; color: var(--muted); }
+
+    /* ---------- Matrícula ---------- */
+    .enrol { background: var(--sticker); color: var(--on-sticker); }
+    .enrol-inner { display: grid; gap: 2rem; align-items: center; }
+    .cta-title { max-width: 16ch; font-size: clamp(2.5rem, 1.6rem + 3.6vw, 4.75rem); font-weight: 700; letter-spacing: -0.05em; line-height: 1; }
+    .enrol p { max-width: 34rem; margin-top: 1.25rem; font-size: 1.125rem; opacity: 0.86; }
+    .enrol .actions { flex-direction: column; align-items: stretch; }
+    .enrol .btn-ink { background: var(--on-sticker); color: var(--sticker); }
+    .enrol .btn-ink:hover { background: color-mix(in srgb, var(--on-sticker) 85%, var(--sticker)); }
+    .enrol-call { text-align: center; font-size: 0.9375rem; }
+    .enrol-call a { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+    @media (min-width: 900px) {
+      .enrol-inner { grid-template-columns: minmax(0, 1fr) auto; gap: 4rem; }
+      .enrol .actions { min-width: 17rem; }
+    }
+
+    /* ---------- Contacto ---------- */
+    .contact-panel { display: flex; flex-wrap: wrap; gap: 1.25rem; }
+    .contact-card { flex: 1 1 13rem; padding: clamp(1.5rem, 3vw, 2rem); border-radius: var(--radius-lg); background: var(--surface); }
+    .contact-card .method-icon { width: 3rem; height: 3rem; margin-bottom: 1.25rem; border-radius: 14px; }
+    .contact-card .method-icon svg { width: 1.375rem; height: 1.375rem; }
+    .contact-card:nth-child(2) .method-icon { background: var(--sticker); color: var(--on-sticker); }
+    .contact-card h3 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.025em; }
+    .contact-card > p { margin-top: 0.625rem; color: var(--muted); }
+    .contact-card .link-arrow { margin-top: 0.875rem; }
+    .contact-card .hours { margin-top: 0.75rem; }
+    .contact-card .hours li { padding: 0.5rem 0; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.9375rem; }
+    .contact-card .hours li:first-child { border-top: 0; padding-top: 0; }
+    .contact-links { display: grid; gap: 0.5rem; margin-top: 0.875rem; }
+    .contact-links a { display: inline-flex; align-items: center; gap: 0.625rem; font-weight: 600; overflow-wrap: anywhere; }
+    .contact-links a:hover { color: var(--primary-ink); }
+    .contact-links svg { flex-shrink: 0; width: 1.125rem; height: 1.125rem; color: var(--primary-ink); }
+
+    /* ---------- Pie ---------- */
+    .site-footer { padding: clamp(3.5rem, 7vw, 5rem) 0 2rem; background: var(--deep); color: rgb(255 255 255 / 0.74); }
+    .footer-top { display: grid; gap: 2rem; padding-bottom: 2.5rem; border-bottom: 1px solid rgb(255 255 255 / 0.14); }
+    .footer-brand { color: #fff; font-family: var(--font-heading); font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.75rem); font-weight: 700; letter-spacing: -0.045em; line-height: 1.05; }
+    .footer-brand img { height: 3rem; width: auto; }
+    .footer-text { max-width: 32rem; margin-top: 0.875rem; font-size: 0.9375rem; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 0.625rem 1.5rem; align-content: start; }
+    .footer-links a { color: #fff; font-weight: 600; }
+    .footer-links a:hover { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--sticker); }
+    .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem; padding-top: 1.5rem; font-size: 0.875rem; }
+    @media (min-width: 820px) { .footer-top { grid-template-columns: 1fr auto; align-items: end; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main"><%= t("skip") %></a>
+
+  <%
+    function sectionHead(key, extraClass) {
+      const h = heading(key);
+      if (!h.eyebrow && !h.title && !h.subtitle) return;
+  %>
+    <div class="section-head <%= extraClass || '' %>">
+      <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+      <% if (h.title) { %><h2 class="title"><%= h.title %></h2><% } %>
+      <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+    </div>
+  <% } %>
+
+  <%
+    const c = config.contact;
+    const hero = config.hero;
+    const showContact = show("contact");
+    const hourLines = lines(c.hours);
+    const navCta = show("hero") && hero.ctaText
+      ? { text: hero.ctaText, href: hero.ctaLink }
+      : show("cta") && config.cta.buttonText ? { text: config.cta.buttonText, href: config.cta.buttonLink } : null;
+    const colsFor = (n) => n <= 3 ? n : n % 3 === 0 ? 3 : n % 4 === 0 ? 4 : n % 3 === 2 ? 3 : 4;
+    // Resultados destacados en la portada: las dos primeras cifras (si se muestran)
+    const heroResults = show("stats") ? config.stats.filter((s) => s.value).slice(0, 2) : [];
+  %>
+
+  <%
+    function resultChip(s, i) {
+  %>
+    <p class="result<%= i === 1 ? ' alt' : '' %>"><strong><%= s.value %></strong><% if (s.label) { %><span><%= s.label %></span><% } %></p>
+  <% } %>
+
+  <header class="site-header" data-section="brand">
+    <div class="container nav">
+      <a class="brand" href="#main">
+        <% if (config.brand.logo) { %><%- img(config.brand.logo, config.brand.name, { eager: true, sizes: "160px", width: 480 }) %><% } %>
+        <% if (config.brand.name || !config.brand.logo) { %><span><%= config.brand.name %></span><% } %>
+      </a>
+      <%- navLinks({ limit: 5, exclude: ["contact"] }) %>
+      <% if (navCta) { %>
+        <a class="btn btn-sticker btn-sm nav-cta" <%- linkAttrs(navCta.href) %>><span><%= navCta.text %></span></a>
+      <% } %>
+      <%- mobileMenu({ cta: navCta ? { ...navCta, class: "btn-sticker" } : undefined }) %>
+    </div>
+  </header>
+
+  <main id="main">
+    <% if (show("hero")) { const withPhoto = !!hero.backgroundImage; const aside = withPhoto || heroResults.length; %>
+    <section class="hero" id="hero" data-section="hero">
+      <div class="container hero-grid<%= aside ? ' with-aside' : '' %>">
+        <div>
+          <% if (hero.eyebrow) { %><p class="hero-tag rise"><%= hero.eyebrow %></p><% } %>
+          <% if (hero.title) { %><h1 class="hero-title rise-2<%= hero.title.length > 70 ? ' long' : '' %>"><%= hero.title %></h1><% } %>
+          <% if (hero.subtitle) { %><p class="hero-sub rise-3"><%= hero.subtitle %></p><% } %>
+          <% if (hero.ctaText || hero.secondaryCtaText) { %>
+          <div class="actions rise-3">
+            <% if (hero.ctaText) { %><a class="btn btn-primary btn-lg" <%- linkAttrs(hero.ctaLink) %>><%= hero.ctaText %></a><% } %>
+            <% if (hero.secondaryCtaText) { %><a class="btn btn-outline btn-lg" <%- linkAttrs(hero.secondaryCtaLink) %>><%= hero.secondaryCtaText %></a><% } %>
+          </div>
+          <% } %>
+        </div>
+        <% if (withPhoto) { %>
+        <div class="hero-media rise-2">
+          <div class="hero-photo"><%- img(hero.backgroundImage, "", { eager: true, sizes: "(min-width: 960px) 42vw, 100vw", width: 1600 }) %></div>
+          <% heroResults.forEach((s, i) => resultChip(s, i)) %>
+        </div>
+        <% } else if (heroResults.length) { %>
+        <div class="results-stack rise-3"><% heroResults.forEach((s, i) => resultChip(s, i)) %></div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("features")) { const n = config.features.length; %>
+    <section class="section" id="features" data-section="features">
+      <div class="container">
+        <% sectionHead("features", "center") %>
+        <ul class="method-grid<%= n === 1 ? ' solo' : '' %>" style="--cols: <%= Math.min(colsFor(n), 4) %>">
+          <% config.features.forEach((f) => { %>
+            <li class="method">
+              <span class="method-icon"><%- icon(f.icon || "sparkles") %></span>
+              <% if (f.title) { %><h3><%= f.title %></h3><% } %>
+              <% if (f.description) { %><p><%= f.description %></p><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("products")) { const n = config.products.length; %>
+    <section class="section courses-sec" id="products" data-section="products">
+      <div class="container">
+        <% sectionHead("products", "center") %>
+        <ul class="courses<%= n === 1 ? ' solo' : '' %>" style="--cols: <%= Math.min(colsFor(n), 4) %>">
+          <% config.products.forEach((p) => { const items = lines(p.description); %>
+            <li class="course">
+              <% if (p.image) { %><div class="course-media"><%- img(p.image, p.title, { sizes: "(min-width: 900px) 400px, 100vw", width: 1200 }) %></div><% } %>
+              <% if (p.badge) { %><span class="course-badge"><%= p.badge %></span><% } %>
+              <% if (p.title) { %><h3><%= p.title %></h3><% } %>
+              <% if (p.price) { %><p class="course-price"><%= p.price %></p><% } %>
+              <% if (items.length > 1) { %>
+                <ul class="course-info">
+                  <% items.forEach((line, i) => { %><li><%- icon(i === 0 ? "graduation-cap" : /\d{1,2}:\d{2}/.test(line) ? "clock" : "check", "") %><span><%= line %></span></li><% }) %>
+                </ul>
+              <% } else if (p.description) { %>
+                <p class="course-info text"><%= p.description %></p>
+              <% } else { %>
+                <span class="course-info" aria-hidden="true" style="border:0;padding:0"></span>
+              <% } %>
+              <% if (p.link) { %><a class="btn btn-primary" <%- linkAttrs(p.link) %>><%= t("reserve") %></a><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("stats")) { const n = config.stats.length; %>
+    <section class="section results-band" id="stats" data-section="stats">
+      <div class="container">
+        <% sectionHead("stats") %>
+        <ul class="result-list<%= Math.max(...config.stats.map((s) => s.value.length)) > 5 ? ' compact' : '' %>" style="--cols: <%= Math.min(colsFor(n), 4) %>">
+          <% config.stats.forEach((s) => { %>
+            <li class="big-stat">
+              <% if (s.value) { %><strong><%= s.value %></strong><% } %>
+              <% if (s.label) { %><span><%= s.label %></span><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("team")) { const withPhotos = config.team.some((m) => m.image); const cols = colsFor(config.team.length); %>
+    <section class="section" id="team" data-section="team">
+      <div class="container">
+        <% sectionHead("team", "center") %>
+        <ul class="teachers<%= withPhotos ? '' : ' no-photos' %>" data-cols="<%= cols %>" style="--cols: <%= cols %>">
+          <% config.team.forEach((m) => { %>
+            <li class="teacher">
+              <% if (withPhotos) { %>
+                <div class="teacher-photo"><%- img(m.image, m.name, { sizes: "(min-width: 1100px) 280px, 50vw", width: 800, placeholder: "user" }) %></div>
+              <% } else { %>
+                <span class="avatar" aria-hidden="true"><%= initials(m.name) %></span>
+              <% } %>
+              <div>
+                <% if (m.name) { %><h3><%= m.name %></h3><% } %>
+                <% if (m.role) { %><p><%= m.role %></p><% } %>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("testimonials")) { const n = config.testimonials.length; %>
+    <section class="section students-sec" id="testimonials" data-section="testimonials">
+      <div class="container">
+        <% sectionHead("testimonials", "center") %>
+        <div class="reviews" style="--cols: <%= n === 4 ? 2 : Math.min(colsFor(n), 3) %>">
+          <% config.testimonials.forEach((r) => { %>
+            <figure class="review">
+              <% if (r.role) { %><span class="review-tag"><%- icon("badge-check", "") %><%= r.role %></span><% } %>
+              <% if (r.quote) { %><blockquote>“<%= r.quote %>”</blockquote><% } %>
+              <% if (r.name) { %>
+              <figcaption>
+                <span class="avatar"><% if (r.avatar) { %><%- img(r.avatar, r.name, { sizes: "48px", width: 480 }) %><% } else { %><%= initials(r.name) %><% } %></span>
+                <span><%= r.name %></span>
+              </figcaption>
+              <% } %>
+            </figure>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("faqs")) { %>
+    <section class="section" id="faqs" data-section="faqs">
+      <div class="container">
+        <% sectionHead("faqs", "center") %>
+        <div class="faq-cols<%= config.faqs.length < 4 ? ' single' : '' %>">
+          <% config.faqs.forEach((f, i) => { %>
+            <details class="faq-item"<%= i === 0 ? " open" : "" %>>
+              <summary><span><%= f.question || t("question") %></span><%- icon("plus", "faq-icon") %></summary>
+              <% if (f.answer) { %><div class="faq-answer"><%- paras(f.answer) %></div><% } %>
+            </details>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("cta")) { const cta = config.cta; const callLine = showContact && c.phone; %>
+    <section class="section enrol" id="cta" data-section="cta">
+      <div class="container enrol-inner">
+        <div>
+          <% if (cta.title) { %><h2 class="cta-title"><%= cta.title %></h2><% } %>
+          <% if (cta.text) { %><p><%= cta.text %></p><% } %>
+        </div>
+        <% if (cta.buttonText || callLine) { %>
+        <div class="actions">
+          <% if (cta.buttonText) { %><a class="btn btn-lg btn-ink" <%- linkAttrs(cta.buttonLink) %>><%= cta.buttonText %></a><% } %>
+          <% if (callLine) { %><p class="enrol-call"><%= cta.buttonText ? t("orCall") : t("callUs") %> <a href="<%= telHref(c.phone) %>"><%= c.phone %></a></p><% } %>
+        </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (showContact) { %>
+    <section class="section" id="contact" data-section="contact">
+      <div class="container">
+        <% sectionHead("contact", "center") %>
+        <div class="contact-panel">
+          <% if (c.address) { %>
+          <div class="contact-card">
+            <span class="method-icon"><%- icon("map-pin") %></span>
+            <h3><%= t("whereWeAre") %></h3>
+            <p><%= c.address %></p>
+            <a class="link-arrow" <%- linkAttrs(mapsHref(c.address)) %>><%= t("directions") %><%- icon("arrow-up-right", "") %></a>
+          </div>
+          <% } %>
+          <% if (hourLines.length) { %>
+          <div class="contact-card">
+            <span class="method-icon"><%- icon("clock") %></span>
+            <h3><%= t("hours") %></h3>
+            <ul class="hours"><% hourLines.forEach((line) => { %><li><%= line %></li><% }) %></ul>
+          </div>
+          <% } %>
+          <% if (c.phone || c.email || c.whatsapp) { %>
+          <div class="contact-card">
+            <span class="method-icon"><%- icon("message-circle") %></span>
+            <h3><%= t("talkToUs") %></h3>
+            <div class="contact-links">
+              <% if (c.phone) { %><a href="<%= telHref(c.phone) %>"><%- icon("phone", "") %><%= c.phone %></a><% } %>
+              <% if (c.whatsapp) { %><a <%- linkAttrs(waHref(c.whatsapp)) %>><%- icon("message-circle", "") %><%= t("whatsapp") %></a><% } %>
+              <% if (c.email) { %><a href="<%= mailHref(c.email) %>"><%- icon("mail", "") %><%= c.email %></a><% } %>
+            </div>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+  </main>
+
+  <% if (show("footer")) { %>
+  <footer class="site-footer" id="footer" data-section="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div>
+          <p class="footer-brand"><% if (config.brand.logo && !config.brand.name) { %><%- img(config.brand.logo, "", { sizes: "160px", width: 480 }) %><% } else { %><%= config.brand.name %><% } %></p>
+          <% if (config.footer.text) { %><p class="footer-text"><%= config.footer.text %></p><% } %>
+        </div>
+        <% if (config.footer.links.length) { %>
+        <nav class="footer-links" aria-label="<%= config.brand.name || t('menu') %>">
+          <% config.footer.links.forEach((l) => { %><a <%- linkAttrs(l.url) %>><%= l.label || l.url %></a><% }) %>
+        </nav>
+        <% } %>
+      </div>
+      <div class="footer-bottom">
+        <p><%- copyright(config.brand.name) %></p>
+        <%- madeWith %>
+      </div>
+    </div>
+  </footer>
+  <% } %>
+
+  <%- foot %>
+</body>
+</html>

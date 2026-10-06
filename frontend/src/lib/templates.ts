@@ -1,19 +1,19 @@
 import type { TFunction } from "i18next";
-import type { BaseTemplate, Project, SectionKey } from "../types";
+import type { BaseTemplate, Project, SectionKey, SiteLanguage, TemplateCategory, TemplateInfo } from "../types";
 
-/**
- * Secciones que pinta cada plantilla, en el orden en que aparecen en la web.
- * Tiene que coincidir con los show("…") de backend/src/views/<plantilla>.ejs;
- * la marca va siempre en la cabecera.
- */
-export const TEMPLATE_SECTIONS: Record<string, SectionKey[]> = {
-  templateStartup: ["brand", "hero", "features", "program", "products", "about", "testimonials", "faqs", "contact", "footer"],
-  templatePortfolio: ["brand", "hero", "about", "features", "gallery", "video", "testimonials", "contact", "footer"],
-  templateShop: ["brand", "hero", "products", "features", "gallery", "testimonials", "faqs", "contact", "footer"],
-  templateAgencia: ["brand", "hero", "about", "features", "products", "testimonials", "faqs", "contact", "footer"],
-  templateBlog: ["brand", "hero", "about", "gallery", "video", "testimonials", "contact", "footer"],
-  templateRestaurante: ["brand", "hero", "about", "features", "products", "gallery", "testimonials", "faqs", "contact", "footer"],
-};
+// Las plantillas se definen en el backend (backend/src/templates): la API cuenta
+// de cada una su categoría, sus secciones en orden y sus nombres en es/en.
+
+/** Categorías de la galería de plantillas, en el orden en que se enseñan. */
+export const TEMPLATE_CATEGORIES: TemplateCategory[] = [
+  "business",
+  "food",
+  "health",
+  "creative",
+  "shop",
+  "events",
+  "education",
+];
 
 const ALL_SECTIONS: SectionKey[] = [
   "brand",
@@ -23,14 +23,21 @@ const ALL_SECTIONS: SectionKey[] = [
   "products",
   "gallery",
   "video",
+  "stats",
+  "steps",
+  "team",
   "testimonials",
   "documentation",
   "faqs",
   "inspiration",
   "program",
+  "cta",
   "contact",
   "footer",
 ];
+
+/** Idioma de la interfaz reducido a los que tienen las plantillas. */
+export const uiLanguage = (language: string): SiteLanguage => (language.startsWith("en") ? "en" : "es");
 
 // Vacía = sin texto en ningún campo, también en objetos anidados (p. ej. program.cta1).
 export const isEmpty = (value: unknown): boolean => {
@@ -41,16 +48,19 @@ export const isEmpty = (value: unknown): boolean => {
 };
 
 /** Secciones editables de un proyecto. Con una plantilla desconocida, las que tienen contenido. */
-export function sectionsOf(project: Pick<Project, "view" | "config">): SectionKey[] {
-  return TEMPLATE_SECTIONS[project.view] ?? ALL_SECTIONS.filter((key) => !isEmpty(project.config[key]));
+export function sectionsOf(project: Pick<Project, "template" | "config">): SectionKey[] {
+  return project.template?.sections ?? ALL_SECTIONS.filter((key) => !isEmpty(project.config[key]));
 }
 
 /** Nombre de una sección tal y como se llama en esa plantilla («Carta» en el restaurante…). */
-export const sectionName = (t: TFunction, view: string, key: SectionKey) =>
-  t([`templates.${view}.sections.${key}`, `editPage.sections.${key}`]);
+export const sectionName = (
+  t: TFunction,
+  language: string,
+  template: Pick<TemplateInfo, "text"> | null | undefined,
+  key: SectionKey
+) => template?.text[uiLanguage(language)]?.sections[key] ?? t(`editPage.sections.${key}`);
 
-export const templateName = (t: TFunction, tpl: BaseTemplate) =>
-  t(`templates.${tpl.view}.name`, { defaultValue: tpl.name });
+export const templateName = (language: string, tpl: BaseTemplate) => tpl.text?.[uiLanguage(language)]?.name ?? tpl.name;
 
-export const templateDescription = (t: TFunction, tpl: BaseTemplate) =>
-  t(`templates.${tpl.view}.description`, { defaultValue: tpl.description ?? "" });
+export const templateDescription = (language: string, tpl: BaseTemplate) =>
+  tpl.text?.[uiLanguage(language)]?.description ?? tpl.description ?? "";

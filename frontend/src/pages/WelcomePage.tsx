@@ -8,11 +8,14 @@ import Icon from "../components/ui/Icon";
 import { LogoMark } from "../components/ui/Logo";
 import { useAuth } from "../context/useAuth";
 import { api, templatePreviewUrl } from "../lib/api";
-import { sectionName, templateDescription, templateName } from "../lib/templates";
+import { templateDescription, templateName } from "../lib/templates";
+import type { TFunction } from "i18next";
 import type { BaseTemplate, SectionKey } from "../types";
 
 // La web de ejemplo de la portada: la plantilla Restaurante, de arriba abajo.
-const EXAMPLE_VIEW = "templateRestaurante";
+const exampleSection = (t: TFunction, key: SectionKey) => t([`welcome.sections.${key}`, `editPage.sections.${key}`]);
+// Plantillas que se enseñan en la portada (la galería completa está al crear una web)
+const FEATURED = 6;
 // hint: un esbozo del contenido de cada bloque (líneas de texto o tarjetas)
 type Example = { key: SectionKey; height: string; hidden?: boolean; selected?: boolean; hint?: "lines" | "tiles" };
 const EXAMPLE_STACK: Example[] = [
@@ -65,7 +68,7 @@ function HeroStack() {
             >
               <div className="flex items-center justify-between text-sm font-medium">
                 <span>
-                  {sectionName(t, EXAMPLE_VIEW, key)}
+                  {exampleSection(t, key)}
                   {hidden && <span className="text-andamio"> ({t("editPage.hidden")})</span>}
                 </span>
                 {key !== "brand" && <Icon name={hidden ? "eyeOff" : "eye"} className="size-4 opacity-70" />}
@@ -89,7 +92,8 @@ function HeroStack() {
 const STEPS = ["step1", "step2", "step3"] as const;
 
 export default function WelcomePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
   const { user } = useAuth();
   const [templates, setTemplates] = useState<BaseTemplate[]>([]);
 
@@ -157,22 +161,27 @@ export default function WelcomePage() {
               <h2 className="titular text-2xl">{t("welcome.templates_title")}</h2>
               <p className="mt-3 max-w-xl text-andamio">{t("welcome.templates_text")}</p>
               <ul className="mt-10 grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-                {templates.map((tpl) => (
+                {templates.slice(0, FEATURED).map((tpl) => (
                   <li key={tpl._id}>
                     <Link
                       to={startLink}
                       className="group block rounded-lg focus-visible:outline-offset-4"
-                      aria-label={t("welcome.template_link", { name: templateName(t, tpl) })}
+                      aria-label={t("welcome.template_link", { name: templateName(lang, tpl) })}
                     >
                       <div className="overflow-hidden rounded-lg border border-junta bg-papel transition-colors group-hover:border-grafito">
-                        <SiteThumbnail src={templatePreviewUrl(tpl._id)} title={templateName(t, tpl)} />
+                        <SiteThumbnail src={templatePreviewUrl(tpl._id)} title={templateName(lang, tpl)} />
                       </div>
-                      <h3 className="mt-4 font-semibold">{templateName(t, tpl)}</h3>
-                      <p className="mt-1 text-sm text-andamio">{templateDescription(t, tpl)}</p>
+                      <h3 className="mt-4 font-semibold">{templateName(lang, tpl)}</h3>
+                      <p className="mt-1 text-sm text-andamio">{templateDescription(lang, tpl)}</p>
                     </Link>
                   </li>
                 ))}
               </ul>
+              {templates.length > FEATURED && (
+                <Link to={user ? "/projects/new" : "/register"} className={buttonClass("secondary", "md", "mt-12")}>
+                  {t("welcome.all_templates", { count: templates.length })}
+                </Link>
+              )}
             </div>
           </section>
         )}

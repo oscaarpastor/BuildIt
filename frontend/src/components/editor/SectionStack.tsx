@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next";
 import Icon from "../ui/Icon";
 import { sectionName } from "../../lib/templates";
-import type { HideableSection, SectionKey } from "../../types";
+import type { HideableSection, SectionKey, TemplateInfo } from "../../types";
 
 export type EditorTarget = SectionKey | "style";
 
 type Props = {
-  view: string;
+  template: TemplateInfo | null | undefined;
   sections: SectionKey[];
   hidden: ReadonlySet<SectionKey>;
   selected: EditorTarget;
@@ -18,8 +18,8 @@ type Props = {
  * La web como una pila de bloques, igual que la «B» del logo.
  * Relleno = sección visible, discontinuo = oculta, azul = la que se está editando.
  */
-export default function SectionStack({ view, sections, hidden, selected, onSelect, onToggle }: Props) {
-  const { t } = useTranslation();
+export default function SectionStack({ template, sections, hidden, selected, onSelect, onToggle }: Props) {
+  const { t, i18n } = useTranslation();
 
   return (
     <nav aria-label={t("editPage.structure_label")} className="space-y-5">
@@ -42,7 +42,7 @@ export default function SectionStack({ view, sections, hidden, selected, onSelec
         <h2 className="mb-2 text-sm font-semibold">{t("editPage.structure")}</h2>
         <ol className="relative -mx-4 flex gap-[3px] overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0 lg:pb-0">
           {sections.map((key) => {
-            const name = sectionName(t, view, key);
+            const name = sectionName(t, i18n.language, template, key);
             const isHidden = hidden.has(key);
             const isSelected = selected === key;
             const tone = isHidden

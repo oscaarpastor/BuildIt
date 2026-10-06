@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { app, auth, createProject, createTemplate, registerUser, useTestDatabase } from "./helpers";
 import { BaseTemplate } from "../src/models/BaseTemplate";
 import { Project } from "../src/models/Project";
+import { SITE_SCRIPT_CSP_HASH } from "../src/lib/render";
 
 useTestDatabase();
 
@@ -25,7 +26,9 @@ describe("web pública", () => {
     expect(res.type).toBe("text/html");
     expect(res.text).toContain("Marca de prueba");
     expect(res.text).toContain('src="/api/public/track.js"');
-    expect(res.headers["content-security-policy"]).toContain("https://cdn.tailwindcss.com");
+    // Sin Tailwind ni CDNs de scripts: solo el propio origen y el script del menú por su hash
+    expect(res.headers["content-security-policy"]).toContain(`script-src 'self' ${SITE_SCRIPT_CSP_HASH}`);
+    expect(res.text).not.toContain("cdn.tailwindcss.com");
   });
 
   it("no pinta imágenes rotas cuando la URL está vacía", async () => {
@@ -37,7 +40,7 @@ describe("web pública", () => {
     const res = await request(app).get(siteUrl(project.publicId, true));
     expect(res.status).toBe(200);
     expect(res.text).not.toContain("track.js");
-    expect(res.text).toContain("preview-wrapper");
+    expect(res.text).toMatch(/<html lang="es" class="bi-preview">/);
   });
 
   it("no es accesible por el _id de MongoDB ni con ids inventados", async () => {
@@ -58,7 +61,7 @@ describe("web pública", () => {
       const res = await request(app).get(url);
       expect(res.text).not.toContain('id="testimonials"');
       expect(res.text).not.toContain('href="#testimonials"');
-      expect(res.text).not.toContain('id="faq"');
+      expect(res.text).not.toContain('id="faqs"');
       expect(res.text).toContain('id="features"');
     }
   });
@@ -73,8 +76,7 @@ describe("web pública", () => {
     const exportada = await request(app).get(`/api/projects/${project._id}/export`).set(auth(token));
 
     for (const res of [publica, preview, exportada]) {
-      expect(res.text).toContain('<html class="bi-dark"');
-      expect(res.text).toContain("background-color: #111827");
+      expect(res.text).toMatch(/<html lang="es" class="bi-dark( bi-preview)?">/);
     }
   });
 
@@ -138,6 +140,10 @@ describe("plantillas base", () => {
     const list = await request(app).get("/api/base-templates");
     expect(list.status).toBe(200);
     expect(list.body).toHaveLength(1);
+    // Con la información de la plantilla del catálogo (categoría, secciones y nombres)
+    expect(list.body[0]).toMatchObject({ view: "templateRestaurante", category: "food" });
+    expect(list.body[0].sections[0]).toBe("brand");
+    expect(list.body[0].text.en.name).toBe("Restaurant");
 
     const id = list.body[0]._id;
     expect((await request(app).get(`/api/base-templates/${id}/preview`)).status).toBe(200);

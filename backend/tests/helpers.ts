@@ -30,6 +30,10 @@ export function useTestDatabase() {
   });
 }
 
+// La plantilla de los tests es el Restaurante: sus secciones incluyen
+// ventajas, testimonios y preguntas, que es lo que comprueban los tests.
+export const TEST_VIEW = "templateRestaurante";
+
 export const TEMPLATE_CONFIG = {
   theme: { colorPrimary: "#6366f1", colorSecondary: "#818cf8", fontFamily: "Inter", darkMode: false },
   brand: { name: "Marca de prueba", logo: "" },
@@ -53,9 +57,9 @@ export const TEMPLATE_CONFIG = {
 
 export async function createTemplate() {
   return BaseTemplate.create({
-    name: "Startup de prueba",
+    name: "Restaurante de prueba",
     description: "Plantilla para tests",
-    view: "templateStartup",
+    view: TEST_VIEW,
     config: TEMPLATE_CONFIG,
   });
 }

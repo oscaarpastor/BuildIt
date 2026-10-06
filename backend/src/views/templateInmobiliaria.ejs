@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html <%- htmlAttrs %>>
+<head>
+  <%- head %>
+  <style>
+    /* Inmobiliaria: aspiracional y arquitectónica. Verde bosque (principal) y
+       piedra (secundario); titulares DM Serif Display, esquinas rectas, la
+       retícula de un plano sobre la foto de portada y cotas como antetítulos. */
+    :root {
+      --bg: #fbfbf9;
+      --surface: #f2efe9;
+      --surface-2: #e7e1d6;
+      --text: #17201a;
+      --muted: #5b655e;
+      --border: #e2ddd3;
+      --radius-sm: 2px;
+      --radius: 2px;
+      --radius-lg: 2px;
+      --radius-btn: 0px;
+      --header-h: 5rem;
+      /* Verde muy oscuro fijo aunque el principal sea claro */
+      --deep: color-mix(in srgb, var(--primary) 40%, #0b120e);
+      --deepest: color-mix(in srgb, var(--primary) 28%, #070b09);
+      --on-deep: #f4f2ec;
+      --on-deep-muted: rgb(244 242 236 / 0.72);
+      --line-deep: rgb(244 242 236 / 0.18);
+      --band: var(--secondary);
+      --on-band: var(--on-secondary);
+    }
+    html.bi-dark {
+      --bg: #0f1411;
+      --surface: #151b17;
+      --surface-2: #1d2520;
+      --text: #eef0eb;
+      --muted: #a7b0a9;
+      --border: #29312b;
+      --deep: color-mix(in srgb, var(--primary) 34%, #0a100c);
+      --deepest: color-mix(in srgb, var(--primary) 22%, #050806);
+      --band: color-mix(in srgb, var(--secondary) 16%, var(--bg));
+      --on-band: var(--text);
+    }
+
+    h1, h2, h3 { font-weight: 400; letter-spacing: -0.01em; }
+    .title { font-size: clamp(2.125rem, 1.4rem + 2.8vw, 3.5rem); font-weight: 400; line-height: 1.04; letter-spacing: -0.015em; }
+    /* Antetítulo con una cota de plano delante */
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--primary-ink);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      text-transform: none;
+    }
+    .eyebrow::before {
+      content: "";
+      flex-shrink: 0;
+      width: 2.25rem;
+      height: 0.5625rem;
+      background:
+        linear-gradient(currentColor, currentColor) center / 100% 1px no-repeat,
+        linear-gradient(currentColor, currentColor) left / 1px 100% no-repeat,
+        linear-gradient(currentColor, currentColor) right / 1px 100% no-repeat;
+    }
+    .lead { line-height: 1.55; }
+    .head-split { display: grid; gap: 1.25rem 4rem; max-width: none; align-items: end; }
+    .head-split .lead { max-width: 30rem; }
+    @media (min-width: 960px) {
+      .head-split { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+      .head-split .lead { margin-top: 0; justify-self: end; }
+    }
+
+    /* Cabecera: transparente sobre la portada, normal si no hay portada */
+    .brand { font-weight: 400; font-size: 1.5rem; letter-spacing: -0.01em; }
+    .site-header:not(.solid) {
+      position: absolute;
+      inset: 0 0 auto;
+      background: transparent;
+      border: 0;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      color: #fff;
+    }
+    .site-header:not(.solid) .nav-links a { color: rgb(255 255 255 / 0.84); }
+    .site-header:not(.solid) .nav-links a:hover { color: #fff; }
+    .site-header:not(.solid) .nav-cta { background: transparent; border-color: rgb(255 255 255 / 0.6); color: #fff; }
+    .site-header:not(.solid) .nav-cta:hover { background: #fff; color: #17201a; }
+    .site-header.solid .nav-links a { color: var(--muted); }
+    .menu-panel { color: var(--text); }
+    .btn { letter-spacing: 0.01em; }
+
+    /* Portada */
+    .hero {
+      position: relative;
+      isolation: isolate;
+      display: flex;
+      align-items: flex-end;
+      min-height: min(100svh, 920px);
+      padding: calc(var(--header-h) + 4rem) 0 clamp(2.75rem, 6vw, 4.5rem);
+      overflow: hidden;
+      background:
+        radial-gradient(60% 70% at 80% 20%, color-mix(in srgb, var(--secondary) 22%, transparent), transparent 70%),
+        var(--deep);
+      color: #fff;
+    }
+    .hero-media { position: absolute; inset: 0; z-index: -3; }
+    .hero-media img { width: 100%; height: 100%; object-fit: cover; }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background:
+        linear-gradient(to top, rgb(7 12 9 / 0.86) 0%, rgb(7 12 9 / 0.42) 48%, rgb(7 12 9 / 0.1) 100%),
+        linear-gradient(to bottom, rgb(7 12 9 / 0.5), transparent 26%);
+    }
+    .hero.no-media::before { background: none; }
+    /* Retícula de cuatro columnas alineada con el contenedor */
+    .hero-lines { position: absolute; inset: 0; z-index: -1; pointer-events: none; --grid-line: rgb(255 255 255 / 0.14); }
+    .hero.no-media .hero-lines { --grid-line: rgb(255 255 255 / 0.1); }
+    .hero-lines span {
+      display: block;
+      width: calc(min(100%, var(--container)) - 2 * var(--gutter));
+      height: 100%;
+      margin-inline: auto;
+      border-inline: 1px solid var(--grid-line);
+      background:
+        linear-gradient(var(--grid-line), var(--grid-line)) 25% 0 / 1px 100% no-repeat,
+        linear-gradient(var(--grid-line), var(--grid-line)) 50% 0 / 1px 100% no-repeat,
+        linear-gradient(var(--grid-line), var(--grid-line)) 75% 0 / 1px 100% no-repeat;
+    }
+    .hero-inner { display: grid; gap: 2rem; }
+    .hero .eyebrow { margin-bottom: 1.5rem; color: rgb(255 255 255 / 0.88); }
+    .hero-title { max-width: 14ch; font-size: clamp(3rem, 1.5rem + 5.4vw, 6.75rem); font-weight: 400; line-height: 0.98; letter-spacing: -0.02em; }
+    .hero-title.is-long { max-width: 24ch; font-size: clamp(2.125rem, 1.5rem + 2.4vw, 3.75rem); line-height: 1.06; }
+    .hero-sub { max-width: 34rem; color: rgb(255 255 255 / 0.86); font-size: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem); line-height: 1.55; }
+    .hero-side .actions { margin-top: 1.75rem; }
+    .btn-white { background: #fff; color: #17201a; }
+    .btn-white:hover { background: rgb(255 255 255 / 0.88); }
+    @media (min-width: 1000px) {
+      .hero-inner { grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); gap: 0; align-items: end; }
+      .hero-main { padding-right: 2rem; }
+      .hero-side { padding-left: 1.75rem; }
+      .hero-side .actions { flex-direction: column; align-items: stretch; }
+      .hero-side .btn { width: 100%; }
+    }
+
+    /* Inmuebles */
+    .prop-grid { display: grid; gap: clamp(2.5rem, 4vw, 3.25rem) clamp(1.25rem, 2.5vw, 2rem); }
+    .prop { position: relative; display: flex; flex-direction: column; min-width: 0; }
+    .prop-media { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--surface-2); }
+    .prop-media > img, .prop-media > .ph { width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--ease); }
+    .prop:hover .prop-media > img { transform: scale(1.025); }
+    .prop-badge {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      max-width: calc(100% - 2rem);
+      padding: 0.3125rem 0.75rem;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .prop-body { display: flex; flex-direction: column; flex: 1; padding-top: 1.25rem; }
+    .prop-price { font-family: var(--font-heading); font-size: clamp(1.625rem, 1.4rem + 0.6vw, 2rem); line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .prop-title { margin-top: 0.375rem; font-family: var(--font-body); font-size: 1.0625rem; font-weight: 600; line-height: 1.35; letter-spacing: 0; }
+    .prop-title a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+    .prop-title a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .prop-specs { margin-top: 0.875rem; padding-top: 0.875rem; border-top: 1px solid var(--border); font-size: 0.9375rem; font-weight: 500; }
+    .prop-note { margin-top: 0.25rem; color: var(--muted); font-size: 0.9375rem; line-height: 1.5; }
+    .prop-more { display: inline-flex; align-items: center; gap: 0.375rem; margin-top: auto; padding-top: 1rem; color: var(--primary-ink); font-size: 0.9375rem; font-weight: 600; }
+    .prop-more svg { width: 1rem; height: 1rem; }
+    .no-media-list .prop { padding: 1.75rem; border: 1px solid var(--border); background: var(--bg); }
+    .no-media-list .prop-body { padding-top: 0; }
+    .prop-badge.is-static { position: static; align-self: flex-start; margin-bottom: 1rem; background: var(--surface); }
+    /* Si un inmueble se queda solo en su fila, pasa a horizontal y a todo el ancho */
+    @media (min-width: 640px) and (max-width: 1023.98px) {
+      .prop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .prop:last-child:nth-child(odd) { grid-column: 1 / -1; }
+      .prop-grid:not(.no-media-list) .prop:last-child:nth-child(odd) { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 2rem; align-items: center; }
+      .prop-grid:not(.no-media-list) .prop:last-child:nth-child(odd) .prop-body { padding-top: 0; }
+    }
+    @media (min-width: 1024px) {
+      .prop-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      .prop { grid-column: span 2; }
+      .prop:nth-child(3n + 1):nth-last-child(2),
+      .prop:nth-child(3n + 1):nth-last-child(2) + .prop { grid-column: span 3; }
+      .prop:nth-child(3n + 1):last-child { grid-column: 1 / -1; }
+      .prop-grid:not(.no-media-list) .prop:nth-child(3n + 1):last-child { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 3rem; align-items: center; }
+      .prop-grid:not(.no-media-list) .prop:nth-child(3n + 1):last-child .prop-media { aspect-ratio: 16 / 10; }
+      .prop-grid:not(.no-media-list) .prop:nth-child(3n + 1):last-child .prop-body { padding-top: 0; }
+      .prop-grid:not(.no-media-list) .prop:nth-child(3n + 1):last-child .prop-price { font-size: clamp(2rem, 1.5rem + 1.2vw, 2.75rem); }
+    }
+
+    /* Servicios: filas de ficha con cabecera fija a la izquierda */
+    .services { background: var(--surface); }
+    .svc-wrap { display: grid; gap: 1rem; }
+    .svc-list { border-bottom: 1px solid var(--border); }
+    .svc-row { display: grid; grid-template-columns: 3.25rem minmax(0, 1fr); gap: 0 1.5rem; padding: 2rem 0; border-top: 1px solid var(--border); }
+    .svc-row.no-icon { grid-template-columns: minmax(0, 1fr); }
+    .svc-icon {
+      display: grid;
+      place-items: center;
+      width: 3.25rem;
+      height: 3.25rem;
+      border: 1px solid color-mix(in srgb, var(--primary-ink) 35%, transparent);
+      border-radius: 50%;
+      color: var(--primary-ink);
+    }
+    .svc-icon svg { width: 1.375rem; height: 1.375rem; }
+    .svc-row h3 { font-size: clamp(1.5rem, 1.3rem + 0.6vw, 1.875rem); line-height: 1.15; }
+    .svc-row p { max-width: 36rem; margin-top: 0.5rem; color: var(--muted); }
+    @media (min-width: 960px) {
+      .svc-wrap { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 5rem; }
+      .svc-wrap .section-head { position: sticky; top: 2.5rem; align-self: start; margin-bottom: 0; }
+      .svc-wrap.no-head { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    /* Cifras: banda de piedra */
+    .stats { padding-block: clamp(3.5rem, 7vw, 5.5rem); background: var(--band); color: var(--on-band); }
+    .stats .eyebrow { color: var(--on-band); }
+    .stats .lead { color: color-mix(in srgb, var(--on-band) 75%, var(--band)); }
+    .stats .section-head { margin-bottom: clamp(2rem, 4vw, 3rem); }
+    .stat-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(max(11rem, calc((100% - 3 * 2rem) / 4)), 1fr)); gap: 2rem; }
+    .stat { container-type: inline-size; min-width: 0; padding-top: 1.25rem; border-top: 1px solid color-mix(in srgb, var(--on-band) 35%, transparent); }
+    .stat-value {
+      display: block;
+      font-family: var(--font-heading);
+      font-weight: 400;
+      font-size: min(clamp(2.75rem, 2rem + 2.6vw, 4.25rem), 24cqi);
+      line-height: 1;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-label { display: block; margin-top: 0.75rem; color: color-mix(in srgb, var(--on-band) 78%, var(--band)); font-size: 0.9375rem; line-height: 1.45; }
+
+    /* La agencia: foto a sangre a la izquierda */
+    .about { display: grid; }
+    .about-media { aspect-ratio: 4 / 3; overflow: hidden; background: var(--surface-2); }
+    .about-media > img, .about-media > .ph { width: 100%; height: 100%; object-fit: cover; }
+    .about-copy { padding: var(--section-y) var(--gutter); }
+    .about-title { font-size: clamp(2.125rem, 1.4rem + 2.8vw, 3.5rem); line-height: 1.04; letter-spacing: -0.015em; }
+    .about .prose { margin-top: 1.5rem; color: var(--muted); font-size: 1.0625rem; }
+    .about .prose p:first-child { color: var(--text); font-size: 1.1875rem; }
+    .about.no-media .about-copy { width: 100%; max-width: var(--container); margin-inline: auto; }
+    @media (min-width: 960px) {
+      .about:not(.no-media) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+      .about-media { aspect-ratio: auto; min-height: 36rem; }
+      .about:not(.no-media) .about-copy {
+        align-self: center;
+        padding-left: clamp(3rem, 6vw, 6rem);
+        padding-right: max(var(--gutter), calc(100% - var(--container) / 2 + var(--gutter)));
+      }
+      .about.no-media .about-copy { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 5rem; align-items: start; }
+      .about.no-media .prose { margin-top: 0; }
+    }
+
+    /* Agentes */
+    .team { background: var(--surface); }
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr)); gap: 2.25rem 1.25rem; }
+    .agent { min-width: 0; }
+    .agent-photo { aspect-ratio: 4 / 5; overflow: hidden; background: var(--surface-2); }
+    .agent-photo > img, .agent-photo > .ph { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; filter: saturate(0.9); }
+    .agent-initials { display: grid; place-items: center; height: 100%; background: color-mix(in srgb, var(--secondary) 45%, var(--surface-2)); color: color-mix(in srgb, var(--text) 75%, var(--secondary)); font-family: var(--font-heading); font-size: clamp(2.5rem, 2rem + 2vw, 3.75rem); }
+    .agent h3 { margin-top: 1rem; font-size: 1.375rem; line-height: 1.2; }
+    .agent p { margin-top: 0.25rem; color: var(--muted); font-size: 0.9375rem; line-height: 1.45; }
+    .team-grid.no-photos { gap: 0 2rem; }
+    .team-grid.no-photos .agent { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 0; border-top: 1px solid var(--border); }
+    .team-grid.no-photos .avatar { width: 3.5rem; height: 3.5rem; background: color-mix(in srgb, var(--secondary) 45%, var(--surface-2)); color: color-mix(in srgb, var(--text) 75%, var(--secondary)); font-family: var(--font-heading); font-weight: 400; font-size: 1.25rem; }
+    .team-grid.no-photos h3 { margin-top: 0; }
+    @media (min-width: 640px) { .team-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 14.5rem), 1fr)); gap: 2.5rem 1.5rem; } }
+
+    /* Opiniones */
+    .quote-grid { display: grid; gap: 0 clamp(2rem, 5vw, 4.5rem); }
+    .quote { display: flex; flex-direction: column; min-width: 0; padding: 2rem 0 2.5rem; border-top: 1px solid var(--border); }
+    .quote blockquote { flex: 1; font-family: var(--font-heading); font-size: clamp(1.3125rem, 1.15rem + 0.55vw, 1.625rem); line-height: 1.35; }
+    .quote figcaption { display: flex; align-items: center; gap: 0.875rem; margin-top: 1.5rem; }
+    .quote figcaption .avatar { width: 2.75rem; height: 2.75rem; }
+    .quote strong { display: block; font-weight: 600; line-height: 1.3; }
+    .quote figcaption span:not(.avatar) { display: block; color: var(--muted); font-size: 0.875rem; }
+    .quote-grid.single .quote blockquote { max-width: 34ch; font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.75rem); line-height: 1.2; }
+    @media (min-width: 820px) {
+      .quote-grid:not(.single) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .quote:last-child:nth-child(odd):not(:only-child) { grid-column: 1 / -1; }
+      .quote:last-child:nth-child(odd):not(:only-child) blockquote { max-width: 46rem; }
+    }
+
+    /* Valoración: banda verde con marco de plano */
+    .cta { padding-block: clamp(4rem, 8vw, 6.5rem); background: var(--deep); color: var(--on-deep); }
+    .cta-frame { position: relative; display: grid; gap: 2rem 4rem; padding: clamp(2rem, 6vw, 4.5rem); border: 1px solid var(--line-deep); }
+    .cta-frame::before, .cta-frame::after {
+      content: "";
+      position: absolute;
+      width: 1.25rem;
+      height: 1.25rem;
+      background:
+        linear-gradient(var(--on-deep), var(--on-deep)) center / 100% 1px no-repeat,
+        linear-gradient(var(--on-deep), var(--on-deep)) center / 1px 100% no-repeat;
+    }
+    .cta-frame::before { top: -0.625rem; left: -0.625rem; }
+    .cta-frame::after { bottom: -0.625rem; right: -0.625rem; }
+    .cta-title { font-size: clamp(2.25rem, 1.4rem + 3.4vw, 4.25rem); line-height: 1.02; letter-spacing: -0.02em; }
+    .cta-copy p { max-width: 32rem; color: var(--on-deep-muted); font-size: 1.125rem; }
+    .cta-copy .actions { margin-top: 1.75rem; }
+    .btn-band { background: var(--secondary); color: var(--on-secondary); }
+    .btn-band:hover { background: color-mix(in srgb, var(--secondary) 85%, #fff); }
+    @media (min-width: 960px) { .cta-frame { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: end; } }
+
+    /* Contacto: tabla de datos */
+    .contact-grid { display: grid; gap: 2.5rem clamp(3rem, 6vw, 6rem); }
+    .contact-grid .section-head { margin-bottom: 0; }
+    .contact-table { border-bottom: 1px solid var(--border); }
+    .contact-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.25rem 2rem; padding: 1.25rem 0; border-top: 1px solid var(--border); }
+    .contact-row dt { color: var(--muted); font-size: 0.875rem; font-weight: 500; }
+    .contact-row dd { min-width: 0; font-size: 1.0625rem; }
+    .contact-row a { overflow-wrap: anywhere; }
+    .contact-row a:hover { color: var(--primary-ink); text-decoration: underline; text-underline-offset: 3px; }
+    .contact-row .big { font-family: var(--font-heading); font-size: clamp(1.625rem, 1.3rem + 1vw, 2.125rem); line-height: 1.15; }
+    .contact-row .link-arrow { margin-top: 0.375rem; font-size: 0.9375rem; }
+    .contact-row ul li + li { margin-top: 0.25rem; }
+    @media (min-width: 560px) { .contact-row { grid-template-columns: 8.5rem minmax(0, 1fr); align-items: baseline; } }
+    @media (min-width: 960px) { .contact-grid.has-head { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+
+    /* Pie */
+    .site-footer { padding: clamp(4rem, 8vw, 6rem) 0 2rem; background: var(--deepest); color: var(--on-deep-muted); }
+    .footer-top { display: grid; gap: 2.5rem; padding-bottom: 3rem; border-bottom: 1px solid var(--line-deep); }
+    .footer-brand { color: var(--on-deep); font-family: var(--font-heading); font-size: clamp(2.25rem, 1.6rem + 2.6vw, 3.75rem); line-height: 1; letter-spacing: -0.015em; }
+    .footer-brand img { height: 3rem; width: auto; }
+    .footer-text { max-width: 28rem; margin-top: 1rem; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 0.75rem 1.75rem; align-content: start; }
+    .footer-links a { color: var(--on-deep); font-weight: 500; }
+    .footer-links a:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem; padding-top: 1.75rem; font-size: 0.875rem; }
+    @media (min-width: 820px) { .footer-top { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main"><%= t("skip") %></a>
+
+  <%
+    // Cabecera de sección: antetítulo, título y entradilla (solo lo que tenga texto)
+    function sectionHead(key, extraClass) {
+      const h = heading(key);
+      if (!h.eyebrow && !h.title && !h.subtitle) return;
+      const split = (extraClass || "").includes("head-split");
+  %>
+    <div class="section-head <%= extraClass || '' %>">
+      <% if (split) { %><div><% } %>
+      <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+      <% if (h.title) { %><h2 class="title"><%= h.title %></h2><% } %>
+      <% if (split) { %></div><% } %>
+      <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+    </div>
+  <% } %>
+  <% const hasHead = (key) => { const h = heading(key); return Boolean(h.eyebrow || h.title || h.subtitle); }; %>
+
+  <%
+    const c = config.contact;
+    const showContact = show("contact");
+    const hourLines = lines(c.hours);
+    const hero = config.hero;
+    const showHero = show("hero");
+  %>
+
+  <header class="site-header<%= showHero ? '' : ' solid' %>" data-section="brand">
+    <div class="container nav">
+      <a class="brand" href="#main">
+        <% if (config.brand.logo) { %><%- img(config.brand.logo, config.brand.name, { eager: true, sizes: "160px", width: 480 }) %><% } %>
+        <% if (config.brand.name || !config.brand.logo) { %><span><%= config.brand.name %></span><% } %>
+      </a>
+      <%- navLinks({ limit: 5, exclude: ["contact", "stats"] }) %>
+      <% if (showContact && (c.phone || c.email)) { %>
+        <a class="btn btn-sm <%= showHero ? '' : 'btn-primary' %> nav-cta" href="#contact"><%= t("contact") %></a>
+      <% } %>
+      <%- mobileMenu({ cta: showContact && (c.phone || c.email) ? { text: t("contact"), href: "#contact" } : undefined }) %>
+    </div>
+  </header>
+
+  <main id="main">
+    <% if (showHero) { const hasMedia = Boolean(hero.backgroundImage); const hasSide = Boolean(hero.subtitle || hero.ctaText || hero.secondaryCtaText); %>
+    <section class="hero<%= hasMedia ? '' : ' no-media' %>" id="hero" data-section="hero">
+      <% if (hasMedia) { %><div class="hero-media"><%- img(hero.backgroundImage, "", { eager: true, width: 2000 }) %></div><% } %>
+      <div class="hero-lines" aria-hidden="true"><span></span></div>
+      <div class="container hero-inner">
+        <div class="hero-main">
+          <% if (hero.eyebrow) { %><p class="eyebrow rise"><%= hero.eyebrow %></p><% } %>
+          <% if (hero.title) { %><h1 class="hero-title rise-2<%= hero.title.length > 70 ? ' is-long' : '' %>"><%= hero.title %></h1><% } %>
+        </div>
+        <% if (hasSide) { %>
+        <div class="hero-side rise-3">
+          <% if (hero.subtitle) { %><p class="hero-sub"><%= hero.subtitle %></p><% } %>
+          <% if (hero.ctaText || hero.secondaryCtaText) { %>
+          <div class="actions">
+            <% if (hero.ctaText) { %><a class="btn btn-white btn-lg" <%- linkAttrs(hero.ctaLink) %>><%= hero.ctaText %></a><% } %>
+            <% if (hero.secondaryCtaText) { %><a class="btn btn-ghost-light btn-lg" <%- linkAttrs(hero.secondaryCtaLink) %>><%= hero.secondaryCtaText %></a><% } %>
+          </div>
+          <% } %>
+        </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("products")) { const anyImg = config.products.some((p) => p.image); %>
+    <section class="section props" id="products" data-section="products">
+      <div class="container">
+        <% sectionHead("products", "head-split") %>
+        <div class="prop-grid<%= anyImg ? '' : ' no-media-list' %>">
+          <% config.products.forEach((p) => { const specs = lines(p.description); %>
+            <article class="prop">
+              <% if (anyImg) { %>
+              <div class="prop-media">
+                <%- img(p.image, p.title, { sizes: "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw", width: 1200, placeholder: "house" }) %>
+                <% if (p.badge) { %><span class="prop-badge"><%= p.badge %></span><% } %>
+              </div>
+              <% } %>
+              <div class="prop-body">
+                <% if (!anyImg && p.badge) { %><span class="prop-badge is-static"><%= p.badge %></span><% } %>
+                <% if (p.price) { %><p class="prop-price"><%= p.price %></p><% } %>
+                <% if (p.title) { %><h3 class="prop-title"><% if (p.link) { %><a <%- linkAttrs(p.link) %>><%= p.title %></a><% } else { %><%= p.title %><% } %></h3><% } %>
+                <% if (specs.length) { %>
+                  <p class="prop-specs"><%= specs[0] %></p>
+                  <% specs.slice(1).forEach((line) => { %><p class="prop-note"><%= line %></p><% }) %>
+                <% } %>
+                <% if (p.link) { %><span class="prop-more" aria-hidden="true"><%= t("askAbout") %><%- icon("arrow-up-right", "") %></span><% } %>
+              </div>
+            </article>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("features")) { %>
+    <section class="section services" id="features" data-section="features">
+      <div class="container svc-wrap<%= hasHead('features') ? '' : ' no-head' %>">
+        <% sectionHead("features") %>
+        <ul class="svc-list">
+          <% config.features.forEach((f) => { %>
+            <li class="svc-row<%= f.icon ? '' : ' no-icon' %>">
+              <% if (f.icon) { %><span class="svc-icon"><%- icon(f.icon) %></span><% } %>
+              <div>
+                <% if (f.title) { %><h3><%= f.title %></h3><% } %>
+                <% if (f.description) { %><p><%= f.description %></p><% } %>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("stats")) { %>
+    <section class="stats" id="stats" data-section="stats">
+      <div class="container">
+        <% sectionHead("stats", "head-split") %>
+        <ul class="stat-list">
+          <% config.stats.forEach((s) => { %>
+            <li class="stat">
+              <% if (s.value) { %><strong class="stat-value"><%= s.value %></strong><% } %>
+              <% if (s.label) { %><span class="stat-label"><%= s.label %></span><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("about")) { const a = config.about; const h = heading("about"); %>
+    <section class="about<%= a.image ? '' : ' no-media' %>" id="about" data-section="about">
+      <% if (a.image) { %><div class="about-media"><%- img(a.image, a.heading, { sizes: "(min-width: 960px) 50vw, 100vw", width: 1600 }) %></div><% } %>
+      <div class="about-copy">
+        <div>
+          <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+          <% if (a.heading) { %><h2 class="about-title"><%= a.heading %></h2><% } %>
+          <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+        </div>
+        <% if (a.content) { %><div class="prose"><%- paras(a.content) %></div><% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("team")) { const anyPhoto = config.team.some((m) => m.image); %>
+    <section class="section team" id="team" data-section="team">
+      <div class="container">
+        <% sectionHead("team", "head-split") %>
+        <ul class="team-grid<%= anyPhoto ? '' : ' no-photos' %>">
+          <% config.team.forEach((m) => { %>
+            <li class="agent">
+              <% if (anyPhoto) { %>
+                <div class="agent-photo"><% if (m.image) { %><%- img(m.image, m.name, { sizes: "(min-width: 640px) 280px, 50vw", width: 800 }) %><% } else { %><span class="agent-initials" aria-hidden="true"><%= initials(m.name) %></span><% } %></div>
+              <% } else { %>
+                <span class="avatar" aria-hidden="true"><%= initials(m.name) %></span>
+              <% } %>
+              <div>
+                <% if (m.name) { %><h3><%= m.name %></h3><% } %>
+                <% if (m.role) { %><p><%= m.role %></p><% } %>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("testimonials")) { const single = config.testimonials.length === 1; %>
+    <section class="section reviews" id="testimonials" data-section="testimonials">
+      <div class="container">
+        <% sectionHead("testimonials") %>
+        <div class="quote-grid<%= single ? ' single' : '' %>">
+          <% config.testimonials.forEach((r) => { %>
+            <figure class="quote">
+              <% if (r.quote) { %><blockquote>«<%= r.quote %>»</blockquote><% } %>
+              <% if (r.name || r.role) { %>
+              <figcaption>
+                <% if (r.avatar) { %><span class="avatar"><%- img(r.avatar, "", { sizes: "44px", width: 480 }) %></span><% } %>
+                <div><% if (r.name) { %><strong><%= r.name %></strong><% } %><% if (r.role) { %><span><%= r.role %></span><% } %></div>
+              </figcaption>
+              <% } %>
+            </figure>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("cta")) { const cta = config.cta; %>
+    <section class="cta" id="cta" data-section="cta">
+      <div class="container">
+        <div class="cta-frame">
+          <% if (cta.title) { %><h2 class="cta-title"><%= cta.title %></h2><% } %>
+          <% if (cta.text || cta.buttonText) { %>
+          <div class="cta-copy">
+            <% if (cta.text) { %><p><%= cta.text %></p><% } %>
+            <% if (cta.buttonText) { %><div class="actions"><a class="btn btn-band btn-lg" <%- linkAttrs(cta.buttonLink) %>><%= cta.buttonText %></a></div><% } %>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (showContact) { const head = hasHead("contact"); %>
+    <section class="section contact" id="contact" data-section="contact">
+      <div class="container contact-grid<%= head ? ' has-head' : '' %>">
+        <% sectionHead("contact") %>
+        <dl class="contact-table">
+          <% if (c.phone) { %>
+          <div class="contact-row"><dt><%= t("phone") %></dt><dd><a class="big" href="<%= telHref(c.phone) %>"><%= c.phone %></a></dd></div>
+          <% } %>
+          <% if (c.whatsapp) { %>
+          <div class="contact-row"><dt><%= t("whatsapp") %></dt><dd><a <%- linkAttrs(waHref(c.whatsapp)) %>><%= t("writeWhatsapp") %></a></dd></div>
+          <% } %>
+          <% if (c.email) { %>
+          <div class="contact-row"><dt><%= t("email") %></dt><dd><a href="<%= mailHref(c.email) %>"><%= c.email %></a></dd></div>
+          <% } %>
+          <% if (c.address) { %>
+          <div class="contact-row"><dt><%= t("office") %></dt><dd><%= c.address %><br><a class="link-arrow" <%- linkAttrs(mapsHref(c.address)) %>><%= t("directions") %><%- icon("arrow-up-right", "") %></a></dd></div>
+          <% } %>
+          <% if (hourLines.length) { %>
+          <div class="contact-row"><dt><%= t("hours") %></dt><dd><ul><% hourLines.forEach((line) => { %><li><%= line %></li><% }) %></ul></dd></div>
+          <% } %>
+        </dl>
+      </div>
+    </section>
+    <% } %>
+  </main>
+
+  <% if (show("footer")) { %>
+  <footer class="site-footer" id="footer" data-section="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div>
+          <p class="footer-brand"><% if (config.brand.logo && !config.brand.name) { %><%- img(config.brand.logo, "", { sizes: "160px", width: 480 }) %><% } else { %><%= config.brand.name %><% } %></p>
+          <% if (config.footer.text) { %><p class="footer-text"><%= config.footer.text %></p><% } %>
+        </div>
+        <% if (config.footer.links.length) { %>
+        <nav class="footer-links" aria-label="<%= config.brand.name %>">
+          <% config.footer.links.forEach((l) => { %><a <%- linkAttrs(l.url) %>><%= l.label || l.url %></a><% }) %>
+        </nav>
+        <% } %>
+      </div>
+      <div class="footer-bottom">
+        <p><%- copyright(config.brand.name) %></p>
+        <%- madeWith %>
+      </div>
+    </div>
+  </footer>
+  <% } %>
+
+  <%- foot %>
+</body>
+</html>

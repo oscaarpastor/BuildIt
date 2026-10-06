@@ -5,11 +5,13 @@ import cors from "cors";
 import helmet from "helmet";
 import { config } from "./config";
 import { apiNotFound, errorHandler } from "./middleware/errors";
+import { SITE_SCRIPT_CSP_HASH } from "./lib/render";
 import authRoutes from "./routes/auth";
 import userRoutes from "./routes/user";
 import projectRoutes from "./routes/project";
 import baseTemplateRoutes from "./routes/baseTemplate";
 import publicRoutes from "./routes/public";
+import devRoutes from "./routes/dev";
 
 // Carpeta donde el build de producción copia el frontend compilado.
 export const PUBLIC_DIR = path.join(__dirname, "..", "public");
@@ -34,13 +36,14 @@ const appSecurity = helmet({
   },
 });
 
-// CSP de las webs generadas: necesitan Tailwind (CDN), Google Fonts, imágenes
-// y vídeos externos, y solo se pueden incrustar desde la propia app.
+// CSP de las webs generadas: su único script en línea (el del menú móvil, por
+// su hash) y el de estadísticas, Google Fonts, imágenes y vídeos externos
+// (YouTube, Vimeo). Solo se pueden incrustar desde la propia app.
 const siteSecurity = helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'none'"],
-      scriptSrc: ["'self'", "https://cdn.tailwindcss.com"],
+      scriptSrc: ["'self'", SITE_SCRIPT_CSP_HASH],
       styleSrc: ["'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["https://fonts.gstatic.com"],
       imgSrc: ["https:", "http:", "data:"],
@@ -77,6 +80,8 @@ export function createApp() {
     req.path.endsWith("/preview") ? siteSecurity(req, res, next) : appSecurity(req, res, next)
   );
   app.use("/api/base-templates", baseTemplateRoutes);
+  // Revisión de plantillas desde el código, sin base de datos (nunca en producción)
+  if (!config.isProduction) app.use("/api/dev", siteSecurity, devRoutes);
 
   // API privada
   app.use("/api", appSecurity);

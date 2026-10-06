@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html <%- htmlAttrs %>>
+<head>
+  <%- head %>
+  <style>
+    /* Gimnasio: energía de sala de fuerza. Negro casi puro y un acento ácido
+       (principal); titulares condensados en mayúsculas, enormes, esquinas
+       duras, una cinta con las disciplinas y franjas de seguridad. */
+    :root {
+      --bg: #efefea;
+      --surface: #e4e4de;
+      --surface-2: #d8d8d0;
+      --text: #0d0e0e;
+      --muted: #55575a;
+      --border: #cfcfc6;
+      --radius-sm: 2px;
+      --radius: 3px;
+      --radius-lg: 4px;
+      --radius-btn: 2px;
+      --header-h: 4.75rem;
+      /* Secciones oscuras fijas: siempre oscuras sea cual sea el color secundario */
+      --ink: color-mix(in srgb, var(--secondary) 8%, #0a0a0a);
+      --ink-2: color-mix(in srgb, var(--secondary) 10%, #161616);
+      --on-ink: #f3f3ee;
+      --on-ink-muted: rgb(243 243 238 / 0.68);
+      --ink-line: rgb(255 255 255 / 0.13);
+      --accent: var(--primary-on-dark);
+    }
+    html.bi-dark {
+      --bg: #0b0b0b;
+      --surface: #131313;
+      --surface-2: #1c1c1c;
+      --text: #f1f1ec;
+      --muted: #a3a49e;
+      --border: #282828;
+      --ink: color-mix(in srgb, var(--secondary) 7%, #171717);
+      --ink-2: color-mix(in srgb, var(--secondary) 9%, #202020);
+    }
+
+    /* Tipografía: titulares condensados en mayúsculas. font-synthesis evita la
+       negrita falsa en letras de un solo peso (Anton, Bebas Neue). */
+    h1, h2, h3, .brand, .display, .btn, .faq-item > summary {
+      font-weight: 700;
+      font-synthesis: none;
+    }
+    h1, h2, h3, .display { text-transform: uppercase; letter-spacing: 0.004em; line-height: 1.06; }
+    .title { max-width: 18ch; font-size: clamp(2.5rem, 1.25rem + 4.2vw, 5rem); }
+    .title.is-long { max-width: 24ch; font-size: clamp(2.125rem, 1.25rem + 2.8vw, 3.75rem); }
+    .title.is-xlong { max-width: 32ch; font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.75rem); }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.625rem;
+      margin-bottom: 1.25rem;
+      color: var(--text);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .eyebrow::before { content: ""; flex-shrink: 0; width: 0.75rem; height: 0.75rem; background: var(--primary); }
+    .lead { max-width: 34rem; }
+    .section-head { max-width: none; }
+    @media (min-width: 1000px) {
+      .section-head.has-lead { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 4rem; align-items: end; }
+      .section-head.has-lead .lead { margin-top: 0; }
+    }
+
+    /* Botones: misma letra que los titulares, en mayúsculas */
+    .btn { font-family: var(--font-heading); font-size: 1.0625rem; letter-spacing: 0.035em; text-transform: uppercase; }
+    .btn-lg { min-height: 3.75rem; padding: 1rem 2rem; font-size: 1.25rem; }
+    .btn-line { border-color: rgb(255 255 255 / 0.4); color: var(--on-ink); }
+    .btn-line:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-ink { background: var(--ink); color: var(--on-ink); }
+    .btn-ink:hover { background: color-mix(in srgb, var(--ink) 80%, #555); }
+
+    /* Secciones oscuras */
+    .dark { background: var(--ink); color: var(--on-ink); }
+    .dark .eyebrow { color: var(--on-ink); }
+    .dark .lead { color: var(--on-ink-muted); }
+
+    /* Cabecera: sobre la portada, transparente; sin portada, barra negra fija */
+    .site-header {
+      position: absolute;
+      inset: 0 0 auto;
+      background: transparent;
+      border: 0;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      color: #fff;
+    }
+    .site-header.solid { position: sticky; background: var(--ink); color: var(--on-ink); border-bottom: 1px solid var(--ink-line); }
+    .site-header .brand { font-size: 1.625rem; text-transform: uppercase; letter-spacing: 0.01em; line-height: 1; }
+    .site-header .nav-links a { color: inherit; opacity: 0.78; }
+    .site-header .nav-links a:hover { opacity: 1; }
+    .menu-panel { background: var(--ink); color: var(--on-ink); border-color: var(--ink-line); }
+    .menu-panel a:not(.btn) { border-color: var(--ink-line); }
+    .nav-cta { max-width: 17rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; display: inline-block; line-height: 2.5rem; padding-block: 0; }
+    @media (max-width: 1180px) { .nav-links a:nth-child(n + 4) { display: none; } }
+
+    /* Portada */
+    .hero {
+      position: relative;
+      isolation: isolate;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: min(100svh, 940px);
+      padding-top: calc(var(--header-h) + 3.5rem);
+      background: var(--ink);
+      color: var(--on-ink);
+      overflow: hidden;
+    }
+    .hero.no-img {
+      min-height: min(88svh, 820px);
+      background:
+        radial-gradient(55% 65% at 92% 100%, color-mix(in srgb, var(--primary) 24%, transparent), transparent 70%),
+        repeating-linear-gradient(-45deg, rgb(255 255 255 / 0.028) 0 2px, transparent 2px 22px),
+        var(--ink);
+    }
+    .hero-media { position: absolute; inset: 0; z-index: -2; }
+    .hero-media img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.25) contrast(1.06); }
+    .hero.has-img::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background:
+        linear-gradient(to top, rgb(8 8 8 / 0.94) 0%, rgb(8 8 8 / 0.6) 42%, rgb(8 8 8 / 0.38) 100%),
+        linear-gradient(to right, rgb(8 8 8 / 0.5), transparent 75%);
+    }
+    .hero-inner { padding-bottom: clamp(2.5rem, 6vw, 4.5rem); }
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      margin-bottom: clamp(1.75rem, 3vw, 2.5rem);
+      color: rgb(255 255 255 / 0.86);
+      font-size: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+      font-weight: 600;
+    }
+    .hero-eyebrow::before { content: ""; flex-shrink: 0; width: 2.75rem; height: 4px; background: var(--primary); }
+    .hero-title { max-width: 11ch; font-size: clamp(3.5rem, 16.5vw, 11rem); line-height: 0.98; }
+    .hero-title.is-long { max-width: 18ch; font-size: clamp(2.75rem, 1rem + 5.4vw, 6.75rem); line-height: 1.02; }
+    .hero-title.is-xlong { max-width: 30ch; font-size: clamp(2.25rem, 1rem + 3.2vw, 4.25rem); line-height: 1.04; }
+    .hero-foot {
+      display: grid;
+      gap: 1.75rem;
+      margin-top: clamp(2rem, 4vw, 3rem);
+      padding-top: 1.75rem;
+      border-top: 1px solid rgb(255 255 255 / 0.2);
+    }
+    .hero-sub { max-width: 36rem; color: rgb(255 255 255 / 0.84); font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem); }
+    @media (min-width: 960px) {
+      .hero-foot { grid-template-columns: minmax(0, 36rem) auto; justify-content: space-between; align-items: end; gap: 3rem; }
+      .hero-foot .actions { justify-content: flex-end; }
+    }
+    @media (max-width: 520px) {
+      .hero .actions .btn { flex: 1 1 100%; }
+    }
+
+    /* Cinta con las disciplinas */
+    .tape { position: relative; overflow: hidden; background: var(--primary); color: var(--on-primary); }
+    .tape-track { display: flex; width: max-content; }
+    html:not(.bi-preview) .tape-track { animation: tape 60s linear infinite; }
+    @keyframes tape { to { transform: translateX(-50%); } }
+    .tape-group { display: flex; flex-shrink: 0; }
+    .tape-group span {
+      display: inline-flex;
+      align-items: center;
+      gap: 1.75rem;
+      padding: 0.95rem 0 0.85rem 1.75rem;
+      font-family: var(--font-heading);
+      font-size: clamp(1.25rem, 1rem + 1vw, 1.875rem);
+      font-weight: 700;
+      font-synthesis: none;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .tape-group span::after { content: ""; width: 0.5rem; height: 0.5rem; background: currentColor; transform: rotate(45deg); }
+
+    /* Disciplinas */
+    .disc-list { border-top: 2px solid var(--text); }
+    .disc {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 0.75rem 1.25rem;
+      align-items: center;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .disc-icon {
+      display: grid;
+      place-items: center;
+      width: 3.25rem;
+      height: 3.25rem;
+      background: var(--primary);
+      color: var(--on-primary);
+      border-radius: var(--radius-sm);
+    }
+    .disc-icon.is-empty { width: 0.875rem; height: 0.875rem; }
+    .disc h3 { font-size: clamp(1.875rem, 1.2rem + 2.4vw, 3.25rem); }
+    .disc p { grid-column: 1 / -1; max-width: 40rem; color: var(--muted); }
+    @media (min-width: 900px) {
+      .disc { grid-template-columns: 4rem minmax(0, 1.1fr) minmax(0, 1fr); gap: 2.5rem; padding: 1.875rem 0; }
+      .disc p { grid-column: auto; }
+      .disc-icon.is-empty { justify-self: start; }
+    }
+
+    /* Tarifas */
+    .plans { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; }
+    .plan {
+      display: flex;
+      flex: 1 1 18rem;
+      flex-direction: column;
+      max-width: 26rem;
+      padding: clamp(1.75rem, 3vw, 2.25rem);
+      background: var(--ink-2);
+      border: 1px solid var(--ink-line);
+      border-radius: var(--radius-lg);
+    }
+    .plans.is-single .plan { max-width: 34rem; }
+    .plan.is-featured { background: var(--primary); color: var(--on-primary); border-color: color-mix(in srgb, var(--accent) 60%, transparent); }
+    .plan-media { margin: calc(clamp(1.75rem, 3vw, 2.25rem) * -1) calc(clamp(1.75rem, 3vw, 2.25rem) * -1) 1.75rem; aspect-ratio: 16 / 10; overflow: hidden; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+    .plan-media > * { width: 100%; height: 100%; object-fit: cover; }
+    .plan-media .ph { background: var(--ink); color: rgb(255 255 255 / 0.3); }
+    .plan-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem 1rem; }
+    .plan h3 { font-size: clamp(1.75rem, 1.4rem + 1vw, 2.25rem); }
+    .tag {
+      display: inline-block;
+      padding: 0.35rem 0.65rem 0.3rem;
+      background: var(--primary);
+      color: var(--on-primary);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+    .plan.is-featured .tag { background: var(--ink); color: var(--accent); }
+    .plan-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.5rem; margin-top: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--ink-line); }
+    .plan.is-featured .plan-price { border-color: color-mix(in srgb, var(--on-primary) 22%, transparent); }
+    .price-pre { flex-basis: 100%; font-size: 0.9375rem; opacity: 0.72; }
+    .price-main { font-family: var(--font-heading); font-size: clamp(3.5rem, 2.8rem + 2vw, 4.75rem); font-weight: 700; font-synthesis: none; line-height: 0.9; overflow-wrap: anywhere; }
+    .price-main.is-long { font-size: clamp(2.25rem, 1.9rem + 1.2vw, 3rem); }
+    .price-post { font-size: 1rem; font-weight: 500; opacity: 0.72; }
+    .plan-body { flex: 1; margin-top: 1.5rem; }
+    .plan-body p { opacity: 0.8; }
+    .plan .checklist li { font-size: 0.9875rem; }
+    .plan .checklist li svg { color: var(--accent); }
+    .plan.is-featured .checklist li svg { color: var(--on-primary); }
+    .plan .btn { width: 100%; margin-top: 2rem; }
+
+    /* Cifras */
+    .stats-band { padding-block: clamp(3.5rem, 7vw, 6rem); background: var(--primary); color: var(--on-primary); }
+    .stats-band .eyebrow { color: var(--on-primary); }
+    .stats-band .eyebrow::before { background: var(--on-primary); }
+    .stats-band .lead { color: var(--on-primary); opacity: 0.8; }
+    .stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1.25rem; border-top: 2px solid var(--on-primary); }
+    .stat { padding-top: 1.5rem; }
+    .stat-value { display: block; font-family: var(--font-heading); font-size: clamp(2.75rem, 1.5rem + 3.6vw, 5.25rem); font-weight: 700; font-synthesis: none; line-height: 1; overflow-wrap: anywhere; }
+    .stat-label { display: block; max-width: 16rem; margin-top: 0.5rem; font-size: 0.9875rem; font-weight: 500; line-height: 1.4; }
+    .stat-grid > .stat:nth-child(n + 3) { margin-top: 1.25rem; }
+    .stat-grid > .stat:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .stat-grid.cols-1 { grid-template-columns: 1fr; }
+    @media (min-width: 640px) {
+      .stat-grid.md-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stat-grid.md-3 > .stat:nth-child(n + 3) { margin-top: 0; }
+      .stat-grid.md-3 > .stat:nth-child(n + 4) { margin-top: 1.25rem; }
+      .stat-grid.md-3 > .stat:last-child:nth-child(odd) { grid-column: auto; }
+    }
+    @media (min-width: 1000px) {
+      .stat-grid { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 0 2rem; }
+      .stat-grid > .stat:nth-child(n) { margin-top: 0; grid-column: auto; }
+      .stat-grid > .stat:nth-child(n + 5) { margin-top: 1.5rem; }
+      .stat-grid.cols-3 > .stat:nth-child(n + 4) { margin-top: 1.5rem; }
+    }
+
+    /* Entrenadores */
+    .team-grid { display: grid; gap: 1rem; }
+    .coach { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 1.25rem; align-items: center; }
+    .coach-photo { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--ink); border-radius: var(--radius); }
+    .coach-photo > img, .coach-photo > .ph { width: 100%; height: 100%; object-fit: cover; }
+    .coach-photo > img { filter: grayscale(1) contrast(1.08); transition: filter 0.5s var(--ease), transform 0.8s var(--ease); }
+    .coach:hover .coach-photo > img { filter: grayscale(0.1) contrast(1.02); transform: scale(1.03); }
+    .coach-initials {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 100%;
+      background:
+        repeating-linear-gradient(-45deg, rgb(255 255 255 / 0.035) 0 2px, transparent 2px 16px),
+        var(--ink);
+      color: var(--accent);
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      font-weight: 700;
+      font-synthesis: none;
+      letter-spacing: 0.02em;
+    }
+    .coach h3 { font-size: clamp(1.5rem, 1.25rem + 0.8vw, 2rem); }
+    .coach p { margin-top: 0.375rem; color: var(--muted); font-size: 0.9375rem; line-height: 1.45; }
+    @media (min-width: 600px) and (max-width: 999px) {
+      .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+      .team-grid > .coach:last-child:nth-child(odd) { grid-column: 1 / -1; }
+      .team-grid.cols-1 { grid-template-columns: 1fr; }
+    }
+    @media (min-width: 1000px) {
+      .team-grid { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 2.5rem 1.25rem; }
+      .coach { display: block; }
+      .coach h3 { margin-top: 1.25rem; }
+      .coach-initials { font-size: clamp(3.5rem, 6vw, 6rem); }
+      /* Una sola persona (entrenador personal): ficha horizontal grande */
+      .team-grid.cols-1 .coach { display: grid; grid-template-columns: minmax(0, 26rem) minmax(0, 1fr); gap: 3.5rem; align-items: end; }
+      .team-grid.cols-1 .coach h3 { margin-top: 0; font-size: clamp(2.5rem, 2rem + 2vw, 4rem); }
+      .team-grid.cols-1 .coach p { font-size: 1.125rem; }
+    }
+
+    /* Instalaciones */
+    .gal { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: clamp(9.5rem, 42vw, 15rem); gap: 0.625rem; }
+    .shot { position: relative; overflow: hidden; border-radius: var(--radius); background: var(--ink-2); }
+    .shot.m2 { grid-column: span 2; }
+    .shot > img, .shot > .ph { width: 100%; height: 100%; object-fit: cover; }
+    .shot > img { filter: grayscale(0.25) contrast(1.06); transition: transform 0.8s var(--ease); }
+    .shot:hover > img { transform: scale(1.035); }
+    .shot > .ph { background: repeating-linear-gradient(-45deg, rgb(255 255 255 / 0.03) 0 2px, transparent 2px 18px), var(--ink-2); color: rgb(255 255 255 / 0.28); }
+    .shot figcaption {
+      position: absolute;
+      inset: auto 0 0;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 2.5rem 1rem 0.875rem;
+      background: linear-gradient(to top, rgb(0 0 0 / 0.72), transparent);
+      color: #fff;
+      font-family: var(--font-heading);
+      font-size: clamp(1rem, 0.9rem + 0.5vw, 1.375rem);
+      font-weight: 700;
+      font-synthesis: none;
+      line-height: 1.05;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    /* Palabras largas en mayúsculas (ACONDICIONAMIENTO) en fotos estrechas: se parten */
+    .shot figcaption > span { min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
+    .shot figcaption::before { content: ""; flex-shrink: 0; width: 0.5rem; height: 0.5rem; background: var(--primary); }
+    @media (min-width: 700px) {
+      .gal { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-auto-rows: clamp(12rem, 22vw, 21rem); gap: 0.875rem; }
+      .shot.m2 { grid-column: auto; }
+      .shot.d2 { grid-column: span 2; }
+      .shot.d4 { grid-column: span 4; }
+      .shot.d6 { grid-column: span 6; grid-row: span 2; }
+      .shot figcaption { padding: 3rem 1.25rem 1.125rem; }
+    }
+
+    /* Resultados */
+    .results-sec { background: var(--surface); }
+    .results { display: grid; gap: 1rem; }
+    .result {
+      display: flex;
+      flex-direction: column;
+      padding: clamp(1.75rem, 3vw, 2.25rem);
+      background: var(--bg);
+      border-top: 4px solid var(--primary);
+      border-radius: var(--radius-lg);
+    }
+    .result-head { font-family: var(--font-heading); font-size: clamp(1.75rem, 1.35rem + 1.3vw, 2.5rem); font-weight: 700; font-synthesis: none; line-height: 1.05; }
+    .result blockquote { flex: 1; margin-top: 1.125rem; font-size: 1.0625rem; }
+    .result-head + blockquote { color: var(--muted); }
+    .result-author { display: flex; align-items: center; gap: 0.875rem; margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+    .result-author .avatar { width: 2.75rem; height: 2.75rem; border-radius: var(--radius-sm); background: var(--ink); color: var(--accent); font-size: 0.9375rem; }
+    .result-author strong { display: block; font-weight: 600; line-height: 1.3; }
+    .results.cols-1 .result { max-width: 56rem; padding: clamp(2rem, 5vw, 3.5rem); }
+    .results.cols-1 .result blockquote { font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem); line-height: 1.5; }
+    @media (min-width: 640px) {
+      .results:not(.cols-1) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .results:not(.cols-1) > .result:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    }
+    @media (min-width: 1000px) {
+      .results:not(.cols-1) { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 1.25rem; }
+      .results:not(.cols-1) > .result:last-child:nth-child(odd) { grid-column: auto; }
+      .results.cols-2 > .result:last-child:nth-child(odd),
+      .results.cols-3 > .result:last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
+    }
+
+    /* Preguntas */
+    .faq-wrap { display: grid; gap: 2.5rem; }
+    .faq-wrap .section-head { margin-bottom: 0; }
+    .faq-list { border-top: 2px solid var(--text); }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-item > summary {
+      padding: 1.375rem 0;
+      font-family: var(--font-heading);
+      font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.75rem);
+      line-height: 1.08;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+    }
+    .faq-plus { display: grid; place-items: center; flex-shrink: 0; width: 2.25rem; height: 2.25rem; background: var(--primary); color: var(--on-primary); border-radius: var(--radius-sm); }
+    .faq-plus svg { width: 1.125rem; height: 1.125rem; }
+    .faq-answer { max-width: 46rem; padding: 0 3.5rem 1.75rem 0; color: var(--muted); }
+    @media (min-width: 1000px) {
+      .faq-wrap { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 5rem; }
+      .faq-wrap .section-head { position: sticky; top: 2rem; align-self: start; }
+      .faq-wrap .section-head.has-lead { display: block; }
+      .faq-wrap .section-head.has-lead .lead { margin-top: 1.25rem; }
+    }
+
+    /* Prueba gratis */
+    .cta-sec { position: relative; padding-block: clamp(5rem, 10vw, 8.5rem); overflow: hidden; }
+    .cta-sec::before,
+    .cta-sec::after {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 12px;
+      background: repeating-linear-gradient(-45deg, var(--primary) 0 12px, transparent 12px 24px);
+    }
+    .cta-sec::after { inset: auto 0 0; }
+    .cta-title { max-width: 13ch; font-size: clamp(3rem, 1rem + 8vw, 9rem); line-height: 0.98; }
+    .cta-title.is-long { max-width: 20ch; font-size: clamp(2.5rem, 1rem + 4.6vw, 5.5rem); line-height: 1.02; }
+    .cta-title.is-xlong { max-width: 30ch; font-size: clamp(2rem, 1rem + 2.8vw, 3.75rem); line-height: 1.04; }
+    .cta-row { display: grid; gap: 1.75rem; margin-top: clamp(2rem, 4vw, 3rem); }
+    .cta-row p { max-width: 34rem; color: var(--on-ink-muted); font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem); }
+    @media (min-width: 900px) {
+      .cta-row { grid-template-columns: minmax(0, 34rem) auto; justify-content: space-between; align-items: end; gap: 3rem; }
+      .cta-row.only-btn { grid-template-columns: auto; justify-content: start; }
+    }
+
+    /* Contacto */
+    .contact-grid { display: grid; gap: 1px; overflow: hidden; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+    .contact-block { display: flex; flex-direction: column; padding: clamp(1.75rem, 3vw, 2.5rem); background: var(--bg); }
+    .contact-block h3 { display: flex; align-items: center; gap: 0.75rem; font-size: clamp(1.5rem, 1.3rem + 0.6vw, 1.875rem); }
+    .contact-block h3 svg { width: 1.375rem; height: 1.375rem; color: var(--text); }
+    .contact-block h3 .disc-icon { width: 2.5rem; height: 2.5rem; }
+    .contact-block h3 .disc-icon svg { color: var(--on-primary); }
+    .contact-address { margin-top: 1.25rem; font-size: 1.125rem; font-weight: 500; line-height: 1.45; }
+    .contact-block .link-arrow { margin-top: auto; padding-top: 1.5rem; color: var(--text); text-decoration: underline; text-decoration-color: var(--primary); text-decoration-thickness: 3px; text-underline-offset: 6px; }
+    .hours { margin-top: 1.25rem; }
+    .hours div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.125rem 1rem; padding: 0.625rem 0; border-bottom: 1px dashed var(--border); font-size: 0.9875rem; }
+    .hours div:last-child { border-bottom: 0; }
+    .hours dt { color: var(--muted); }
+    .hours dd { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .contact-lines { display: grid; gap: 0.75rem; margin-top: 1.25rem; }
+    .contact-lines a:not(.btn) { display: inline-flex; align-items: center; gap: 0.75rem; font-weight: 500; overflow-wrap: anywhere; }
+    .contact-lines a:not(.btn):hover { text-decoration: underline; text-decoration-color: var(--primary); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+    .contact-lines svg { width: 1.125rem; height: 1.125rem; color: var(--muted); flex-shrink: 0; }
+    .contact-lines .btn { justify-self: start; margin-top: 0.5rem; }
+    @media (min-width: 900px) {
+      .contact-grid { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); }
+    }
+
+    /* Pie */
+    .site-footer { padding-top: clamp(3.5rem, 7vw, 5.5rem); background: var(--ink); color: var(--on-ink-muted); overflow: hidden; }
+    .footer-top { display: grid; gap: 1.75rem; }
+    .footer-text { max-width: 28rem; font-size: 1rem; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 0.75rem 1.75rem; align-content: start; }
+    .footer-links a { color: var(--on-ink); font-weight: 600; }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-mark {
+      margin-top: clamp(2.5rem, 6vw, 4.5rem);
+      color: var(--on-ink);
+      font-family: var(--font-heading);
+      font-size: clamp(2.5rem, calc((min(100vw, var(--container)) - 2 * var(--gutter)) * var(--mark-k)), 12rem);
+      font-weight: 700;
+      font-synthesis: none;
+      line-height: 0.95;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      overflow-wrap: anywhere;
+    }
+    .footer-mark img { width: auto; height: clamp(3rem, 8vw, 6rem); }
+    .footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.75rem 2rem; margin-top: clamp(1.5rem, 3vw, 2.5rem); padding: 1.5rem 0 2rem; border-top: 1px solid var(--ink-line); font-size: 0.875rem; }
+    @media (min-width: 820px) {
+      .footer-top { grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main"><%= t("skip") %></a>
+
+  <%
+    const hero = config.hero;
+    const c = config.contact;
+    const showHero = show("hero");
+    const showContact = show("contact");
+    const hourLines = lines(c.hours);
+
+    // Tamaño de un texto grande según su longitud
+    const sizeClass = (text, long, xlong) => {
+      const n = String(text || "").length;
+      return n > xlong ? " is-xlong" : n > long ? " is-long" : "";
+    };
+    // Columnas en escritorio para que ninguna fila quede con un elemento suelto
+    const colsFor = (n) => (n <= 4 ? n : n % 4 === 0 ? 4 : n % 3 === 0 ? 3 : n % 4 >= 2 ? 4 : 3);
+    // «desde 160 €/mes» → prefijo, cifra y sufijo
+    const splitPrice = (price) => {
+      const m = String(price).match(/^(\D*?)\s*(\d[\d.,\s]*(?:€|eur|euros|\$|£)?)(.*)$/i);
+      if (!m) return { pre: "", main: price, post: "" };
+      return { pre: m[1].trim(), main: m[2].trim(), post: m[3].trim() };
+    };
+    // «Lunes a viernes: 7:00–22:30» → día y horas
+    const splitHour = (line) => {
+      const i = line.indexOf(": ");
+      return i > 0 ? [line.slice(0, i), line.slice(i + 2)] : ["", line];
+    };
+
+    // Botón principal de la cabecera: el de la portada o, sin portada, el de la llamada a la acción
+    const headerCta = showHero && hero.ctaText
+      ? { text: hero.ctaText, href: hero.ctaLink }
+      : show("cta") && config.cta.buttonText
+        ? { text: config.cta.buttonText, href: config.cta.buttonLink }
+        : null;
+  %>
+
+  <% function sectionHead(key, extraClass) {
+       const h = heading(key);
+       if (!h.eyebrow && !h.title && !h.subtitle) return;
+       const split = h.subtitle && (h.eyebrow || h.title);
+  %>
+    <div class="section-head<%= split ? ' has-lead' : '' %> <%= extraClass || '' %>">
+      <% if (h.eyebrow || h.title) { %>
+      <div>
+        <% if (h.eyebrow) { %><p class="eyebrow"><%= h.eyebrow %></p><% } %>
+        <% if (h.title) { %><h2 class="title<%= sizeClass(h.title, 52, 110) %>"><%= h.title %></h2><% } %>
+      </div>
+      <% } %>
+      <% if (h.subtitle) { %><p class="lead"><%= h.subtitle %></p><% } %>
+    </div>
+  <% } %>
+
+  <header class="site-header<%= showHero ? '' : ' solid' %>" data-section="brand">
+    <div class="container nav">
+      <a class="brand" href="#main">
+        <% if (config.brand.logo) { %><%- img(config.brand.logo, config.brand.name, { eager: true, sizes: "160px", width: 480 }) %><% } %>
+        <% if (config.brand.name || !config.brand.logo) { %><span><%= config.brand.name %></span><% } %>
+      </a>
+      <%- navLinks({ limit: 5, exclude: ["stats", "contact"] }) %>
+      <% if (headerCta) { %>
+        <a class="btn btn-primary btn-sm nav-cta" <%- linkAttrs(headerCta.href) %>><%= headerCta.text %></a>
+      <% } %>
+      <%- mobileMenu({ cta: headerCta || undefined }) %>
+    </div>
+  </header>
+
+  <main id="main">
+    <% if (showHero) {
+         const tapeTitles = show("features") ? config.features.map((f) => f.title.trim()).filter(Boolean) : [];
+         const tapeChars = tapeTitles.join("").length + tapeTitles.length * 4;
+         const tapeReps = tapeTitles.length ? Math.max(1, Math.ceil(170 / Math.max(tapeChars, 1))) : 0;
+    %>
+    <section class="hero <%= hero.backgroundImage ? 'has-img' : 'no-img' %>" id="hero" data-section="hero">
+      <% if (hero.backgroundImage) { %>
+        <div class="hero-media"><%- img(hero.backgroundImage, "", { eager: true, width: 2000 }) %></div>
+      <% } %>
+      <div class="container hero-inner">
+        <% if (hero.eyebrow) { %><p class="hero-eyebrow rise"><%= hero.eyebrow %></p><% } %>
+        <% if (hero.title) { %><h1 class="hero-title rise-2<%= sizeClass(hero.title, 34, 90) %>"><%= hero.title %></h1><% } %>
+        <% if (hero.subtitle || hero.ctaText || hero.secondaryCtaText) { %>
+        <div class="hero-foot rise-3">
+          <% if (hero.subtitle) { %><p class="hero-sub"><%= hero.subtitle %></p><% } else { %><span></span><% } %>
+          <% if (hero.ctaText || hero.secondaryCtaText) { %>
+          <div class="actions">
+            <% if (hero.ctaText) { %><a class="btn btn-primary btn-lg" <%- linkAttrs(hero.ctaLink) %>><%= hero.ctaText %></a><% } %>
+            <% if (hero.secondaryCtaText) { %><a class="btn btn-ghost-light btn-lg" <%- linkAttrs(hero.secondaryCtaLink) %>><%= hero.secondaryCtaText %></a><% } %>
+          </div>
+          <% } %>
+        </div>
+        <% } %>
+      </div>
+      <% if (tapeReps) { %>
+      <div class="tape" aria-hidden="true">
+        <div class="tape-track">
+          <% for (let g = 0; g < 2; g++) { %>
+          <div class="tape-group">
+            <% for (let r = 0; r < tapeReps; r++) { tapeTitles.forEach((title) => { %><span><%= title %></span><% }) } %>
+          </div>
+          <% } %>
+        </div>
+      </div>
+      <% } %>
+    </section>
+    <% } %>
+
+    <% if (show("features")) { %>
+    <section class="section" id="features" data-section="features">
+      <div class="container">
+        <% sectionHead("features") %>
+        <ul class="disc-list">
+          <% config.features.forEach((f) => { %>
+            <li class="disc">
+              <% if (f.icon) { %><span class="disc-icon"><%- icon(f.icon) %></span><% } else { %><span class="disc-icon is-empty" aria-hidden="true"></span><% } %>
+              <% if (f.title) { %><h3><%= f.title %></h3><% } %>
+              <% if (f.description) { %><p><%= f.description %></p><% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("products")) {
+         const plans = config.products;
+         const withMedia = plans.some((p) => p.image);
+         const featured = plans.findIndex((p) => p.badge);
+         const fallbackHref = show("cta") ? "#cta" : showContact ? "#contact" : "";
+    %>
+    <section class="section dark" id="products" data-section="products">
+      <div class="container">
+        <% sectionHead("products") %>
+        <ul class="plans<%= plans.length === 1 ? ' is-single' : '' %>">
+          <% plans.forEach((p, i) => {
+               const price = p.price ? splitPrice(p.price) : null;
+               const perks = lines(p.description);
+               const href = p.link || fallbackHref;
+          %>
+            <li class="plan<%= i === featured ? ' is-featured' : '' %>">
+              <% if (withMedia) { %><div class="plan-media"><%- img(p.image, p.title, { sizes: "(min-width: 1000px) 400px, 100vw", width: 1200, placeholder: "dumbbell" }) %></div><% } %>
+              <% if (p.title || p.badge) { %>
+              <div class="plan-top">
+                <% if (p.title) { %><h3><%= p.title %></h3><% } %>
+                <% if (p.badge) { %><span class="tag"><%= p.badge %></span><% } %>
+              </div>
+              <% } %>
+              <% if (price) { %>
+              <p class="plan-price">
+                <% if (price.pre) { %><span class="price-pre"><%= price.pre %></span><% } %>
+                <span class="price-main<%= price.main.length > 7 ? ' is-long' : '' %>"><%= price.main %></span>
+                <% if (price.post) { %><span class="price-post"><%= price.post %></span><% } %>
+              </p>
+              <% } %>
+              <div class="plan-body">
+                <% if (perks.length > 1) { %>
+                  <ul class="checklist"><% perks.forEach((line) => { %><li><%- icon("check", "") %><%= line %></li><% }) %></ul>
+                <% } else if (perks.length === 1) { %>
+                  <p><%= perks[0] %></p>
+                <% } %>
+              </div>
+              <% if (href) { %>
+                <a class="btn <%= i === featured ? 'btn-ink' : 'btn-line' %>" <%- linkAttrs(href) %>><%= t("join") %></a>
+              <% } %>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("stats")) { const n = config.stats.length; %>
+    <section class="stats-band" id="stats" data-section="stats">
+      <div class="container">
+        <% sectionHead("stats") %>
+        <dl class="stat-grid cols-<%= colsFor(n) %><%= n % 3 === 0 ? ' md-3' : '' %>" style="--cols: <%= colsFor(n) %>">
+          <% config.stats.forEach((s) => { %>
+            <div class="stat">
+              <dt class="sr-only"><%= s.label %></dt>
+              <dd><span class="stat-value"><%= s.value %></span><% if (s.label) { %><span class="stat-label" aria-hidden="true"><%= s.label %></span><% } %></dd>
+            </div>
+          <% }) %>
+        </dl>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("team")) { const n = config.team.length; %>
+    <section class="section" id="team" data-section="team">
+      <div class="container">
+        <% sectionHead("team") %>
+        <ul class="team-grid cols-<%= colsFor(n) %>" style="--cols: <%= colsFor(n) %>">
+          <% config.team.forEach((m) => { %>
+            <li class="coach">
+              <div class="coach-photo">
+                <% if (m.image) { %><%- img(m.image, m.name, { sizes: "(min-width: 1000px) 25vw, 120px", width: 1200 }) %><% } else { %><span class="coach-initials" aria-hidden="true"><%= initials(m.name) %></span><% } %>
+              </div>
+              <div>
+                <% if (m.name) { %><h3><%= m.name %></h3><% } %>
+                <% if (m.role) { %><p><%= m.role %></p><% } %>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("gallery")) {
+         // Filas de 3 (tercios) y de 2 (dos tercios + un tercio, alternando) para que ninguna quede coja
+         const n = config.gallery.length;
+         const rows = [];
+         if (n <= 3) rows.push(n);
+         else if (n === 4) rows.push(2, 2);
+         else { let left = n; while (left > 0) { if (left === 4) { rows.push(2, 2); left = 0; } else if (left === 2) { rows.push(2); left = 0; } else { rows.push(3); left -= 3; } } }
+         const spans = [];
+         let pairs = 0;
+         rows.forEach((size) => {
+           if (size === 1) spans.push("d6 m2");
+           else if (size === 3) spans.push("d2 m2", "d2", "d2");
+           else { const flip = pairs++ % 2 === 1; spans.push(flip ? "d2" : "d4", flip ? "d4" : "d2"); }
+         });
+    %>
+    <section class="section dark" id="gallery" data-section="gallery">
+      <div class="container">
+        <% sectionHead("gallery") %>
+        <div class="gal">
+          <% config.gallery.forEach((g, i) => { %>
+            <figure class="shot <%= spans[i] %>">
+              <%- img(g.image, g.caption, { sizes: "(min-width: 700px) 66vw, 100vw", width: 1600, placeholder: "dumbbell" }) %>
+              <% if (g.caption) { %><figcaption><span><%= g.caption %></span></figcaption><% } %>
+            </figure>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("testimonials")) {
+         const n = config.testimonials.length;
+         const cols = n <= 3 ? n : n % 3 === 0 ? 3 : n % 2 === 0 ? 2 : 3;
+    %>
+    <section class="section results-sec" id="testimonials" data-section="testimonials">
+      <div class="container">
+        <% sectionHead("testimonials") %>
+        <div class="results cols-<%= cols %>" style="--cols: <%= cols %>">
+          <% config.testimonials.forEach((r) => { %>
+            <figure class="result">
+              <% if (r.role) { %><p class="result-head"><%= r.role %></p><% } %>
+              <% if (r.quote) { %><blockquote>“<%= r.quote %>”</blockquote><% } %>
+              <% if (r.name || r.avatar) { %>
+              <figcaption class="result-author">
+                <span class="avatar"><% if (r.avatar) { %><%- img(r.avatar, r.name, { sizes: "48px", width: 480 }) %><% } else { %><%= initials(r.name) %><% } %></span>
+                <% if (r.name) { %><strong><%= r.name %></strong><% } %>
+              </figcaption>
+              <% } %>
+            </figure>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("faqs")) { %>
+    <section class="section" id="faqs" data-section="faqs">
+      <div class="container faq-wrap">
+        <div><% sectionHead("faqs") %></div>
+        <div class="faq-list">
+          <% config.faqs.forEach((f, i) => { %>
+            <details class="faq-item"<%= i === 0 ? " open" : "" %>>
+              <summary><span><%= f.question || t("question") %></span><span class="faq-plus"><%- icon("plus", "faq-icon") %></span></summary>
+              <% if (f.answer) { %><div class="faq-answer"><%- paras(f.answer) %></div><% } %>
+            </details>
+          <% }) %>
+        </div>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (show("cta")) { const cta = config.cta; %>
+    <section class="dark cta-sec" id="cta" data-section="cta">
+      <div class="container">
+        <% if (cta.title) { %><h2 class="cta-title<%= sizeClass(cta.title, 30, 80) %>"><%= cta.title %></h2><% } %>
+        <% if (cta.text || cta.buttonText) { %>
+        <div class="cta-row<%= cta.text ? '' : ' only-btn' %>">
+          <% if (cta.text) { %><p><%= cta.text %></p><% } %>
+          <% if (cta.buttonText) { %><div class="actions"><a class="btn btn-primary btn-lg" <%- linkAttrs(cta.buttonLink) %>><%= cta.buttonText %></a></div><% } %>
+        </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <% if (showContact) {
+         const blocks = [c.address ? "visit" : "", hourLines.length ? "hours" : "", c.phone || c.email || c.whatsapp ? "talk" : ""].filter(Boolean);
+    %>
+    <section class="section" id="contact" data-section="contact">
+      <div class="container">
+        <% sectionHead("contact") %>
+        <% if (blocks.length) { %>
+        <div class="contact-grid" style="--cols: <%= blocks.length %>">
+          <% if (c.address) { %>
+          <div class="contact-block">
+            <h3><span class="disc-icon"><%- icon("map-pin", "") %></span><%= t("visit") %></h3>
+            <p class="contact-address"><%= c.address %></p>
+            <a class="link-arrow" <%- linkAttrs(mapsHref(c.address)) %>><%= t("directions") %><%- icon("arrow-up-right", "") %></a>
+          </div>
+          <% } %>
+          <% if (hourLines.length) { %>
+          <div class="contact-block">
+            <h3><span class="disc-icon"><%- icon("clock", "") %></span><%= t("hours") %></h3>
+            <dl class="hours">
+              <% hourLines.forEach((line) => { const [day, time] = splitHour(line); %>
+                <div><% if (day) { %><dt><%= day %></dt><% } %><dd><%= time %></dd></div>
+              <% }) %>
+            </dl>
+          </div>
+          <% } %>
+          <% if (c.phone || c.email || c.whatsapp) { %>
+          <div class="contact-block">
+            <h3><span class="disc-icon"><%- icon("message-circle", "") %></span><%= t("talk") %></h3>
+            <div class="contact-lines">
+              <% if (c.phone) { %><a href="<%= telHref(c.phone) %>"><%- icon("phone", "") %><%= c.phone %></a><% } %>
+              <% if (c.email) { %><a href="<%= mailHref(c.email) %>"><%- icon("mail", "") %><%= c.email %></a><% } %>
+              <% if (c.whatsapp) { %><a class="btn btn-primary" <%- linkAttrs(waHref(c.whatsapp)) %>><%- icon("message-circle", "") %><%= t("whatsapp") %></a><% } %>
+            </div>
+          </div>
+          <% } %>
+        </div>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+  </main>
+
+  <% if (show("footer")) {
+       const markName = config.brand.name.trim();
+       const markK = markName ? (0.96 / Math.max(markName.length * 0.43, 3)).toFixed(4) : "0.1";
+  %>
+  <footer class="site-footer" id="footer" data-section="footer">
+    <div class="container">
+      <% if (config.footer.text || config.footer.links.length) { %>
+      <div class="footer-top">
+        <% if (config.footer.text) { %><p class="footer-text"><%= config.footer.text %></p><% } else { %><span></span><% } %>
+        <% if (config.footer.links.length) { %>
+        <nav class="footer-links" aria-label="<%= config.brand.name || t('menu') %>">
+          <% config.footer.links.forEach((l) => { %><a <%- linkAttrs(l.url) %>><%= l.label || l.url %></a><% }) %>
+        </nav>
+        <% } %>
+      </div>
+      <% } %>
+      <p class="footer-mark" style="--mark-k: <%= markK %>"><% if (config.brand.logo && !markName) { %><%- img(config.brand.logo, "", { sizes: "200px", width: 480 }) %><% } else { %><%= markName %><% } %></p>
+      <div class="footer-bottom">
+        <p><%- copyright(config.brand.name) %></p>
+        <%- madeWith %>
+      </div>
+    </div>
+  </footer>
+  <% } %>
+
+  <%- foot %>
+</body>
+</html>

@@ -1,0 +1,789 @@
+/* Build It: base común de las webs generadas.
+   Cada plantilla añade después su propia hoja con su dirección de arte. Aquí
+   solo va la mecánica: reinicio, tokens, contenedor, menú móvil, botones,
+   huecos de imagen, vídeo y preguntas desplegables. Ver views/README.md. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  /* Superficies y texto (modo claro). Las plantillas los redefinen. */
+  --bg: #ffffff;
+  --surface: #f5f6f8;
+  --surface-2: #eceef2;
+  --text: #15171c;
+  --muted: #5b626e;
+  --border: #e2e5ea;
+
+  /* Tintes del color principal sobre el fondo */
+  --primary-soft: color-mix(in srgb, var(--primary) 10%, var(--bg));
+  --primary-tint: color-mix(in srgb, var(--primary) 18%, var(--bg));
+  --secondary-soft: color-mix(in srgb, var(--secondary) 14%, var(--bg));
+
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 24px;
+  --radius-btn: 999px;
+
+  --container: 1200px;
+  --gutter: clamp(1.25rem, 4vw, 2.5rem);
+  --section-y: clamp(4.5rem, 9vw, 8rem);
+  --header-h: 4.5rem;
+
+  --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.05), 0 1px 3px rgb(16 24 40 / 0.07);
+  --shadow: 0 18px 40px -18px rgb(16 24 40 / 0.22);
+  --shadow-lg: 0 30px 70px -28px rgb(16 24 40 / 0.35);
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: light;
+}
+
+html.bi-dark {
+  --bg: #0d0f12;
+  --surface: #15181d;
+  --surface-2: #1c2026;
+  --text: #eef0f3;
+  --muted: #a2aab5;
+  --border: #2a2f37;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow: 0 18px 40px -18px rgb(0 0 0 / 0.6);
+  --shadow-lg: 0 30px 70px -28px rgb(0 0 0 / 0.7);
+  color-scheme: dark;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + 0.5rem);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+}
+
+img,
+svg,
+video,
+iframe {
+  display: block;
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.1;
+  text-wrap: balance;
+  /* Las letras de rótulo de un solo peso (Anton, DM Serif…) no se engordan a lo falso */
+  font-synthesis: none;
+}
+
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary-ink);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 28%, transparent);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* ---------- Estructura ---------- */
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.container-narrow {
+  --container: 820px;
+}
+
+.section {
+  padding-block: var(--section-y);
+}
+
+.section-head {
+  max-width: 44rem;
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+
+.section-head.center {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: var(--primary-ink);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.title {
+  font-size: clamp(2rem, 1.3rem + 2.8vw, 3.25rem);
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin-top: 1.25rem;
+  color: var(--muted);
+  font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  line-height: 1.6;
+}
+
+.prose p + p {
+  margin-top: 1em;
+}
+
+/* Rejilla que se adapta sola: tantas columnas como quepan con un mínimo de --min */
+.auto-grid {
+  --min: 16rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min)), 1fr));
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+/* ---------- Cabecera y menú ---------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  min-height: var(--header-h);
+}
+
+.brand {
+  font-synthesis: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  margin-right: auto;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.brand img {
+  width: auto;
+  height: 2.25rem;
+  max-width: 10rem;
+  object-fit: contain;
+}
+
+.brand span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 2vw, 2rem);
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.nav-links a {
+  position: relative;
+  padding-block: 0.5rem;
+  color: var(--muted);
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover {
+  color: var(--text);
+}
+
+/* Un texto de botón largo no puede aplastar la marca */
+.nav-cta {
+  flex-shrink: 0;
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Menú móvil: <details data-menu> funciona sin JavaScript; el script solo lo
+   cierra al elegir un enlace, al pulsar fuera o con Escape. */
+.menu {
+  display: none;
+}
+
+.menu > summary {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-right: -0.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  list-style: none;
+}
+
+.menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.menu > summary svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.menu .icon-close {
+  display: none;
+}
+
+.menu[open] .icon-close {
+  display: block;
+}
+
+.menu[open] .icon-open {
+  display: none;
+}
+
+/* .nav (también .container) es la caja de referencia: en móvil ocupa todo el
+   ancho con el margen lateral por dentro, así que el panel va de borde a borde */
+.menu-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: calc(100vh - var(--header-h));
+  overflow-y: auto;
+  padding: 0.75rem var(--gutter) 1.5rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.menu-panel a:not(.btn) {
+  display: block;
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 1.0625rem;
+  font-weight: 500;
+}
+
+.menu-panel .btn {
+  width: 100%;
+  margin-top: 1.25rem;
+}
+
+/* Clase doble: tiene que ganar a .btn y a los estilos de cada plantilla */
+@media (max-width: 900px) {
+  .nav-links.nav-links,
+  .nav-cta.nav-cta {
+    display: none;
+  }
+
+  .menu.menu {
+    display: block;
+  }
+}
+
+/* ---------- Botones ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-btn);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s,
+    transform 0.2s var(--ease),
+    box-shadow 0.2s;
+}
+
+.btn svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.btn-primary:hover {
+  background: color-mix(in srgb, var(--primary) 86%, var(--text));
+}
+
+.btn-secondary {
+  background: var(--secondary);
+  color: var(--on-secondary);
+}
+
+.btn-secondary:hover {
+  background: color-mix(in srgb, var(--secondary) 86%, var(--text));
+}
+
+.btn-outline {
+  border-color: color-mix(in srgb, var(--text) 22%, transparent);
+  color: var(--text);
+}
+
+.btn-outline:hover {
+  border-color: var(--text);
+}
+
+/* Sobre fotos o fondos oscuros */
+.btn-light {
+  background: #fff;
+  color: #111;
+}
+
+.btn-light:hover {
+  background: rgb(255 255 255 / 0.88);
+}
+
+.btn-ghost-light {
+  border-color: rgb(255 255 255 / 0.55);
+  color: #fff;
+}
+
+.btn-ghost-light:hover {
+  border-color: #fff;
+  background: rgb(255 255 255 / 0.1);
+}
+
+.btn-sm {
+  min-height: 2.5rem;
+  padding: 0.5rem 1.125rem;
+  font-size: 0.9375rem;
+}
+
+.btn-lg {
+  min-height: 3.5rem;
+  padding: 0.9rem 2rem;
+  font-size: 1.0625rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--primary-ink);
+  font-weight: 600;
+}
+
+.link-arrow svg {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.2s var(--ease);
+}
+
+.link-arrow:hover svg {
+  transform: translateX(3px);
+}
+
+/* ---------- Iconos ---------- */
+
+.icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* Emoji guardado en una web antigua en vez de un icono */
+.icon-emoji {
+  display: inline-grid;
+  place-items: center;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+/* ---------- Imágenes ---------- */
+
+.cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Hueco de imagen cuando la web aún no tiene foto: no parece un error */
+.ph {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--primary) 26%, transparent), transparent 62%),
+    radial-gradient(120% 90% at 100% 100%, color-mix(in srgb, var(--secondary) 30%, transparent), transparent 62%),
+    var(--surface-2);
+  color: color-mix(in srgb, var(--text) 32%, transparent);
+}
+
+.ph > svg {
+  width: clamp(1.75rem, 12%, 3rem);
+  height: auto;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--primary-tint);
+  color: var(--primary-ink);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------- Vídeo ---------- */
+
+.video-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: #000;
+}
+
+.video-frame iframe,
+.video-frame video,
+.video-frame > img,
+.video-frame > .ph {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+}
+
+.video-link .play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.35), rgb(0 0 0 / 0.05));
+  color: #fff;
+}
+
+.video-link .play span {
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.95);
+  color: #111;
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.3s var(--ease);
+}
+
+.video-link:hover .play span {
+  transform: scale(1.06);
+}
+
+.video-link .play svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-left: 0.2rem;
+  fill: currentColor;
+}
+
+/* ---------- Preguntas desplegables (<details>) ---------- */
+
+.faq-item > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.faq-item > summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item > summary .faq-icon {
+  flex-shrink: 0;
+  transition: transform 0.3s var(--ease);
+}
+
+.faq-item[open] > summary .faq-icon {
+  transform: rotate(45deg);
+}
+
+/* ---------- Listas de texto (una línea por elemento) ---------- */
+
+.checklist li {
+  position: relative;
+  padding-left: 1.75rem;
+}
+
+.checklist li + li {
+  margin-top: 0.625rem;
+}
+
+.checklist li svg {
+  position: absolute;
+  left: 0;
+  top: 0.2em;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--primary-ink);
+}
+
+/* ---------- Botón flotante de WhatsApp (lo añade el render si hay número) ---------- */
+
+.wa-float {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  padding: 0.75rem 1.25rem 0.75rem 1rem;
+  border-radius: 999px;
+  background: #1fa855;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 12px 30px -10px rgb(0 0 0 / 0.45);
+  transition: transform 0.2s var(--ease), background-color 0.2s;
+}
+
+/* Con el botón flotante, el pie deja hueco al final (con su mismo fondo) para
+   que el botón no tape la última línea al llegar abajo del todo */
+body:has(.wa-float) [data-section=footer]::after {
+  content: "";
+  display: block;
+  height: 3.5rem;
+}
+
+.wa-float:hover {
+  background: #178a45;
+  transform: translateY(-2px);
+}
+
+.wa-float svg {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
+@media (max-width: 600px) {
+  .wa-float {
+    width: 3.5rem;
+    height: 3.5rem;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .wa-float span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+}
+
+/* ---------- Pie ---------- */
+
+.made-with {
+  font-size: 0.8125rem;
+  opacity: 0.7;
+}
+
+.made-with a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ---------- Movimiento ---------- */
+
+/* Entrada suave de la portada al cargar (no en el editor ni en miniaturas) */
+@keyframes bi-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+html:not(.bi-preview) .rise {
+  animation: bi-rise 0.9s var(--ease) both;
+}
+
+html:not(.bi-preview) .rise-2 {
+  animation: bi-rise 0.9s 0.12s var(--ease) both;
+}
+
+html:not(.bi-preview) .rise-3 {
+  animation: bi-rise 0.9s 0.24s var(--ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .site-header {
+    position: static;
+  }
+
+  .menu,
+  .skip-link {
+    display: none;
+  }
+}

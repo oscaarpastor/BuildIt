@@ -5,7 +5,9 @@ import { BaseTemplate } from "../models/BaseTemplate";
 import { Stat } from "../models/Stat";
 import { currentUserId } from "../middleware/auth";
 import { HttpError, notFound } from "../middleware/errors";
-import { renderSite } from "../lib/render";
+import { editableConfig, renderSite } from "../lib/render";
+import { getTemplate } from "../templates";
+import { templateInfo } from "../templates/info";
 import { createProjectSchema, updateProjectSchema } from "../validation/schemas";
 
 const PROJECT_NOT_FOUND = "Proyecto no encontrado";
@@ -60,8 +62,17 @@ export const createProject = async (req: Request, res: Response) => {
   res.status(201).json(project);
 };
 
+// Para el editor: el contenido con todos los campos (también los que se
+// añadieron después de crear la web) y la información de su plantilla.
 export const getProject = async (req: Request, res: Response) => {
-  res.json(await findOwnedProject(req));
+  const project = await findOwnedProject(req);
+  const json = project.toJSON() as Record<string, unknown>;
+  const template = getTemplate(project.view);
+  res.json({
+    ...json,
+    config: editableConfig(json.config, project.view),
+    template: template ? templateInfo(template) : null,
+  });
 };
 
 export const updateProject = async (req: Request, res: Response) => {

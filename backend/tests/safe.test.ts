@@ -47,7 +47,9 @@ describe("reglas de seguridad de contenido", () => {
       colorPrimary: "#3b82f6",
       colorSecondary: "#000000",
       fontFamily: "Inter",
+      fontBody: "Inter",
       darkMode: true,
+      language: "es",
     });
     expect(config.hero.ctaLink).toBe("#");
     expect(config.hero.backgroundImage).toBe("");

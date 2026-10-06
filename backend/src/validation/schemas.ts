@@ -26,40 +26,90 @@ export const SECTION_KEYS = [
   "products",
   "gallery",
   "video",
+  "stats",
+  "steps",
+  "team",
   "testimonials",
   "documentation",
   "faqs",
   "inspiration",
   "program",
+  "cta",
   "contact",
   "footer",
 ] as const;
+
+// Secciones con cabecera editable (antetítulo, título y entradilla).
+export const HEADING_KEYS = [
+  "about",
+  "features",
+  "products",
+  "gallery",
+  "video",
+  "stats",
+  "steps",
+  "team",
+  "testimonials",
+  "faqs",
+  "program",
+  "contact",
+] as const;
+
+export const SITE_LANGUAGES = ["es", "en"] as const;
+
+const headingSchema = z.object({ eyebrow: text(60), title: text(200), subtitle: text(600) });
+
+// Sin valor por defecto: una cabecera que no existe (webs anteriores a las
+// cabeceras editables) se rellena con la de la plantilla al leerla.
+const headingsSchema = z
+  .object(Object.fromEntries(HEADING_KEYS.map((key) => [key, headingSchema.optional()])) as {
+    [K in (typeof HEADING_KEYS)[number]]: z.ZodOptional<typeof headingSchema>;
+  })
+  .prefault({});
 
 export const projectConfigSchema = z.object({
   theme: z.object({
     colorPrimary: color,
     colorSecondary: color,
     fontFamily: z.enum(ALLOWED_FONTS),
+    fontBody: z.enum(ALLOWED_FONTS).optional(),
     darkMode: z.boolean().default(false),
+    language: z.enum(SITE_LANGUAGES).default("es"),
   }),
+  headings: headingsSchema,
   brand: z.object({ name: text(100), logo: media }).prefault({}),
   hero: z
     .object({
+      eyebrow: text(100),
       title: text(200),
       subtitle: text(500),
       backgroundImage: media,
       ctaText: text(100),
       ctaLink: link,
+      secondaryCtaText: text(100),
+      secondaryCtaLink: link,
     })
     .prefault({}),
   about: z.object({ heading: text(200), content: text(5000), image: media }).prefault({}),
   features: list(z.object({ icon: text(20), title: text(200), description: text(1000) })),
   products: list(
-    z.object({ title: text(200), description: text(1000), price: text(50), image: media })
+    z.object({
+      title: text(200),
+      description: text(1000),
+      price: text(50),
+      image: media,
+      badge: text(40),
+      link: link,
+    })
   ),
-  gallery: list(z.object({ image: media })),
+  gallery: list(z.object({ image: media, caption: text(200) })),
   video: z.object({ url: media, thumbnail: media }).prefault({}),
-  testimonials: list(z.object({ name: text(100), quote: text(1000), avatar: media })),
+  stats: list(z.object({ value: text(30), label: text(100) })),
+  steps: list(z.object({ label: text(60), title: text(200), description: text(1000) })),
+  team: list(z.object({ name: text(100), role: text(100), image: media })),
+  testimonials: list(
+    z.object({ name: text(100), role: text(100), quote: text(1000), avatar: media })
+  ),
   documentation: list(z.object({ title: text(200), url: link })),
   faqs: list(z.object({ question: text(300), answer: text(2000) })),
   inspiration: list(
@@ -83,8 +133,17 @@ export const projectConfigSchema = z.object({
       cta2: z.object({ text: text(100), link: link }).prefault({}),
     })
     .prefault({}),
+  cta: z
+    .object({ title: text(200), text: text(600), buttonText: text(100), buttonLink: link })
+    .prefault({}),
   contact: z
-    .object({ email: text(200), phone: text(50), address: text(300) })
+    .object({
+      email: text(200),
+      phone: text(50),
+      address: text(300),
+      hours: text(500),
+      whatsapp: text(30),
+    })
     .prefault({}),
   footer: z
     .object({

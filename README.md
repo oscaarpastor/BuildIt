@@ -2,6 +2,8 @@
 
 Creador de páginas web sin código (TFG). Cada usuario se registra, elige una de las 6 plantillas (Startup, Portfolio, Tienda, Agencia, Blog, Restaurante) y la personaliza en un editor con vista previa en directo. Después puede compartirla con un enlace público, ver sus visitas y clics, o descargarla como un único archivo HTML.
 
+La interfaz sigue el plan de diseño de [DISENO.md](DISENO.md), hecho con la skill `frontend-design` de Anthropic (en `.claude/skills/`).
+
 | Parte | Tecnología |
 |---|---|
 | `frontend/` | React 19 + TypeScript + Vite 6 + Tailwind 4, bilingüe (es/en) con i18next |
@@ -182,12 +184,16 @@ backend/
 frontend/
   src/
     lib/api.ts        Único punto de acceso a la API
+    lib/templates.ts  Secciones que pinta cada plantilla y cómo se llaman en ella
     context/          Sesión (AuthProvider, useAuth)
     pages/            Pantallas
-    components/       Editor por secciones y UI
+    components/       editor/ (pila de secciones y formularios), layout/ y ui/
+    index.css         Tokens de diseño: colores, escala tipográfica, fuente Archivo
   public/locales/     Traducciones es/en
 e2e/                  Test de extremo a extremo (Playwright)
 scripts/              copy-frontend.mjs (paso del build de producción)
+.claude/skills/       Skill frontend-design de Anthropic
+DISENO.md             Plan de diseño de la interfaz
 ```
 
 ## API
